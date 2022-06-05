@@ -1,0 +1,64 @@
+BeginPackage["VQD`"]
+
+    Public API, for all VQD functionalities, symbols, parameters, warning, etc. 
+    Works for all virtual devices
+
+    func::usage="";
+    func:error="`1`"
+
+
+    device::usage=".... "
+
+    BeginPackage["`Silicon`"]
+        APIs for specific to silicon devices
+
+        SiliconDelft
+        SiliconHub
+    EndPackage[]
+
+    BeginPackage["`SuperconductingQubit`"]
+        APIs for specific to superconducting qubit devices
+
+        SuperconductingFZJ
+        SuperconductingHub
+    EndPackage[]
+
+
+    BeginPackage["`TrappedIon`"]
+        APIs for specific to trapped ion devices
+
+        TrappedIonHub
+        TrappedIonInnsbruck
+    EndPackage[]
+
+    BeginPackage["`Rydberg`"]
+        APIs for specific to rydberg quantum devices, also known as neutral atoms.
+
+        RydbergHub
+        RydbergWisconsin
+        
+    EndPackage[]
+
+    BeginPackage["`NVCenter`"]
+        APIs for specific to nuclear-vacancy center devices.
+
+        NVCenterDelft
+        NVCenterHub
+        
+    EndPackage[]
+
+
+    Begin["`Private`"] 
+        All definitions of modules
+    End[]
+
+
+EndPackage[]
+
+
+Needs["VQD`Silicon`"]
+Needs["VQD`SuperconductingQubit`"]
+Needs["VQD`TrappedIon`"]
+Needs["VQD`Rydberg`"]
+Needs["VQD`NVCenter`"]
+
