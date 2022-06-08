@@ -104,36 +104,50 @@ Begin["`Private`"];
 
 
 validate::usage="Validate expression, throw error if false.";
-validate[value_,expr_,err_,msg_]:=(If[expr[value],value,Throw[Message[err::error,msg]]]);
+validate[value_,expr_,err_,msg_,format_:nothing]:=(If[expr[format[value]],format[value],Throw[Message[err::error,msg]]])
 
+nothing[arg___]:=arg
 checkAss::usage="check if it's an association with length len.";
-checkAss[ass_,len_]:=AssociationQ[ass]&&Length[ass]===len&&And@@NumberQ/@Values@ass;
-checkAss[ass_,len_,f_]:=AssociationQ[ass]&&Length[ass]===len&&And@@f/@Values@ass;
+checkAss[ass_,len_]:=AssociationQ[ass]&&Length[ass]===len&&And@@NumberQ/@Values@ass
+checkAss[ass_,len_,f_]:=AssociationQ[ass]&&Length[ass]===len&&And@@f/@Values@ass
+num2Ass[arg_Real,len_Integer]:=<|Table[i->arg,{i,0,-1+len}]|>
+num2Ass[arg_Integer,len_Integer]:=<|Table[i->arg,{i,0,-1+len}]|>
+num2Ass[arg_Association,len_Integer]:=arg
+
+
+numass[len_]:="not a number or association of numbers with length "<>ToString[len]
+fidass[len_]:="not a fidelity number or association of fidelities with length "<>ToString[len]
 
 
 SiliconDelft[OptionsPattern[]]:=With[
 {
-(*validated and fixed variables*)
+(*validate and format parameter specification*)
+(*Numbers*)
 qubitsnum=Catch@validate[OptionValue@qubitsNum,IntegerQ,qubitsNum,"not an integer"],
 bfield=Catch@validate[OptionValue@BField,NumberQ,BField,"not a number."],
-t1=Catch@validate[OptionValue@T1,NumberQ,T1,"not a number."],
-t2=Catch@validate[OptionValue@T2,checkAss[#,OptionValue@qubitsNum]&,T2,"not an association with length "<>ToString[OptionValue@qubitsNum]],
-t2s=Catch@validate[OptionValue@T2s,checkAss[#,OptionValue@qubitsNum]&,T2s,"not an association with length "<>ToString[OptionValue@qubitsNum]],
+(*Fractions*)
 efsinglexy=Catch@validate[OptionValue@EFSingleXY,Total[#]==1&,EFSingleXY,"not a fraction with total 1 "],
 efcz=Catch@validate[OptionValue@EFCZ,Total[#]==1&,EFCZ,"not a fraction with total 1 "],
-exchangerotoff=Catch@validate[OptionValue@ExchangeRotOff,checkAss[#,-1+OptionValue@qubitsNum]&,ExchangeRotOff,"not an association with length "<>ToString[-1+OptionValue@qubitsNum]],
-exchangeroton=Catch@validate[OptionValue@ExchangeRotOn,SquareMatrixQ&& -1+OptionValue@qubitsNum===Length@#&,ExchangeRotOn,"not a number."],
-fidcrotxy=Catch@validate[OptionValue@FidCRotXY,checkAss[#,-1+OptionValue@qubitsNum,0<=#<=1&]&,FidCRotXY,"not an association with length "<>ToString[-1+OptionValue@qubitsNum]],
-fidcz=Catch@validate[OptionValue@FidCZ,checkAss[#,-1+OptionValue@qubitsNum,0<=#<=1&]&,FidCZ,"not an association with values in [0,1] and length "<>ToString[-1+OptionValue@qubitsNum]],
-freqcrotxy=Catch@validate[OptionValue@FreqCRotXY,NumberQ,FreqCRotXY,"not a number."],
-fidsinglexy=Catch@validate[OptionValue@FidSingleXY,checkAss[#,OptionValue@qubitsNum,0<=#<=1&]&,FidSingleXY,"not an association with values in [0,1] and length "<>ToString[OptionValue@qubitsNum]],
-freqcz=Catch@validate[OptionValue@FreqCZ,checkAss[#,-1+OptionValue@qubitsNum]&,FreqCZ,"not an association with length "<>ToString[-1+OptionValue@qubitsNum]],
-larmor=Catch@validate[OptionValue@Larmor,checkAss[#,OptionValue@qubitsNum]&,Larmor,"not an association with length "<>ToString[OptionValue@qubitsNum]]
-,
+(*Number as average or association to specify each*)
+t1=Catch@validate[OptionValue@T1,checkAss[#,OptionValue@qubitsNum]&,T1,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
+t2=Catch@validate[OptionValue@T2,checkAss[#,OptionValue@qubitsNum]&,T2,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
+t2s=Catch@validate[OptionValue@T2s,checkAss[#,OptionValue@qubitsNum]&,T2s,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
+larmor=Catch@validate[OptionValue@Larmor,checkAss[#,OptionValue@qubitsNum]&,Larmor,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
+exchangerotoff=Catch@validate[OptionValue@ExchangeRotOff,checkAss[#,-1+OptionValue@qubitsNum]&,ExchangeRotOff,numass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
+freqcz=Catch@validate[OptionValue@FreqCZ,checkAss[#,-1+OptionValue@qubitsNum]&,FreqCZ,numass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
+freqcrotxy=Catch@validate[OptionValue@FreqCRotXY,checkAss[#,-1+OptionValue@qubitsNum]&,FreqCRotXY,numass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
+freqsinglexy=Catch@validate[OptionValue@FreqSingleXY,checkAss[#,OptionValue@qubitsNum]&,FreqSingleXY,numass[OptionValue@qubitsNum],num2Ass[#,OptionValue@qubitsNum]&],
+(*Number as average or association to specify each fidelity*)
+fidcrotxy=Catch@validate[OptionValue@FidCRotXY,checkAss[#,-1+OptionValue@qubitsNum,0<=#<=1]&,FidCRotXY,fidass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
+fidcz=Catch@validate[OptionValue@FidCZ,checkAss[#,-1+OptionValue@qubitsNum,0<=#<=1]&,FidCZ,fidass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
+fidsinglexy=Catch@validate[OptionValue@FidSingleXY,checkAss[#,OptionValue@qubitsNum,0<=#<=1]&,FidSingleXY,fidass[OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
+(*a matrix*)
+exchangeroton=Catch@validate[OptionValue@ExchangeRotOn,SquareMatrixQ && -1+OptionValue@qubitsNum===Length@#&,ExchangeRotOn,StringForm["not a matrix with dim \!\(\*SuperscriptBox[\(``\), \(2\)]\)",-1+OptionValue@qubitsNum]],
 (*calculated fixed parameters*)
 er1xy=fid2DepolDeph[#,OptionValue@EFSingleXY,1,FidSingleXY,True]&/@OptionValue[FidSingleXY],
-ercz=fid2DepolDeph[#,OptionValue@EFCZ,1,FidCZ,True]&/@OptionValue[FidCZ]
+ercz=fid2DepolDeph[#,OptionValue@EFCZ,2,FidCZ,True]&/@OptionValue[FidCZ]
 },
+
 Module[
 {\[CapitalDelta]t}
 ,
@@ -149,30 +163,26 @@ Gates ->{
 (* Singles *)
 	Subscript[Rz, q_][\[Theta]_]:> <|
 		NoisyForm->{Subscript[Rz, q][\[Theta]]},
-		GateDuration->10^-10(*virtual gate, instant, noiseless*)
+		GateDuration->0(*virtual gate, instant, noiseless*)
 		|>,
 	Subscript[Rx,q_][\[Theta]_]:><|
-		NoisyForm->{Subscript[Rx, q][\[Theta]],Subscript[Depol, q][er1xy[q]//First],Subscript[Deph, q][er1xy[q]//Last]},
-		GateDuration[]
+		NoisyForm->{Subscript[Rx, q][\[Theta]],Subscript[Depol, q][er1xy[q][[1]]],Subscript[Deph, q][er1xy[q][[2]]]},
+		GateDuration->freqsinglexy[q]Abs[\[Theta]]/(2\[Pi])
 	|>,
 	Subscript[Ry,q_][\[Theta]_]:><|
-	
-	
+		NoisyForm->{Subscript[Ry, q][\[Theta]],Subscript[Depol, q][er1xy[q][[1]]],Subscript[Deph, q][er1xy[q][[2]]]},
+		GateDuration->freqsinglexy[q]Abs[\[Theta]]/(2\[Pi])
 	|>
-}
-		
-	,
-
-	(* Declare that \[CapitalDelta]t will refer to the duration of the current gate/channel. *)
-	DurationSymbol -> \[CapitalDelta]t, 
-		Qubits -> {
+},
+(* Declare that \[CapitalDelta]t will refer to the duration of the current gate/channel. *)
+DurationSymbol -> \[CapitalDelta]t, 
+(* Passive noise *)
+Qubits :> {
 		q_ :> <|
-		PassiveNoise ->SiPassiveNoise[config,q,\[CapitalDelta]t]
+		PassiveNoise ->{}
 		|>		
-	}
-|>;
-
-{er1xy,ercz}
+		}
+|>
 ]
 ]
 
