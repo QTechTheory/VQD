@@ -45,7 +45,8 @@ ErrCT::usage="Error coefficient of the crosstalk with entanglement model";
 ErrSS::usage="Error coefficient of the crosstalk with stark shift model";
 EFSingleXY::usage="Error fraction/ratio, {depolarising, dephasing} of the single qubit X and Y rotations. Sum of the ratio must be 1.";
 EFCZ::usage="Error fraction/ratio, {depolarising, dephasing} of the controlled-Z gates. Sum of the ratio must be 1.";
-ExchangeRotOn::usage="Crosstalks error C-Rz[ex] on the passive qubits when applying two-qubit gates; It must be a square matrix with size (nqubit-2)x(nqubit-2).";
+EFCRotXY::usage="Error fraction/ratio, {depolarising, dephasing} of the controlled-Rx and -Ry gates. Sum of the ratio must be 1.";
+ExchangeRotOn::usage="Maximum interaction j on the passive qubit crosstalk when applying CZ gates; The noise form is C[Rz[j.\[Theta]]] It must be a square matrix with size (nqubit-2)x(nqubit-2).";
 ExchangeRotOff::usage="Crosstalks error C-Rz[ex] on the passive qubits when not applying two-qubit gates.";
 FidSingleXY::usage="Fidelity(ies) of single Rx[\[Theta]] and Ry[\[Theta]] rotations obtained by random benchmarking.";
 FidCRotXY::usage="The fidelity of controlled-X and controlled-Y gates.";
@@ -119,7 +120,12 @@ numass[len_]:="not a number or association of numbers with length "<>ToString[le
 fidass[len_]:="not a fidelity number or association of fidelities with length "<>ToString[len]
 
 
-SiliconDelft[OptionsPattern[]]:=With[
+(*noise forms on the SiliconDelft*)
+exCZON::usage="exCZON[target_qubit,qubitNum,exchangeMatrix]. Exchange C-Rz[j] interaction when CZ gate on";
+exCZON[targ_,nq_,ex_]:=Subscript[C, #-1][Subscript[Rx, #][ex[[targ,#]]]]&/@Delete[Range[nq-1],targ]
+
+
+SiliconDelft[OptionsPattern[]]:=Module[
 {
 (*validate and format parameter specification*)
 (*Numbers*)
@@ -138,19 +144,23 @@ freqcz=Catch@validate[OptionValue@FreqCZ,checkAss[#,-1+OptionValue@qubitsNum]&,F
 freqcrotxy=Catch@validate[OptionValue@FreqCRotXY,checkAss[#,-1+OptionValue@qubitsNum]&,FreqCRotXY,numass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
 freqsinglexy=Catch@validate[OptionValue@FreqSingleXY,checkAss[#,OptionValue@qubitsNum]&,FreqSingleXY,numass[OptionValue@qubitsNum],num2Ass[#,OptionValue@qubitsNum]&],
 (*Number as average or association to specify each fidelity*)
-fidcrotxy=Catch@validate[OptionValue@FidCRotXY,checkAss[#,-1+OptionValue@qubitsNum,0<=#<=1]&,FidCRotXY,fidass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
-fidcz=Catch@validate[OptionValue@FidCZ,checkAss[#,-1+OptionValue@qubitsNum,0<=#<=1]&,FidCZ,fidass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
-fidsinglexy=Catch@validate[OptionValue@FidSingleXY,checkAss[#,OptionValue@qubitsNum,0<=#<=1]&,FidSingleXY,fidass[OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
+fidcrotxy=Catch@validate[OptionValue@FidCRotXY,checkAss[#,-1+OptionValue@qubitsNum,0<=#<=1&]&,FidCRotXY,fidass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
+fidcz=Catch@validate[OptionValue@FidCZ,checkAss[#,-1+OptionValue@qubitsNum,0<=#<=1&]&,FidCZ,fidass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
+fidsinglexy=Catch@validate[OptionValue@FidSingleXY,checkAss[#,OptionValue@qubitsNum,0<=#<=1&]&,FidSingleXY,fidass[OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
 (*a matrix*)
-exchangeroton=Catch@validate[OptionValue@ExchangeRotOn,SquareMatrixQ && -1+OptionValue@qubitsNum===Length@#&,ExchangeRotOn,StringForm["not a matrix with dim \!\(\*SuperscriptBox[\(``\), \(2\)]\)",-1+OptionValue@qubitsNum]],
-(*calculated fixed parameters*)
+exchangeroton=Catch@validate[OptionValue@ExchangeRotOn,SquareMatrixQ,ExchangeRotOn,StringForm["not a square matrix with dim ``^2",-1+OptionValue@qubitsNum]],
+(*probability error of depolarising and dephasing noise *)
 er1xy=fid2DepolDeph[#,OptionValue@EFSingleXY,1,FidSingleXY,True]&/@OptionValue[FidSingleXY],
-ercz=fid2DepolDeph[#,OptionValue@EFCZ,2,FidCZ,True]&/@OptionValue[FidCZ]
+ercz=fid2DepolDeph[#,OptionValue@EFCZ,2,FidCZ,True]&/@OptionValue[FidCZ],
+er2xy=fid2DepolDeph[#,OptionValue@EFCZ,2,FidCZ,True]&/@OptionValue[FidCZ]
 },
 
 Module[
-{\[CapitalDelta]t}
-,
+{
+(*duration symbol, passive noise*)
+\[CapitalDelta]t,passivenoise},
+
+passivenoise[q_,dur_]:={Subscript[Deph, q][.5(1-E^(-dur/t2s[q]))],Subscript[Depol, q][.75(1-E^(-dur/t1[q]))]};
 <|
 (*no hidden qubits/ancilla here *)
 DeviceDescription -> "Delft Silicon device with "<>ToString[qubitsnum]<>"-qubits arranged as a linear array with nearest-neighbor connectivity and control qubits are the lower ones.",
@@ -167,19 +177,30 @@ Gates ->{
 		|>,
 	Subscript[Rx,q_][\[Theta]_]:><|
 		NoisyForm->{Subscript[Rx, q][\[Theta]],Subscript[Depol, q][er1xy[q][[1]]],Subscript[Deph, q][er1xy[q][[2]]]},
-		GateDuration->freqsinglexy[q]Abs[\[Theta]]/(2\[Pi])
+		GateDuration->Abs[\[Theta]]/(2\[Pi] freqsinglexy[q]) 
 	|>,
 	Subscript[Ry,q_][\[Theta]_]:><|
 		NoisyForm->{Subscript[Ry, q][\[Theta]],Subscript[Depol, q][er1xy[q][[1]]],Subscript[Deph, q][er1xy[q][[2]]]},
-		GateDuration->freqsinglexy[q]Abs[\[Theta]]/(2\[Pi])
+		GateDuration->Abs[\[Theta]]/(2\[Pi] freqsinglexy[q])
+	|>,
+(* Twos *)
+	Subscript[C, p_][Subscript[Z, q_]]/; (q-p)===1  :><|
+		NoisyForm->{Subscript[C, p][Subscript[Z, q]],Subscript[Depol, p,q][ercz[p][[1]]],Subscript[Deph, p,q][ercz[p][[2]]],Sequence@@exCZON[q,qubitsnum,exchangeroton]}, 
+		GateDuration->0.5/freqcz[p] 
+	|>,
+		Subscript[C, p_][Subscript[Rx, q_][\[Theta]_]]/; (q-p)===1  :><|
+		NoisyForm->{Subscript[C, p][Subscript[Rx, q][\[Theta]]],Subscript[Depol, p,q][ercz[p][[1]]],Subscript[Deph, p,q][ercz[p][[2]]]}, 
+		GateDuration->0.5/freqcz[p] 
 	|>
+	
+	
 },
 (* Declare that \[CapitalDelta]t will refer to the duration of the current gate/channel. *)
 DurationSymbol -> \[CapitalDelta]t, 
 (* Passive noise *)
 Qubits :> {
 		q_ :> <|
-		PassiveNoise ->{}
+		PassiveNoise ->passivenoise[q,\[CapitalDelta]t]
 		|>		
 		}
 |>

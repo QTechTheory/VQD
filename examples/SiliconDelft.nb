@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[     29533,        681]
-NotebookOptionsPosition[     26984,        633]
-NotebookOutlinePosition[     27410,        650]
-CellTagsIndexPosition[     27367,        647]
+NotebookDataLength[     67426,       1493]
+NotebookOptionsPosition[     63997,       1431]
+NotebookOutlinePosition[     64423,       1448]
+CellTagsIndexPosition[     64380,       1445]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -308,10 +308,9 @@ Cell[BoxData[
        RowBox[{"nearest", "-", "neighbors"}], ",", " ", 
        RowBox[{
        "where", " ", "the", " ", "control", " ", "qubits", " ", "are", " ", 
-        "the", " ", "lower", " ", "one", "\[IndentingNewLine]", "\t", "the", 
-        " ", "qubits", " ", "represented", " ", "below", " ", "are", " ", 
-        "the", " ", "control", " ", "ones"}]}], " ", "*)"}], 
-     "\[IndentingNewLine]", 
+        "the", " ", "lower", " ", 
+        RowBox[{"one", ".", " ", "Keys"}], " ", "are", " ", "the", " ", 
+        "control", " ", "qubits"}]}], " ", "*)"}], "\[IndentingNewLine]", 
      RowBox[{"FreqCZ", "->", 
       RowBox[{"<|", 
        RowBox[{
@@ -414,8 +413,12 @@ Cell[BoxData[
         RowBox[{"1", "->", " ", "0.9987"}], ",", 
         RowBox[{"2", "->", " ", "0.9996"}], ",", 
         RowBox[{"3", "->", " ", "0.9988"}], ",", 
-        RowBox[{"4", "->", " ", "0.9991"}]}], "|>"}]}]}], 
-    "\[IndentingNewLine]", "}"}]}], ";"}]], "Input",
+        RowBox[{"4", "->", " ", "0.9991"}]}], "|>"}]}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"EFCRotXY", "->", 
+      RowBox[{"{", 
+       RowBox[{"0.5", ",", "0.5"}], "}"}]}]}], "\[IndentingNewLine]", "}"}]}],
+   ";"}]], "Input",
  CellChangeTimes->{{3.863454326576664*^9, 3.86345445086904*^9}, {
    3.863454537922344*^9, 3.863454759471093*^9}, {3.8634548456673307`*^9, 
    3.863454893238694*^9}, {3.8634550060872517`*^9, 3.863455068944643*^9}, {
@@ -451,8 +454,26 @@ Cell[BoxData[
    3.8636936252782173`*^9}, {3.8636983827134*^9, 3.863698383179586*^9}, {
    3.8636984439189243`*^9, 3.863698452578929*^9}, {3.863698548560186*^9, 
    3.863698566835609*^9}, {3.863698868775147*^9, 3.8636988713380957`*^9}, {
-   3.863700237685199*^9, 3.8637002389417953`*^9}},
- CellLabel->"In[93]:=",ExpressionUUID->"67f43c7c-6968-4f73-a4b0-e3d3cf237f62"],
+   3.863700237685199*^9, 3.8637002389417953`*^9}, {3.8637034550869093`*^9, 
+   3.8637034837088337`*^9}, {3.863704291710779*^9, 3.863704301547406*^9}},
+ CellLabel->
+  "In[480]:=",ExpressionUUID->"67f43c7c-6968-4f73-a4b0-e3d3cf237f62"],
+
+Cell[CellGroupData[{
+
+Cell["Test", "Section",
+ CellChangeTimes->{{3.86350939774436*^9, 3.863509406506494*^9}, {
+  3.8637030539176893`*^9, 
+  3.863703061247266*^9}},ExpressionUUID->"b297d370-3b92-435e-8487-\
+6f169e985d53"],
+
+Cell["\<\
+Remarks:
+the time unit is \[Mu]s\
+\>", "Text",
+ CellChangeTimes->{{3.863703967682685*^9, 3.8637039988631153`*^9}},
+ Background->RGBColor[
+  1, 0.85, 0.85],ExpressionUUID->"7bc02cbb-0290-483b-b9df-516a1510a0b9"],
 
 Cell[BoxData[
  RowBox[{
@@ -460,13 +481,28 @@ Cell[BoxData[
    RowBox[{"SiliconDelft", "[", "]"}]}], ";"}]], "Input",
  CellChangeTimes->{{3.8636974640002832`*^9, 3.863697465362854*^9}, {
    3.863700340813966*^9, 3.863700372210355*^9}, 3.8637004210256433`*^9, 
-   3.863702777495817*^9},
+   3.863702777495817*^9, {3.8637088223739243`*^9, 3.8637088238532877`*^9}},
  CellLabel->
-  "In[125]:=",ExpressionUUID->"2b07d44d-7697-4245-95ef-242b1ed9feeb"],
+  "In[481]:=",ExpressionUUID->"2b07d44d-7697-4245-95ef-242b1ed9feeb"],
 
 Cell[CellGroupData[{
 
-Cell[BoxData[
+Cell["Individual gate tests", "Subsection",
+ CellChangeTimes->{{3.86370306345203*^9, 
+  3.863703075147481*^9}},ExpressionUUID->"e4995822-6d3f-4592-8284-\
+de2a010712f4"],
+
+Cell["\<\
+Single qubit gates: x- and y- rotations have the same error and z-rotations \
+are virtual\
+\>", "Text",
+ CellChangeTimes->{{3.863702948818843*^9, 3.863702998776547*^9}},
+ Background->RGBColor[
+  0.88, 1, 0.88],ExpressionUUID->"77139c97-1303-4462-aef5-a336edc8c5f0"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
  RowBox[{"InsertCircuitNoise", "[", 
   RowBox[{
    RowBox[{"{", 
@@ -478,11 +514,18 @@ Cell[BoxData[
       SubscriptBox["Rz", "0"], "[", "\[Pi]", "]"}], ",", 
      RowBox[{
       SubscriptBox["Ry", "0"], "[", 
-      RowBox[{"2", "\[Pi]"}], "]"}]}], "}"}], ",", "dev"}], "]"}]], "Input",
+      RowBox[{"2", "\[Pi]"}], "]"}], ",", 
+     RowBox[{
+      SubscriptBox["Rz", "0"], "[", 
+      RowBox[{"2", "\[Pi]"}], "]"}]}], "}"}], ",", "dev"}], 
+  "]"}], "\[IndentingNewLine]", 
+ RowBox[{"DrawCircuit", "[", "%", "]"}]}], "Input",
  CellChangeTimes->{{3.863700373553709*^9, 3.8637004053841553`*^9}, {
-  3.8637027910241337`*^9, 3.863702836653534*^9}},
+  3.8637027910241337`*^9, 3.863702836653534*^9}, {3.8637030394983397`*^9, 
+  3.863703042886256*^9}, {3.863703134219542*^9, 3.863703134821913*^9}, {
+  3.863714286237688*^9, 3.863714343540049*^9}},
  CellLabel->
-  "In[126]:=",ExpressionUUID->"c20a747f-e714-4920-9b47-871feb81cb78"],
+  "In[500]:=",ExpressionUUID->"c20a747f-e714-4920-9b47-871feb81cb78"],
 
 Cell[BoxData[
  RowBox[{"{", 
@@ -499,15 +542,69 @@ Cell[BoxData[
        RowBox[{
         SubscriptBox["Deph", "0"], "[", "0.003449999999999953`", "]"}]}], 
       "}"}], ",", 
-     RowBox[{"{", "}"}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{
+        SubscriptBox["Deph", "0"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "0"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", "1"], "[", "0.03844182680668212`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "1"], "[", "0.0014985009995001908`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", "2"], "[", "0.026309552330200603`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "2"], "[", "0.0014985009995001908`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", "3"], "[", "0.026309552330200603`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "3"], "[", "0.0014985009995001908`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", "4"], "[", "0.016665097478500535`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "4"], "[", "0.0014985009995001908`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", "5"], "[", "0.019228352456054698`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "5"], "[", "0.0014985009995001908`", "]"}]}], 
+      "}"}]}], "}"}], ",", 
    RowBox[{"{", 
-    RowBox[{"5", ",", 
+    RowBox[{
+     FractionBox["1", "5"], ",", 
      RowBox[{"{", 
       RowBox[{
        SubscriptBox["Rz", "0"], "[", "\[Pi]", "]"}], "}"}], ",", 
-     RowBox[{"{", "}"}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{
+        SubscriptBox["Deph", "0"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "0"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", "1"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "1"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", "2"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "2"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", "3"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "3"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", "4"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "4"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", "5"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "5"], "[", "0.`", "]"}]}], "}"}]}], "}"}], ",", 
+   
    RowBox[{"{", 
-    RowBox[{"5", ",", 
+    RowBox[{
+     FractionBox["1", "5"], ",", 
      RowBox[{"{", 
       RowBox[{
        RowBox[{
@@ -518,35 +615,169 @@ Cell[BoxData[
        RowBox[{
         SubscriptBox["Deph", "0"], "[", "0.003449999999999953`", "]"}]}], 
       "}"}], ",", 
-     RowBox[{"{", "}"}]}], "}"}]}], "}"}]], "Output",
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{
+        SubscriptBox["Deph", "0"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "0"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", "1"], "[", "0.03844182680668212`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "1"], "[", "0.0014985009995001908`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", "2"], "[", "0.026309552330200603`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "2"], "[", "0.0014985009995001908`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", "3"], "[", "0.026309552330200603`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "3"], "[", "0.0014985009995001908`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", "4"], "[", "0.016665097478500535`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "4"], "[", "0.0014985009995001908`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", "5"], "[", "0.019228352456054698`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "5"], "[", "0.0014985009995001908`", "]"}]}], 
+      "}"}]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     FractionBox["2", "5"], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       SubscriptBox["Rz", "0"], "[", 
+       RowBox[{"2", " ", "\[Pi]"}], "]"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{
+        SubscriptBox["Deph", "0"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "0"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", "1"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "1"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", "2"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "2"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", "3"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "3"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", "4"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "4"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", "5"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "5"], "[", "0.`", "]"}]}], "}"}]}], "}"}]}], 
+  "}"}]], "Output",
  CellChangeTimes->{{3.86370039832463*^9, 3.8637004057632113`*^9}, 
    3.863700671217833*^9, 3.863700719625135*^9, 3.863700792311535*^9, 
    3.863702396749421*^9, {3.863702519421028*^9, 3.863702536155538*^9}, 
    3.863702669282331*^9, 3.8637027324920177`*^9, {3.863702780431614*^9, 
-   3.863702850542264*^9}},
+   3.863702850542264*^9}, 3.863703043315237*^9, 3.863703135261389*^9, 
+   3.863703776590016*^9, {3.863703931303316*^9, 3.863703934481843*^9}, {
+   3.863704027000334*^9, 3.863704029556581*^9}, {3.863708817251981*^9, 
+   3.863708825463668*^9}, 3.863708857420485*^9, 3.863709263354611*^9, 
+   3.863709357845793*^9, {3.8637137437669992`*^9, 3.8637137543875513`*^9}, 
+   3.8637142669582157`*^9, {3.863714309392963*^9, 3.863714343733593*^9}},
  CellLabel->
-  "Out[126]=",ExpressionUUID->"e6fb6227-64c5-47c4-941b-9c1040abcaf1"]
-}, Open  ]],
-
-Cell[CellGroupData[{
-
-Cell[BoxData[
- RowBox[{"DrawCircuit", "[", "%", "]"}]], "Input",
- CellChangeTimes->{{3.863702860161973*^9, 3.863702862588925*^9}},
- CellLabel->
-  "In[127]:=",ExpressionUUID->"05c5e1a2-416b-4ba4-867e-bf889b3db5db"],
+  "Out[500]=",ExpressionUUID->"4f760e82-ee4c-4a13-9383-10ad7429746a"],
 
 Cell[BoxData[
  GraphicsBox[
   {EdgeForm[GrayLevel[0]], FaceForm[GrayLevel[
-   1]], {LineBox[{{0.125, 0.5}, {0.25, 0.5}}], 
-    LineBox[{{0.25, 0.5}, {1.25, 0.5}}], LineBox[{{1.25, 0.5}, {2.25, 0.5}}], 
-    LineBox[{{2.25, 0.5}, {3.25, 0.5}}], LineBox[{{3.25, 0.5}, {3.5, 0.5}}], 
-    LineBox[{{3.5, 0.5}, {4.5, 0.5}}], LineBox[{{4.5, 0.5}, {4.75, 0.5}}], 
-    LineBox[{{4.75, 0.5}, {5.75, 0.5}}], LineBox[{{5.75, 0.5}, {6.75, 0.5}}], 
-    LineBox[{{6.75, 0.5}, {7.75, 0.5}}]}, {
+   1]], {{LineBox[{{0.125, 0.5}, {0.25, 0.5}}], 
+     LineBox[{{0.125, 1.5}, {0.25, 1.5}}], 
+     LineBox[{{0.125, 2.5}, {0.25, 2.5}}], 
+     LineBox[{{0.125, 3.5}, {0.25, 3.5}}], 
+     LineBox[{{0.125, 4.5}, {0.25, 4.5}}], 
+     LineBox[{{0.125, 5.5}, {0.25, 5.5}}]}, {
+     LineBox[{{0.25, 0.5}, {1.25, 0.5}}], LineBox[{{0.25, 1.5}, {1.25, 1.5}}],
+      LineBox[{{0.25, 2.5}, {1.25, 2.5}}], 
+     LineBox[{{0.25, 3.5}, {1.25, 3.5}}], LineBox[{{0.25, 4.5}, {1.25, 4.5}}],
+      LineBox[{{0.25, 5.5}, {1.25, 5.5}}]}, {
+     LineBox[{{1.25, 0.5}, {2.25, 0.5}}], LineBox[{{1.25, 1.5}, {2.25, 1.5}}],
+      LineBox[{{1.25, 2.5}, {2.25, 2.5}}], 
+     LineBox[{{1.25, 3.5}, {2.25, 3.5}}], LineBox[{{1.25, 4.5}, {2.25, 4.5}}],
+      LineBox[{{1.25, 5.5}, {2.25, 5.5}}]}, {
+     LineBox[{{2.25, 0.5}, {3.25, 0.5}}], LineBox[{{2.25, 1.5}, {3.25, 1.5}}],
+      LineBox[{{2.25, 2.5}, {3.25, 2.5}}], 
+     LineBox[{{2.25, 3.5}, {3.25, 3.5}}], LineBox[{{2.25, 4.5}, {3.25, 4.5}}],
+      LineBox[{{2.25, 5.5}, {3.25, 5.5}}]}, {
+     LineBox[{{3.25, 0.5}, {4.25, 0.5}}], LineBox[{{3.25, 1.5}, {4.25, 1.5}}],
+      LineBox[{{3.25, 2.5}, {4.25, 2.5}}], 
+     LineBox[{{3.25, 3.5}, {4.25, 3.5}}], LineBox[{{3.25, 4.5}, {4.25, 4.5}}],
+      LineBox[{{3.25, 5.5}, {4.25, 5.5}}]}, {
+     LineBox[{{4.25, 0.5}, {5.25, 0.5}}], LineBox[{{4.25, 1.5}, {5.25, 1.5}}],
+      LineBox[{{4.25, 2.5}, {5.25, 2.5}}], 
+     LineBox[{{4.25, 3.5}, {5.25, 3.5}}], LineBox[{{4.25, 4.5}, {5.25, 4.5}}],
+      LineBox[{{4.25, 5.5}, {5.25, 5.5}}]}, {
+     LineBox[{{5.25, 0.5}, {5.5, 0.5}}], LineBox[{{5.25, 1.5}, {5.5, 1.5}}], 
+     LineBox[{{5.25, 2.5}, {5.5, 2.5}}], LineBox[{{5.25, 3.5}, {5.5, 3.5}}], 
+     LineBox[{{5.25, 4.5}, {5.5, 4.5}}], 
+     LineBox[{{5.25, 5.5}, {5.5, 5.5}}]}, {LineBox[{{5.5, 0.5}, {6.5, 0.5}}], 
+     LineBox[{{5.5, 1.5}, {6.5, 1.5}}], LineBox[{{5.5, 2.5}, {6.5, 2.5}}], 
+     LineBox[{{5.5, 3.5}, {6.5, 3.5}}], LineBox[{{5.5, 4.5}, {6.5, 4.5}}], 
+     LineBox[{{5.5, 5.5}, {6.5, 5.5}}]}, {LineBox[{{6.5, 0.5}, {7.5, 0.5}}], 
+     LineBox[{{6.5, 1.5}, {7.5, 1.5}}], LineBox[{{6.5, 2.5}, {7.5, 2.5}}], 
+     LineBox[{{6.5, 3.5}, {7.5, 3.5}}], LineBox[{{6.5, 4.5}, {7.5, 4.5}}], 
+     LineBox[{{6.5, 5.5}, {7.5, 5.5}}]}, {LineBox[{{7.5, 0.5}, {8.5, 0.5}}], 
+     LineBox[{{7.5, 1.5}, {8.5, 1.5}}], LineBox[{{7.5, 2.5}, {8.5, 2.5}}], 
+     LineBox[{{7.5, 3.5}, {8.5, 3.5}}], LineBox[{{7.5, 4.5}, {8.5, 4.5}}], 
+     LineBox[{{7.5, 5.5}, {8.5, 5.5}}]}, {LineBox[{{8.5, 0.5}, {8.75, 0.5}}], 
+     LineBox[{{8.5, 1.5}, {8.75, 1.5}}], LineBox[{{8.5, 2.5}, {8.75, 2.5}}], 
+     LineBox[{{8.5, 3.5}, {8.75, 3.5}}], LineBox[{{8.5, 4.5}, {8.75, 4.5}}], 
+     LineBox[{{8.5, 5.5}, {8.75, 5.5}}]}, {
+     LineBox[{{8.75, 0.5}, {9.75, 0.5}}], LineBox[{{8.75, 1.5}, {9.75, 1.5}}],
+      LineBox[{{8.75, 2.5}, {9.75, 2.5}}], 
+     LineBox[{{8.75, 3.5}, {9.75, 3.5}}], LineBox[{{8.75, 4.5}, {9.75, 4.5}}],
+      LineBox[{{8.75, 5.5}, {9.75, 5.5}}]}, {
+     LineBox[{{9.75, 0.5}, {10.75, 0.5}}], 
+     LineBox[{{9.75, 1.5}, {10.75, 1.5}}], 
+     LineBox[{{9.75, 2.5}, {10.75, 2.5}}], 
+     LineBox[{{9.75, 3.5}, {10.75, 3.5}}], 
+     LineBox[{{9.75, 4.5}, {10.75, 4.5}}], 
+     LineBox[{{9.75, 5.5}, {10.75, 5.5}}]}, {
+     LineBox[{{10.75, 0.5}, {11.75, 0.5}}], 
+     LineBox[{{10.75, 1.5}, {11.75, 1.5}}], 
+     LineBox[{{10.75, 2.5}, {11.75, 2.5}}], 
+     LineBox[{{10.75, 3.5}, {11.75, 3.5}}], 
+     LineBox[{{10.75, 4.5}, {11.75, 4.5}}], 
+     LineBox[{{10.75, 5.5}, {11.75, 5.5}}]}, {
+     LineBox[{{11.75, 0.5}, {12.75, 0.5}}], 
+     LineBox[{{11.75, 1.5}, {12.75, 1.5}}], 
+     LineBox[{{11.75, 2.5}, {12.75, 2.5}}], 
+     LineBox[{{11.75, 3.5}, {12.75, 3.5}}], 
+     LineBox[{{11.75, 4.5}, {12.75, 4.5}}], 
+     LineBox[{{11.75, 5.5}, {12.75, 5.5}}]}, {
+     LineBox[{{12.75, 0.5}, {13.75, 0.5}}], 
+     LineBox[{{12.75, 1.5}, {13.75, 1.5}}], 
+     LineBox[{{12.75, 2.5}, {13.75, 2.5}}], 
+     LineBox[{{12.75, 3.5}, {13.75, 3.5}}], 
+     LineBox[{{12.75, 4.5}, {13.75, 4.5}}], 
+     LineBox[{{12.75, 5.5}, {13.75, 5.5}}]}, {
+     LineBox[{{13.75, 0.5}, {14., 0.5}}], LineBox[{{13.75, 1.5}, {14., 1.5}}],
+      LineBox[{{13.75, 2.5}, {14., 2.5}}], 
+     LineBox[{{13.75, 3.5}, {14., 3.5}}], LineBox[{{13.75, 4.5}, {14., 4.5}}],
+      LineBox[{{13.75, 5.5}, {14., 5.5}}]}, {
+     LineBox[{{14., 0.5}, {15., 0.5}}], LineBox[{{14., 1.5}, {15., 1.5}}], 
+     LineBox[{{14., 2.5}, {15., 2.5}}], LineBox[{{14., 3.5}, {15., 3.5}}], 
+     LineBox[{{14., 4.5}, {15., 4.5}}], LineBox[{{14., 5.5}, {15., 5.5}}]}, {
+     LineBox[{{15., 0.5}, {16., 0.5}}], LineBox[{{15., 1.5}, {16., 1.5}}], 
+     LineBox[{{15., 2.5}, {16., 2.5}}], LineBox[{{15., 3.5}, {16., 3.5}}], 
+     LineBox[{{15., 4.5}, {16., 4.5}}], LineBox[{{15., 5.5}, {16., 5.5}}]}, {
+     LineBox[{{16., 0.5}, {17., 0.5}}], LineBox[{{16., 1.5}, {17., 1.5}}], 
+     LineBox[{{16., 2.5}, {17., 2.5}}], LineBox[{{16., 3.5}, {17., 3.5}}], 
+     LineBox[{{16., 4.5}, {17., 4.5}}], 
+     LineBox[{{16., 5.5}, {17., 5.5}}]}}, {
     {GrayLevel[0.5], Dashing[{Small, Small}], 
-     LineBox[{{0.125, 0}, {0.125, 1}}]}, GeometricTransformationBox[InsetBox[
+     LineBox[{{0.125, 0}, {0.125, 6}}]}, GeometricTransformationBox[InsetBox[
       TagBox[
        RowBox[{
         RowBox[{"t", "="}], "0"}],
@@ -560,63 +791,630 @@ Cell[BoxData[
     {EdgeForm[Dashing[{Small, Small}]], 
      RectangleBox[{2.35, 0.1}, {3.15, 0.9}], 
      InsetBox["\<\"\[Phi]\"\>", {2.75, 0.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{3.35, 0.1}, {4.15, 0.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {3.75, 0.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{3.35, 1.1}, {4.15, 1.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {3.75, 1.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{3.35, 2.1}, {4.15, 2.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {3.75, 2.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{3.35, 3.1}, {4.15, 3.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {3.75, 3.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{3.35, 4.1}, {4.15, 4.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {3.75, 4.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{3.35, 5.1}, {4.15, 5.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {3.75, 5.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{4.35, 0.1}, {5.15, 0.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {4.75, 0.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{4.35, 1.1}, {5.15, 1.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {4.75, 1.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{4.35, 2.1}, {5.15, 2.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {4.75, 2.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{4.35, 3.1}, {5.15, 3.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {4.75, 3.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{4.35, 4.1}, {5.15, 4.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {4.75, 4.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{4.35, 5.1}, {5.15, 5.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {4.75, 5.5}]}, 
     {GrayLevel[0.5], Dashing[{Small, Small}], 
-     LineBox[{{3.375, 0}, {3.375, 1}}]}, GeometricTransformationBox[InsetBox[
+     LineBox[{{5.375, 0}, {5.375, 6}}]}, GeometricTransformationBox[InsetBox[
       TagBox[
        RowBox[{
-        RowBox[{"t", "="}], "5"}],
-       DisplayForm], {3.375, -0.5}], {{{0.9659258262890682, 
+        RowBox[{"t", "="}], 
+        FractionBox["1", "5"]}],
+       DisplayForm], {5.375, -0.5}], {{{0.9659258262890682, 
       0.2588190451025207}, {-0.2588190451025207, 0.9659258262890682}}, 
-      Center}], {RectangleBox[{3.6, 0.1}, {4.4, 0.9}], 
-     InsetBox["\<\"Rz\"\>", {4., 0.5}]}, 
+      Center}], {RectangleBox[{5.6, 0.1}, {6.4, 0.9}], 
+     InsetBox["\<\"Rz\"\>", {6., 0.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], RectangleBox[{6.6, 0.1}, {7.4, 0.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {7., 0.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], RectangleBox[{6.6, 1.1}, {7.4, 1.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {7., 1.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], RectangleBox[{6.6, 2.1}, {7.4, 2.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {7., 2.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], RectangleBox[{6.6, 3.1}, {7.4, 3.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {7., 3.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], RectangleBox[{6.6, 4.1}, {7.4, 4.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {7., 4.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], RectangleBox[{6.6, 5.1}, {7.4, 5.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {7., 5.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], RectangleBox[{7.6, 0.1}, {8.4, 0.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {8., 0.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], RectangleBox[{7.6, 1.1}, {8.4, 1.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {8., 1.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], RectangleBox[{7.6, 2.1}, {8.4, 2.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {8., 2.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], RectangleBox[{7.6, 3.1}, {8.4, 3.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {8., 3.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], RectangleBox[{7.6, 4.1}, {8.4, 4.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {8., 4.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], RectangleBox[{7.6, 5.1}, {8.4, 5.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {8., 5.5}]}, 
     {GrayLevel[0.5], Dashing[{Small, Small}], 
-     LineBox[{{4.625, 0}, {4.625, 1}}]}, GeometricTransformationBox[InsetBox[
+     LineBox[{{8.625, 0}, {8.625, 6}}]}, GeometricTransformationBox[InsetBox[
       TagBox[
        RowBox[{
-        RowBox[{"t", "="}], "5"}],
-       DisplayForm], {4.625, -0.5}], {{{0.9659258262890682, 
+        RowBox[{"t", "="}], 
+        FractionBox["1", "5"]}],
+       DisplayForm], {8.625, -0.5}], {{{0.9659258262890682, 
       0.2588190451025207}, {-0.2588190451025207, 0.9659258262890682}}, 
-      Center}], {RectangleBox[{4.85, 0.1}, {5.65, 0.9}], 
-     InsetBox["\<\"Ry\"\>", {5.25, 0.5}]}, 
+      Center}], {RectangleBox[{8.85, 0.1}, {9.65, 0.9}], 
+     InsetBox["\<\"Ry\"\>", {9.25, 0.5}]}, 
     {EdgeForm[Dashing[{Small, Small}]], 
-     RectangleBox[{5.85, 0.1}, {6.65, 0.9}], 
-     InsetBox["\<\"\[CapitalDelta]\"\>", {6.25, 0.5}]}, 
+     RectangleBox[{9.85, 0.1}, {10.65, 0.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {10.25, 0.5}]}, 
     {EdgeForm[Dashing[{Small, Small}]], 
-     RectangleBox[{6.85, 0.1}, {7.65, 0.9}], 
-     InsetBox["\<\"\[Phi]\"\>", {7.25, 0.5}]}}},
-  ImageSize->262.5,
+     RectangleBox[{10.85, 0.1}, {11.65, 0.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {11.25, 0.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{11.85, 0.1}, {12.65, 0.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {12.25, 0.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{11.85, 1.1}, {12.65, 1.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {12.25, 1.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{11.85, 2.1}, {12.65, 2.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {12.25, 2.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{11.85, 3.1}, {12.65, 3.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {12.25, 3.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{11.85, 4.1}, {12.65, 4.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {12.25, 4.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{11.85, 5.1}, {12.65, 5.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {12.25, 5.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{12.85, 0.1}, {13.65, 0.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {13.25, 0.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{12.85, 1.1}, {13.65, 1.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {13.25, 1.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{12.85, 2.1}, {13.65, 2.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {13.25, 2.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{12.85, 3.1}, {13.65, 3.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {13.25, 3.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{12.85, 4.1}, {13.65, 4.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {13.25, 4.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{12.85, 5.1}, {13.65, 5.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {13.25, 5.5}]}, 
+    {GrayLevel[0.5], Dashing[{Small, Small}], 
+     LineBox[{{13.875, 0}, {13.875, 6}}]}, GeometricTransformationBox[InsetBox[
+      TagBox[
+       RowBox[{
+        RowBox[{"t", "="}], 
+        FractionBox["2", "5"]}],
+       DisplayForm], {13.875, -0.5}], {{{0.9659258262890682, 
+      0.2588190451025207}, {-0.2588190451025207, 0.9659258262890682}}, 
+      Center}], {RectangleBox[{14.1, 0.1}, {14.9, 0.9}], 
+     InsetBox["\<\"Rz\"\>", {14.5, 0.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{15.1, 0.1}, {15.9, 0.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {15.5, 0.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{15.1, 1.1}, {15.9, 1.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {15.5, 1.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{15.1, 2.1}, {15.9, 2.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {15.5, 2.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{15.1, 3.1}, {15.9, 3.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {15.5, 3.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{15.1, 4.1}, {15.9, 4.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {15.5, 4.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{15.1, 5.1}, {15.9, 5.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {15.5, 5.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{16.1, 0.1}, {16.9, 0.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {16.5, 0.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{16.1, 1.1}, {16.9, 1.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {16.5, 1.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{16.1, 2.1}, {16.9, 2.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {16.5, 2.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{16.1, 3.1}, {16.9, 3.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {16.5, 3.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{16.1, 4.1}, {16.9, 4.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {16.5, 4.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{16.1, 5.1}, {16.9, 5.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {16.5, 5.5}]}}},
+  ImageSize->540.,
   PlotRangePadding->None]], "Output",
- CellChangeTimes->{3.863702862740801*^9},
+ CellChangeTimes->{{3.86370039832463*^9, 3.8637004057632113`*^9}, 
+   3.863700671217833*^9, 3.863700719625135*^9, 3.863700792311535*^9, 
+   3.863702396749421*^9, {3.863702519421028*^9, 3.863702536155538*^9}, 
+   3.863702669282331*^9, 3.8637027324920177`*^9, {3.863702780431614*^9, 
+   3.863702850542264*^9}, 3.863703043315237*^9, 3.863703135261389*^9, 
+   3.863703776590016*^9, {3.863703931303316*^9, 3.863703934481843*^9}, {
+   3.863704027000334*^9, 3.863704029556581*^9}, {3.863708817251981*^9, 
+   3.863708825463668*^9}, 3.863708857420485*^9, 3.863709263354611*^9, 
+   3.863709357845793*^9, {3.8637137437669992`*^9, 3.8637137543875513`*^9}, 
+   3.8637142669582157`*^9, {3.863714309392963*^9, 3.863714343771185*^9}},
  CellLabel->
-  "Out[127]=",ExpressionUUID->"6df63575-45b6-4142-a2c6-2a009c5e66cc"]
+  "Out[501]=",ExpressionUUID->"213d8278-91d2-4f57-81d2-4ecdc1865c6f"]
 }, Open  ]],
+
+Cell["\<\
+Two qubit gates: CZ is obtained by \[Pi] Z-rotation. CZ gates comes with \
+dephasing, depolarising, and crosstalk\
+\>", "Text",
+ CellChangeTimes->{{3.863702948818843*^9, 3.863702998776547*^9}, {
+  3.863703153139337*^9, 3.863703155321621*^9}, {3.86370364497313*^9, 
+  3.8637036765745287`*^9}, {3.863713820276762*^9, 3.863713845333596*^9}},
+ Background->RGBColor[
+  0.88, 1, 0.88],ExpressionUUID->"a5dea8fe-13e5-49fb-a503-61e801833d85"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"dev", "=", 
+   RowBox[{"SiliconDelft", "[", "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{"InsertCircuitNoise", "[", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       SubscriptBox["C", "0"], "[", 
+       SubscriptBox["Z", "1"], "]"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       SubscriptBox["C", "4"], "[", 
+       SubscriptBox["Z", "5"], "]"}], "}"}]}], "}"}], ",", "dev"}], 
+  "]"}], "\[IndentingNewLine]", 
+ RowBox[{"DrawCircuit", "[", "%", "]"}]}], "Input",
+ CellChangeTimes->{{3.863703612698986*^9, 3.863703635017887*^9}, {
+  3.86370415833963*^9, 3.86370417026117*^9}, {3.863709530200848*^9, 
+  3.8637095352537107`*^9}, {3.863709788128191*^9, 3.863709789331461*^9}, {
+  3.863713762094705*^9, 3.863713805649048*^9}},
+ CellLabel->
+  "In[502]:=",ExpressionUUID->"e55249be-a261-4edd-bbb4-093e0880a79e"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"0", ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{
+        SubscriptBox["C", "0"], "[", 
+        SubscriptBox["Z", "1"], "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", 
+         RowBox[{"0", ",", "1"}]], "[", "0.026573219481202056`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", 
+         RowBox[{"0", ",", "1"}]], "[", "0.10629287792480822`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["C", "1"], "[", 
+        RowBox[{
+         SubscriptBox["Rx", "2"], "[", "0.023`", "]"}], "]"}], ",", 
+       RowBox[{
+        SubscriptBox["C", "2"], "[", 
+        RowBox[{
+         SubscriptBox["Rx", "3"], "[", "0.018`", "]"}], "]"}], ",", 
+       RowBox[{
+        SubscriptBox["C", "3"], "[", 
+        RowBox[{
+         SubscriptBox["Rx", "4"], "[", "0.03`", "]"}], "]"}], ",", 
+       RowBox[{
+        SubscriptBox["C", "4"], "[", 
+        RowBox[{
+         SubscriptBox["Rx", "5"], "[", "0.04`", "]"}], "]"}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{
+        SubscriptBox["Deph", "0"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "0"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", "1"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "1"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", "2"], "[", "0.005553030118851721`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "2"], "[", "0.0003098533316794605`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", "3"], "[", "0.005553030118851721`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "3"], "[", "0.0003098533316794605`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", "4"], "[", "0.003489656360056881`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "4"], "[", "0.0003098533316794605`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", "5"], "[", "0.004034839216225494`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "5"], "[", "0.0003098533316794605`", "]"}]}], 
+      "}"}]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"0.04132231404958678`", ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{
+        SubscriptBox["C", "4"], "[", 
+        SubscriptBox["Z", "5"], "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", 
+         RowBox[{"4", ",", "5"}]], "[", "0.014505527804134622`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", 
+         RowBox[{"4", ",", "5"}]], "[", "0.05802211121653849`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["C", "0"], "[", 
+        RowBox[{
+         SubscriptBox["Rx", "1"], "[", "0.033`", "]"}], "]"}], ",", 
+       RowBox[{
+        SubscriptBox["C", "1"], "[", 
+        RowBox[{
+         SubscriptBox["Rx", "2"], "[", "0.03`", "]"}], "]"}], ",", 
+       RowBox[{
+        SubscriptBox["C", "2"], "[", 
+        RowBox[{
+         SubscriptBox["Rx", "3"], "[", "0.02`", "]"}], "]"}], ",", 
+       RowBox[{
+        SubscriptBox["C", "3"], "[", 
+        RowBox[{
+         SubscriptBox["Rx", "4"], "[", "0.03`", "]"}], "]"}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{
+        SubscriptBox["Deph", "0"], "[", "0.015196380403646959`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "0"], "[", "0.0006941230415929145`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", "1"], "[", "0.01817977784935687`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "1"], "[", "0.0006941230415929145`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", "2"], "[", "0.012357247410615335`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "2"], "[", "0.0006941230415929145`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", "3"], "[", "0.012357247410615335`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "3"], "[", "0.0006941230415929145`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", "4"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "4"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Deph", "5"], "[", "0.`", "]"}], ",", 
+       RowBox[{
+        SubscriptBox["Depol", "5"], "[", "0.`", "]"}]}], "}"}]}], "}"}]}], 
+  "}"}]], "Output",
+ CellChangeTimes->{{3.863703618849169*^9, 3.8637036353118*^9}, 
+   3.86370405213575*^9, {3.863704156152152*^9, 3.8637041704886293`*^9}, {
+   3.863708819323004*^9, 3.863708858560876*^9}, {3.863709264506424*^9, 
+   3.86370926769055*^9}, 3.863709380055121*^9, 3.863709461933983*^9, {
+   3.8637095148160057`*^9, 3.863709550299111*^9}, {3.863709607116439*^9, 
+   3.863709670529685*^9}, {3.863709711196885*^9, 3.863709738594779*^9}, {
+   3.863709787343005*^9, 3.863709791704423*^9}, {3.863713665229999*^9, 
+   3.8637136677993593`*^9}, {3.863713740477336*^9, 3.86371380604954*^9}, 
+   3.8637144082616453`*^9},
+ CellLabel->
+  "Out[503]=",ExpressionUUID->"21ccabfc-1749-494e-9191-3270556a92a3"],
+
+Cell[BoxData[
+ GraphicsBox[
+  {EdgeForm[GrayLevel[0]], FaceForm[GrayLevel[
+   1]], {{LineBox[{{0.125, 0.5}, {0.25, 0.5}}], 
+     LineBox[{{0.125, 1.5}, {0.25, 1.5}}], 
+     LineBox[{{0.125, 2.5}, {0.25, 2.5}}], 
+     LineBox[{{0.125, 3.5}, {0.25, 3.5}}], 
+     LineBox[{{0.125, 4.5}, {0.25, 4.5}}], 
+     LineBox[{{0.125, 5.5}, {0.25, 5.5}}]}, {
+     LineBox[{{0.25, 0.5}, {1.25, 0.5}}], LineBox[{{0.25, 1.5}, {1.25, 1.5}}],
+      LineBox[{{0.25, 2.5}, {1.25, 2.5}}], 
+     LineBox[{{0.25, 3.5}, {1.25, 3.5}}], LineBox[{{0.25, 4.5}, {1.25, 4.5}}],
+      LineBox[{{0.25, 5.5}, {1.25, 5.5}}]}, {
+     LineBox[{{1.25, 0.5}, {2.25, 0.5}}], LineBox[{{1.25, 1.5}, {2.25, 1.5}}],
+      LineBox[{{1.25, 2.5}, {2.25, 2.5}}], 
+     LineBox[{{1.25, 3.5}, {2.25, 3.5}}], LineBox[{{1.25, 4.5}, {2.25, 4.5}}],
+      LineBox[{{1.25, 5.5}, {2.25, 5.5}}]}, {
+     LineBox[{{2.25, 0.5}, {3.25, 0.5}}], LineBox[{{2.25, 1.5}, {3.25, 1.5}}],
+      LineBox[{{2.25, 2.5}, {3.25, 2.5}}], 
+     LineBox[{{2.25, 3.5}, {3.25, 3.5}}], LineBox[{{2.25, 4.5}, {3.25, 4.5}}],
+      LineBox[{{2.25, 5.5}, {3.25, 5.5}}]}, {
+     LineBox[{{3.25, 0.5}, {4.25, 0.5}}], LineBox[{{3.25, 1.5}, {4.25, 1.5}}],
+      LineBox[{{3.25, 2.5}, {4.25, 2.5}}], 
+     LineBox[{{3.25, 3.5}, {4.25, 3.5}}], LineBox[{{3.25, 4.5}, {4.25, 4.5}}],
+      LineBox[{{3.25, 5.5}, {4.25, 5.5}}]}, {
+     LineBox[{{4.25, 0.5}, {5.25, 0.5}}], LineBox[{{4.25, 1.5}, {5.25, 1.5}}],
+      LineBox[{{4.25, 2.5}, {5.25, 2.5}}], 
+     LineBox[{{4.25, 3.5}, {5.25, 3.5}}], LineBox[{{4.25, 4.5}, {5.25, 4.5}}],
+      LineBox[{{4.25, 5.5}, {5.25, 5.5}}]}, {
+     LineBox[{{5.25, 0.5}, {6.25, 0.5}}], LineBox[{{5.25, 1.5}, {6.25, 1.5}}],
+      LineBox[{{5.25, 2.5}, {6.25, 2.5}}], 
+     LineBox[{{5.25, 3.5}, {6.25, 3.5}}], LineBox[{{5.25, 4.5}, {6.25, 4.5}}],
+      LineBox[{{5.25, 5.5}, {6.25, 5.5}}]}, {
+     LineBox[{{6.25, 0.5}, {7.25, 0.5}}], LineBox[{{6.25, 1.5}, {7.25, 1.5}}],
+      LineBox[{{6.25, 2.5}, {7.25, 2.5}}], 
+     LineBox[{{6.25, 3.5}, {7.25, 3.5}}], LineBox[{{6.25, 4.5}, {7.25, 4.5}}],
+      LineBox[{{6.25, 5.5}, {7.25, 5.5}}]}, {
+     LineBox[{{7.25, 0.5}, {8.25, 0.5}}], LineBox[{{7.25, 1.5}, {8.25, 1.5}}],
+      LineBox[{{7.25, 2.5}, {8.25, 2.5}}], 
+     LineBox[{{7.25, 3.5}, {8.25, 3.5}}], LineBox[{{7.25, 4.5}, {8.25, 4.5}}],
+      LineBox[{{7.25, 5.5}, {8.25, 5.5}}]}, {
+     LineBox[{{8.25, 0.5}, {9.25, 0.5}}], LineBox[{{8.25, 1.5}, {9.25, 1.5}}],
+      LineBox[{{8.25, 2.5}, {9.25, 2.5}}], 
+     LineBox[{{8.25, 3.5}, {9.25, 3.5}}], LineBox[{{8.25, 4.5}, {9.25, 4.5}}],
+      LineBox[{{8.25, 5.5}, {9.25, 5.5}}]}, {
+     LineBox[{{9.25, 0.5}, {9.5, 0.5}}], LineBox[{{9.25, 1.5}, {9.5, 1.5}}], 
+     LineBox[{{9.25, 2.5}, {9.5, 2.5}}], LineBox[{{9.25, 3.5}, {9.5, 3.5}}], 
+     LineBox[{{9.25, 4.5}, {9.5, 4.5}}], 
+     LineBox[{{9.25, 5.5}, {9.5, 5.5}}]}, {LineBox[{{9.5, 0.5}, {10.5, 0.5}}],
+      LineBox[{{9.5, 1.5}, {10.5, 1.5}}], LineBox[{{9.5, 2.5}, {10.5, 2.5}}], 
+     LineBox[{{9.5, 3.5}, {10.5, 3.5}}], LineBox[{{9.5, 4.5}, {10.5, 4.5}}], 
+     LineBox[{{9.5, 5.5}, {10.5, 5.5}}]}, {
+     LineBox[{{10.5, 0.5}, {11.5, 0.5}}], LineBox[{{10.5, 1.5}, {11.5, 1.5}}],
+      LineBox[{{10.5, 2.5}, {11.5, 2.5}}], 
+     LineBox[{{10.5, 3.5}, {11.5, 3.5}}], LineBox[{{10.5, 4.5}, {11.5, 4.5}}],
+      LineBox[{{10.5, 5.5}, {11.5, 5.5}}]}, {
+     LineBox[{{11.5, 0.5}, {12.5, 0.5}}], LineBox[{{11.5, 1.5}, {12.5, 1.5}}],
+      LineBox[{{11.5, 2.5}, {12.5, 2.5}}], 
+     LineBox[{{11.5, 3.5}, {12.5, 3.5}}], LineBox[{{11.5, 4.5}, {12.5, 4.5}}],
+      LineBox[{{11.5, 5.5}, {12.5, 5.5}}]}, {
+     LineBox[{{12.5, 0.5}, {13.5, 0.5}}], LineBox[{{12.5, 1.5}, {13.5, 1.5}}],
+      LineBox[{{12.5, 2.5}, {13.5, 2.5}}], 
+     LineBox[{{12.5, 3.5}, {13.5, 3.5}}], LineBox[{{12.5, 4.5}, {13.5, 4.5}}],
+      LineBox[{{12.5, 5.5}, {13.5, 5.5}}]}, {
+     LineBox[{{13.5, 0.5}, {14.5, 0.5}}], LineBox[{{13.5, 1.5}, {14.5, 1.5}}],
+      LineBox[{{13.5, 2.5}, {14.5, 2.5}}], 
+     LineBox[{{13.5, 3.5}, {14.5, 3.5}}], LineBox[{{13.5, 4.5}, {14.5, 4.5}}],
+      LineBox[{{13.5, 5.5}, {14.5, 5.5}}]}, {
+     LineBox[{{14.5, 0.5}, {15.5, 0.5}}], LineBox[{{14.5, 1.5}, {15.5, 1.5}}],
+      LineBox[{{14.5, 2.5}, {15.5, 2.5}}], 
+     LineBox[{{14.5, 3.5}, {15.5, 3.5}}], LineBox[{{14.5, 4.5}, {15.5, 4.5}}],
+      LineBox[{{14.5, 5.5}, {15.5, 5.5}}]}}, {
+    {GrayLevel[0.5], Dashing[{Small, Small}], 
+     LineBox[{{0.125, 0}, {0.125, 6}}]}, GeometricTransformationBox[InsetBox[
+      TagBox[
+       RowBox[{
+        RowBox[{"t", "="}], "0"}],
+       DisplayForm], {0.125, -0.5}], {{{0.9659258262890682, 
+      0.2588190451025207}, {-0.2588190451025207, 0.9659258262890682}}, 
+      Center}], {
+     {FaceForm[GrayLevel[
+      0]], {DiskBox[{0.75, 0.5}, 0.1], DiskBox[{0.75, 1.5}, 0.1]}, 
+      LineBox[{{0.75, 0.5}, {0.75, 1.5}}]}, 
+     LineBox[{{0.75, 0.5}, {0.75, 0.5}}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{1.35, 0.1}, {2.15, 1.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {1.75, 1.}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{2.35, 0.1}, {3.15, 1.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {2.75, 1.}]}, {
+     {FaceForm[GrayLevel[0]], DiskBox[{3.75, 1.5}, 0.1], 
+      LineBox[{{3.75, 1.5}, {3.75, 2.5}}]}, {
+      RectangleBox[{3.35, 2.1}, {4.15, 2.9}], 
+      InsetBox["\<\"Rx\"\>", {3.75, 2.5}]}}, {
+     {FaceForm[GrayLevel[0]], DiskBox[{4.75, 2.5}, 0.1], 
+      LineBox[{{4.75, 2.5}, {4.75, 3.5}}]}, {
+      RectangleBox[{4.35, 3.1}, {5.15, 3.9}], 
+      InsetBox["\<\"Rx\"\>", {4.75, 3.5}]}}, {
+     {FaceForm[GrayLevel[0]], DiskBox[{5.75, 3.5}, 0.1], 
+      LineBox[{{5.75, 3.5}, {5.75, 4.5}}]}, {
+      RectangleBox[{5.35, 4.1}, {6.15, 4.9}], 
+      InsetBox["\<\"Rx\"\>", {5.75, 4.5}]}}, {
+     {FaceForm[GrayLevel[0]], DiskBox[{6.75, 4.5}, 0.1], 
+      LineBox[{{6.75, 4.5}, {6.75, 5.5}}]}, {
+      RectangleBox[{6.35, 5.1}, {7.15, 5.9}], 
+      InsetBox["\<\"Rx\"\>", {6.75, 5.5}]}}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{6.35, 0.1}, {7.15, 0.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {6.75, 0.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{6.35, 1.1}, {7.15, 1.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {6.75, 1.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{6.35, 2.1}, {7.15, 2.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {6.75, 2.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{6.35, 3.1}, {7.15, 3.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {6.75, 3.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{7.35, 4.1}, {8.15, 4.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {7.75, 4.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{7.35, 5.1}, {8.15, 5.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {7.75, 5.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{7.35, 0.1}, {8.15, 0.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {7.75, 0.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{7.35, 1.1}, {8.15, 1.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {7.75, 1.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{7.35, 2.1}, {8.15, 2.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {7.75, 2.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{7.35, 3.1}, {8.15, 3.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {7.75, 3.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{8.35, 4.1}, {9.15, 4.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {8.75, 4.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{8.35, 5.1}, {9.15, 5.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {8.75, 5.5}]}, 
+    {GrayLevel[0.5], Dashing[{Small, Small}], 
+     LineBox[{{9.375, 0}, {9.375, 6}}]}, GeometricTransformationBox[InsetBox[
+      TagBox[
+       RowBox[{
+        RowBox[{"t", "="}], "0.04132231404958678`"}],
+       DisplayForm], {9.375, -0.5}], {{{0.9659258262890682, 
+      0.2588190451025207}, {-0.2588190451025207, 0.9659258262890682}}, 
+      Center}], {
+     {FaceForm[GrayLevel[
+      0]], {DiskBox[{10., 4.5}, 0.1], DiskBox[{10., 5.5}, 0.1]}, 
+      LineBox[{{10., 4.5}, {10., 5.5}}]}, LineBox[{{10., 4.5}, {10., 4.5}}]}, {
+     {FaceForm[GrayLevel[0]], DiskBox[{10., 0.5}, 0.1], 
+      LineBox[{{10., 0.5}, {10., 1.5}}]}, {
+      RectangleBox[{9.6, 1.1}, {10.4, 1.9}], 
+      InsetBox["\<\"Rx\"\>", {10., 1.5}]}}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{10.6, 4.1}, {11.4, 5.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {11., 5.}]}, {
+     {FaceForm[GrayLevel[0]], DiskBox[{11., 1.5}, 0.1], 
+      LineBox[{{11., 1.5}, {11., 2.5}}]}, {
+      RectangleBox[{10.6, 2.1}, {11.4, 2.9}], 
+      InsetBox["\<\"Rx\"\>", {11., 2.5}]}}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{11.6, 4.1}, {12.4, 5.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {12., 5.}]}, {
+     {FaceForm[GrayLevel[0]], DiskBox[{12., 2.5}, 0.1], 
+      LineBox[{{12., 2.5}, {12., 3.5}}]}, {
+      RectangleBox[{11.6, 3.1}, {12.4, 3.9}], 
+      InsetBox["\<\"Rx\"\>", {12., 3.5}]}}, {
+     {FaceForm[GrayLevel[0]], DiskBox[{13., 3.5}, 0.1], 
+      LineBox[{{13., 3.5}, {13., 4.5}}]}, {
+      RectangleBox[{12.6, 4.1}, {13.4, 4.9}], 
+      InsetBox["\<\"Rx\"\>", {13., 4.5}]}}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{12.6, 0.1}, {13.4, 0.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {13., 0.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{12.6, 1.1}, {13.4, 1.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {13., 1.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{12.6, 2.1}, {13.4, 2.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {13., 2.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{13.6, 3.1}, {14.4, 3.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {14., 3.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{13.6, 4.1}, {14.4, 4.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {14., 4.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{13.6, 5.1}, {14.4, 5.9}], 
+     InsetBox["\<\"\[Phi]\"\>", {14., 5.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{13.6, 0.1}, {14.4, 0.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {14., 0.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{13.6, 1.1}, {14.4, 1.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {14., 1.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{13.6, 2.1}, {14.4, 2.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {14., 2.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{14.6, 3.1}, {15.4, 3.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {15., 3.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{14.6, 4.1}, {15.4, 4.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {15., 4.5}]}, 
+    {EdgeForm[Dashing[{Small, Small}]], 
+     RectangleBox[{14.6, 5.1}, {15.4, 5.9}], 
+     InsetBox["\<\"\[CapitalDelta]\"\>", {15., 5.5}]}}},
+  ImageSize->495.,
+  PlotRangePadding->None]], "Output",
+ CellChangeTimes->{{3.863703618849169*^9, 3.8637036353118*^9}, 
+   3.86370405213575*^9, {3.863704156152152*^9, 3.8637041704886293`*^9}, {
+   3.863708819323004*^9, 3.863708858560876*^9}, {3.863709264506424*^9, 
+   3.86370926769055*^9}, 3.863709380055121*^9, 3.863709461933983*^9, {
+   3.8637095148160057`*^9, 3.863709550299111*^9}, {3.863709607116439*^9, 
+   3.863709670529685*^9}, {3.863709711196885*^9, 3.863709738594779*^9}, {
+   3.863709787343005*^9, 3.863709791704423*^9}, {3.863713665229999*^9, 
+   3.8637136677993593`*^9}, {3.863713740477336*^9, 3.86371380604954*^9}, 
+   3.863714408279834*^9},
+ CellLabel->
+  "Out[504]=",ExpressionUUID->"831e9022-959c-45ba-a5b0-23b0da45de03"]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Crosstalk on gate operations", "Subsection",
+ CellChangeTimes->{{3.863705939505539*^9, 
+  3.863705966135545*^9}},ExpressionUUID->"190a8334-6383-4099-815f-\
+c3ca0b7750c3"],
 
 Cell[CellGroupData[{
 
 Cell[BoxData[
- RowBox[{
-  RowBox[{"\[LeftAssociation]", 
-   RowBox[{
-    RowBox[{"0", "\[Rule]", "5"}], ",", 
-    RowBox[{"1", "\[Rule]", "5"}], ",", 
-    RowBox[{"2", "\[Rule]", "5"}], ",", 
-    RowBox[{"3", "\[Rule]", "5"}], ",", 
-    RowBox[{"4", "\[Rule]", "5"}], ",", 
-    RowBox[{"5", "\[Rule]", "5"}]}], "\[RightAssociation]"}], "[", "0", 
-  "]"}]], "Input",
- CellLabel->"In[96]:=",ExpressionUUID->"585fa188-f2dd-4348-890a-8c990acf49dd"],
+ RowBox[{"ex", "=", 
+  RowBox[{"OptionValue", "[", 
+   RowBox[{"SiliconDelft", ",", "ExchangeRotOn"}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.863707421140366*^9, 3.863707442467671*^9}, {
+  3.863707883474299*^9, 3.86370788376293*^9}},
+ CellLabel->
+  "In[208]:=",ExpressionUUID->"c5e99053-94ea-4d9c-a59b-63a8b60b5c97"],
 
-Cell[BoxData["5"], "Output",
- CellChangeTimes->{3.86370082860032*^9},
- CellLabel->"Out[96]=",ExpressionUUID->"8c5c5534-7908-4bff-92f7-365623e8c799"]
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"0", ",", "0.023`", ",", "0.018`", ",", "0.03`", ",", "0.04`"}], 
+    "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"0.05`", ",", "0", ",", "0.03`", ",", "0.03`", ",", "0.04`"}], 
+    "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"0.05`", ",", "0.03`", ",", "0", ",", "0.07`", ",", "0.042`"}], 
+    "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"0.038`", ",", "0.03`", ",", "0.031`", ",", "0", ",", "0.25`"}], 
+    "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"0.033`", ",", "0.03`", ",", "0.02`", ",", "0.03`", ",", "0"}], 
+    "}"}]}], "}"}]], "Output",
+ CellChangeTimes->{3.86370744332339*^9, 3.8637078841548*^9},
+ CellLabel->
+  "Out[208]=",ExpressionUUID->"b18a0f1a-44d1-41db-8607-0b0d4a91d737"]
+}, Open  ]]
+}, Open  ]]
 }, Open  ]],
 
 Cell[CellGroupData[{
 
-Cell["Tests", "Section",
- CellChangeTimes->{{3.86350939774436*^9, 
-  3.863509406506494*^9}},ExpressionUUID->"b297d370-3b92-435e-8487-\
-6f169e985d53"],
+Cell["Reproducing results from the paper", "Section",
+ CellChangeTimes->{{3.86370598133107*^9, 
+  3.863705989799759*^9}},ExpressionUUID->"ae35079d-d391-4dcf-b2b7-\
+9e3d65f5c7c4"],
 
 Cell["\<\
 Initialisation sequence
@@ -633,7 +1431,7 @@ Obtain Bell state preparation fidelity\
 },
 WindowSize->{1295, 809},
 WindowMargins->{{0.5, Automatic}, {Automatic, 0.5}},
-Magnification:>0.8 Inherited,
+Magnification:>0.6 Inherited,
 FrontEndVersion->"13.0 for Linux x86 (64-bit) (December 2, 2021)",
 StyleDefinitions->"Default.nb",
 ExpressionUUID->"a2248c82-5d6e-4e2d-a348-485f095a758a"
@@ -650,37 +1448,51 @@ CellTagsIndex->{}
 (*NotebookFileOutline
 Notebook[{
 Cell[CellGroupData[{
-Cell[580, 22, 523, 8, 117, "Title",ExpressionUUID->"abee3c70-2cd9-4715-9efd-c85791f2af36"],
-Cell[1106, 32, 283, 7, 67, "Text",ExpressionUUID->"21bf1f63-56d0-43d7-9faa-c9210a6c2eb6"],
-Cell[1392, 41, 317, 5, 60, "Text",ExpressionUUID->"b542a8c6-844e-4807-a61e-a038d784e733"],
-Cell[1712, 48, 206, 4, 35, "Input",ExpressionUUID->"0247ed28-53a8-43b5-9885-8a33a13714a9"],
-Cell[1921, 54, 239, 4, 60, "Text",ExpressionUUID->"146b7de5-c30f-4395-a80b-04afbadec2ff"],
-Cell[2163, 60, 1503, 26, 86, "Input",ExpressionUUID->"c1354ac3-097d-48aa-9c8d-c8e21b3f174c"],
-Cell[3669, 88, 454, 7, 60, "Text",ExpressionUUID->"eaa229e1-adb8-4dc7-bc67-2b67b34da0ee"],
-Cell[4126, 97, 1025, 14, 35, "Input",ExpressionUUID->"0401a044-9d88-4aec-a16b-1f92948b8fb2"],
-Cell[5154, 113, 207, 3, 60, "Text",ExpressionUUID->"829ac279-643d-41d9-9158-11ee57dfc634"],
+Cell[580, 22, 523, 8, 87, "Title",ExpressionUUID->"abee3c70-2cd9-4715-9efd-c85791f2af36"],
+Cell[1106, 32, 283, 7, 50, "Text",ExpressionUUID->"21bf1f63-56d0-43d7-9faa-c9210a6c2eb6"],
+Cell[1392, 41, 317, 5, 44, "Text",ExpressionUUID->"b542a8c6-844e-4807-a61e-a038d784e733"],
+Cell[1712, 48, 206, 4, 26, "Input",ExpressionUUID->"0247ed28-53a8-43b5-9885-8a33a13714a9"],
+Cell[1921, 54, 239, 4, 44, "Text",ExpressionUUID->"146b7de5-c30f-4395-a80b-04afbadec2ff"],
+Cell[2163, 60, 1503, 26, 65, "Input",ExpressionUUID->"c1354ac3-097d-48aa-9c8d-c8e21b3f174c"],
+Cell[3669, 88, 454, 7, 44, "Text",ExpressionUUID->"eaa229e1-adb8-4dc7-bc67-2b67b34da0ee"],
+Cell[4126, 97, 1025, 14, 26, "Input",ExpressionUUID->"0401a044-9d88-4aec-a16b-1f92948b8fb2"],
+Cell[5154, 113, 207, 3, 44, "Text",ExpressionUUID->"829ac279-643d-41d9-9158-11ee57dfc634"],
 Cell[CellGroupData[{
-Cell[5386, 120, 679, 17, 35, "Input",ExpressionUUID->"f9fb01b6-1b1b-458a-a9b0-7eb0e5e5f7d5"],
-Cell[6068, 139, 2610, 50, 83, "Output",ExpressionUUID->"38a899ef-373b-4c1f-af29-d6574995b78c"]
+Cell[5386, 120, 679, 17, 26, "Input",ExpressionUUID->"f9fb01b6-1b1b-458a-a9b0-7eb0e5e5f7d5"],
+Cell[6068, 139, 2610, 50, 62, "Output",ExpressionUUID->"38a899ef-373b-4c1f-af29-d6574995b78c"]
 }, Open  ]],
-Cell[8693, 192, 263, 4, 60, "Text",ExpressionUUID->"15a258ee-e7ec-417a-b517-50e93cc27c2b"],
-Cell[8959, 198, 11661, 256, 919, "Input",ExpressionUUID->"67f43c7c-6968-4f73-a4b0-e3d3cf237f62"],
-Cell[20623, 456, 355, 8, 50, "Input",ExpressionUUID->"2b07d44d-7697-4245-95ef-242b1ed9feeb"],
+Cell[8693, 192, 263, 4, 44, "Text",ExpressionUUID->"15a258ee-e7ec-417a-b517-50e93cc27c2b"],
+Cell[8959, 198, 11834, 261, 613, "Input",ExpressionUUID->"67f43c7c-6968-4f73-a4b0-e3d3cf237f62"],
 Cell[CellGroupData[{
-Cell[21003, 468, 587, 16, 50, "Input",ExpressionUUID->"c20a747f-e714-4920-9b47-871feb81cb78"],
-Cell[21593, 486, 1437, 41, 56, "Output",ExpressionUUID->"e6fb6227-64c5-47c4-941b-9c1040abcaf1"]
+Cell[20818, 463, 199, 4, 59, "Section",ExpressionUUID->"b297d370-3b92-435e-8487-6f169e985d53"],
+Cell[21020, 469, 220, 6, 64, "Text",ExpressionUUID->"7bc02cbb-0290-483b-b9df-516a1510a0b9"],
+Cell[21243, 477, 405, 8, 26, "Input",ExpressionUUID->"2b07d44d-7697-4245-95ef-242b1ed9feeb"],
+Cell[CellGroupData[{
+Cell[21673, 489, 168, 3, 48, "Subsection",ExpressionUUID->"e4995822-6d3f-4592-8284-de2a010712f4"],
+Cell[21844, 494, 275, 6, 44, "Text",ExpressionUUID->"77139c97-1303-4462-aef5-a336edc8c5f0"],
+Cell[CellGroupData[{
+Cell[22144, 504, 897, 23, 46, "Input",ExpressionUUID->"c20a747f-e714-4920-9b47-871feb81cb78"],
+Cell[23044, 529, 6236, 160, 180, "Output",ExpressionUUID->"4f760e82-ee4c-4a13-9383-10ad7429746a"],
+Cell[29283, 691, 14843, 283, 215, "Output",ExpressionUUID->"213d8278-91d2-4f57-81d2-4ecdc1865c6f"]
+}, Open  ]],
+Cell[44141, 977, 444, 8, 44, "Text",ExpressionUUID->"a5dea8fe-13e5-49fb-a503-61e801833d85"],
+Cell[CellGroupData[{
+Cell[44610, 989, 886, 23, 65, "Input",ExpressionUUID->"e55249be-a261-4edd-bbb4-093e0880a79e"],
+Cell[45499, 1014, 4978, 125, 95, "Output",ExpressionUUID->"21ccabfc-1749-494e-9191-3270556a92a3"],
+Cell[50480, 1141, 11548, 223, 212, "Output",ExpressionUUID->"831e9022-959c-45ba-a5b0-23b0da45de03"]
+}, Open  ]]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[23067, 532, 213, 4, 50, "Input",ExpressionUUID->"05c5e1a2-416b-4ba4-867e-bf889b3db5db"],
-Cell[23283, 538, 2491, 52, 105, "Output",ExpressionUUID->"6df63575-45b6-4142-a2c6-2a009c5e66cc"]
+Cell[62077, 1370, 176, 3, 48, "Subsection",ExpressionUUID->"190a8334-6383-4099-815f-c3ca0b7750c3"],
+Cell[CellGroupData[{
+Cell[62278, 1377, 332, 7, 26, "Input",ExpressionUUID->"c5e99053-94ea-4d9c-a59b-63a8b60b5c97"],
+Cell[62613, 1386, 753, 20, 30, "Output",ExpressionUUID->"b18a0f1a-44d1-41db-8607-0b0d4a91d737"]
+}, Open  ]]
+}, Open  ]]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[25811, 595, 444, 11, 35, "Input",ExpressionUUID->"585fa188-f2dd-4348-890a-8c990acf49dd"],
-Cell[26258, 608, 148, 2, 55, "Output",ExpressionUUID->"8c5c5534-7908-4bff-92f7-365623e8c799"]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[26443, 615, 149, 3, 80, "Section",ExpressionUUID->"b297d370-3b92-435e-8487-6f169e985d53"],
-Cell[26595, 620, 361, 9, 120, "Text",ExpressionUUID->"7e6627fc-9504-423a-8b92-94d8a6915e3b"]
+Cell[63427, 1413, 178, 3, 59, "Section",ExpressionUUID->"ae35079d-d391-4dcf-b2b7-9e3d65f5c7c4"],
+Cell[63608, 1418, 361, 9, 89, "Text",ExpressionUUID->"7e6627fc-9504-423a-8b92-94d8a6915e3b"]
 }, Open  ]]
 }, Open  ]]
 }
