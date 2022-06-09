@@ -52,16 +52,16 @@ ErrCT::usage="Error coefficient of the crosstalk with entanglement model";
 ErrSS::usage="Error coefficient of the crosstalk with stark shift model";
 EFSingleXY::usage="Error fraction/ratio, {depolarising, dephasing} of the single qubit X and Y rotations. Sum of the ratio must be 1 or 0 (off).";
 EFCZ::usage="Error fraction/ratio, {depolarising, dephasing} of the controlled-Z gates. Sum of the ratio must be 1 or 0 (off).";
-EFCRotXY::usage="Error fraction/ratio, {depolarising, dephasing} of the controlled-Rx and -Ry gates. Sum of the ratio must be 1 or 0 (off).";
+EFCRotX::usage="Error fraction/ratio, {depolarising, dephasing} of the controlled-Rx and -Ry gates. Sum of the ratio must be 1 or 0 (off).";
 ExchangeRotOn::usage="Maximum interaction j on the passive qubit crosstalk when applying CZ gates; The noise form is C[Rz[j.\[Theta]]] It must be a square matrix with size (nqubit-2)x(nqubit-2).";
 ExchangeRotOff::usage="Crosstalks error C-Rz[ex] on the passive qubits when not applying two-qubit gates.";
 FidSingleXY::usage="Fidelity(ies) of single Rx[\[Theta]] and Ry[\[Theta]] rotations obtained by random benchmarking.";
-FidCRotXY::usage="The fidelity of controlled-X and controlled-Y gates.";
+FidCRotX::usage="The fidelity of controlled-X and controlled-Y gates.";
 FidMeas::usage="Fidelity of measurement";
 FidInit::usage="Fidelity of qubit initialisation";
 FidCZ::usage="Fidelity(ies) of the CZ gates.";
 FreqSingleXY::usage="Rabi frequency(ies) for the single X- and Y- rotations with unit MHz";
-FreqCRotXY::usage="Rabi frequency for the controlled-X and controlled-Y rotations with unit MHZ.";
+FreqCRotX::usage="Rabi frequency for the controlled-X and controlled-Y rotations with unit MHZ.";
 FreqCZ::usage="Rabi frequency(ies) for the CZ gate with unit MHz.";
 MSCrossTalk::usage="(entangling OR starkshift) The crosstalk model in applying M\[OSlash]lmer\[Dash]S\[OSlash]rensen gate";
 NIons::usage="The total number of ions in a trapped ion device.";
@@ -111,10 +111,11 @@ EndPackage[];
 Begin["`Private`"];
 
 
+nothing[arg___]:=arg
 validate::usage="Validate expression, throw error if false.";
 validate[value_,expr_,err_,msg_,format_:nothing]:=(If[expr[format[value]],format[value],Throw[Message[err::error,msg]]])
 
-nothing[arg___]:=arg
+
 checkAss::usage="check if it's an association with length len.";
 checkAss[ass_,len_]:=AssociationQ[ass]&&Length[ass]===len&&And@@NumberQ/@Values@ass
 checkAss[ass_,len_,f_]:=AssociationQ[ass]&&Length[ass]===len&&And@@f/@Values@ass
@@ -125,103 +126,6 @@ num2Ass[arg_Association,len_Integer]:=arg
 
 numass[len_]:="not a number or association of numbers with length "<>ToString[len]
 fidass[len_]:="not a fidelity number or association of fidelities with length "<>ToString[len]
-
-
-(*noise forms on the SiliconDelft*)
-exCZON::usage="exCZON[target_qubit,qubitNum,exchangeMatrix]. Exchange C-Rz[j] interaction when CZ gate on";
-exCZON[targ_,nq_,ex_]:=Subscript[C, #-1][Subscript[Rz, #][ex[[targ,#]]]]&/@Delete[Range[nq-1],targ]
-
-
-SiliconDelft[OptionsPattern[]]:=Module[
-{
-(*validate and format parameter specification*)
-(*Numbers*)
-qubitsnum=Catch@validate[OptionValue@qubitsNum,IntegerQ,qubitsNum,"not an integer"],
-bfield=Catch@validate[OptionValue@BField,NumberQ,BField,"not a number."],
-(*Fractions*)
-efsinglexy=Catch@validate[OptionValue@EFSingleXY,(Total[#]==1||Total[#]==0)&,EFSingleXY,"not a fraction with total 1 "],
-efcz=Catch@validate[OptionValue@EFCZ,(Total[#]==1||Total[#]==0)&,EFCZ,"not a fraction with total 1 "],
-(*Number as average or association to specify each*)
-t1=Catch@validate[OptionValue@T1,checkAss[#,OptionValue@qubitsNum]&,T1,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
-t2=Catch@validate[OptionValue@T2,checkAss[#,OptionValue@qubitsNum]&,T2,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
-t2s=Catch@validate[OptionValue@T2s,checkAss[#,OptionValue@qubitsNum]&,T2s,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
-rabifreq=Catch@validate[OptionValue@RabiFreq,checkAss[#,OptionValue@qubitsNum]&,Larmor,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
-exchangerotoff=Catch@validate[OptionValue@ExchangeRotOff,checkAss[#,-1+OptionValue@qubitsNum]&,ExchangeRotOff,numass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
-freqcz=Catch@validate[OptionValue@FreqCZ,checkAss[#,-1+OptionValue@qubitsNum]&,FreqCZ,numass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
-freqcrotxy=Catch@validate[OptionValue@FreqCRotXY,checkAss[#,-1+OptionValue@qubitsNum]&,FreqCRotXY,numass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
-freqsinglexy=Catch@validate[OptionValue@FreqSingleXY,checkAss[#,OptionValue@qubitsNum]&,FreqSingleXY,numass[OptionValue@qubitsNum],num2Ass[#,OptionValue@qubitsNum]&],
-(*Number as average or association to specify each fidelity*)
-fidcrotxy=Catch@validate[OptionValue@FidCRotXY,checkAss[#,-1+OptionValue@qubitsNum,0<=#<=1&]&,FidCRotXY,fidass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
-fidcz=Catch@validate[OptionValue@FidCZ,checkAss[#,-1+OptionValue@qubitsNum,0<=#<=1&]&,FidCZ,fidass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
-fidsinglexy=Catch@validate[OptionValue@FidSingleXY,checkAss[#,OptionValue@qubitsNum,0<=#<=1&]&,FidSingleXY,fidass[OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
-(*a matrix*)
-exchangeroton=Catch@validate[OptionValue@ExchangeRotOn,SquareMatrixQ,ExchangeRotOn,StringForm["not a square matrix with dim ``^2",-1+OptionValue@qubitsNum]],
-(*probability error of depolarising and dephasing noise *)
-er1xy=fid2DepolDeph[#,OptionValue@EFSingleXY,1,FidSingleXY,True]&/@OptionValue[FidSingleXY],
-ercz=fid2DepolDeph[#,OptionValue@EFCZ,2,FidCZ,True]&/@OptionValue[FidCZ],
-er2xy=fid2DepolDeph[#,OptionValue@EFCRotXY,2,FidCRotXY,True]&/@OptionValue[FidCRotXY],
-
-(* frequently used stuff *)
-qubits=Range[0,-1+OptionValue@qubitsNum]
-},
-
-Module[
-{\[CapitalDelta]t},
-<|
-(*no hidden qubits/ancilla here *)
-DeviceDescription -> "Delft Silicon device with "<>ToString[qubitsnum]<>"-qubits arranged as a linear array with nearest-neighbor connectivity and control qubits are the lower ones.",
-NumAccessibleQubits -> qubitsnum,
-NumTotalQubits -> qubitsnum,
-Aliases -> {
-	Subscript[Wait, q__][t_] :> {}
-	},	
-Gates ->{
-	Subscript[Wait, -1][t_]:><|
-		NoisyForm->{},
-		GateDuration->t
-	|>,
-(* Singles *)
-	Subscript[Rz, q_][\[Theta]_]:> <|
-		NoisyForm->{Subscript[Rz, q][\[Theta]]},
-		GateDuration->0(*virtual gate, instant, noiseless*)
-		|>,
-	Subscript[Rx,q_][\[Theta]_]:><|
-		NoisyForm->{Subscript[Rx, q][\[Theta]],Subscript[Depol, q][er1xy[q][[1]]],Subscript[Deph, q][er1xy[q][[2]]],Sequence@@Table[Subscript[U, j][OffResRabiOsc[rabifreq[q],rabifreq[j],Abs[\[Theta]]]],{j,Delete[qubits,q+1]}]},
-		GateDuration->Abs[\[Theta]]/(2\[Pi] freqsinglexy[q]) 
-	|>,
-	Subscript[Ry,q_][\[Theta]_]:><|
-		NoisyForm->{Subscript[Ry, q][\[Theta]],Subscript[Depol, q][er1xy[q][[1]]],Subscript[Deph, q][er1xy[q][[2]]],Sequence@@Table[Subscript[U, j][OffResRabiOsc[rabifreq[q],rabifreq[j],Abs[\[Theta]]]],{j,Delete[qubits,q+1]}]},
-		GateDuration->Abs[\[Theta]]/(2\[Pi] freqsinglexy[q])
-	|>,
-(* Twos *)
-	Subscript[C, p_][Subscript[Z, q_]]/; (q-p)===1  :><|
-		(*The last bit undo the exchange in the passive noise *)
-		NoisyForm->{Subscript[C, p][Subscript[Z, q]],Subscript[Depol, p,q][ercz[p][[1]]],Subscript[Deph, p,q][ercz[p][[2]]],Sequence@@exCZON[q,qubitsnum,exchangeroton],Sequence@@Table[Subscript[C, i][Subscript[Rz, i+1][(-\[CapitalDelta]t/\[Pi])*exchangerotoff[i]]],{i,Complement[qubits,{p,q,qubitsnum-1}]}]}, 
-		GateDuration->0.5/freqcz[p] 
-	|>,
-		Subscript[C, p_][Subscript[Rx, q_][\[Theta]_]]/; (q-p)===1  :><|
-		NoisyForm->{Subscript[C, p][Subscript[Rx, q][\[Theta]]],Subscript[Depol, p,q][ercz[p][[1]]],Subscript[Deph, p,q][ercz[p][[2]]]}, 
-		GateDuration->0.5/freqcz[p] 
-	|>
-	
-	
-},
-(* Declare that \[CapitalDelta]t will refer to the duration of the current gate/channel. *)
-DurationSymbol -> \[CapitalDelta]t, 
-(* Passive noise *)
-Qubits :> {
-		q_/;(q==qubitsnum-1) :> <|
-		PassiveNoise ->{Subscript[Deph, q][.5(1-E^(-\[CapitalDelta]t/t2s[q]))],Subscript[Depol, q][.75(1-E^(-\[CapitalDelta]t/t1[q]))]}
-		|>
-		,
-		q_/;(q<qubitsnum-1) :> <|
-		PassiveNoise ->{Subscript[C, q][Subscript[Rz, q+1][(\[CapitalDelta]t/\[Pi])*exchangerotoff[q]]],Subscript[Deph, q][.5(1-E^(-\[CapitalDelta]t/t2s[q]))],Subscript[Depol, q][.75(1-E^(-\[CapitalDelta]t/t1[q]))]}
-		|>
-				
-		}
-|>
-]
-]
 
 
 OffResRabiOsc::usage="OffResRabiOsc[rabi_freq_active, rabi_freq_passive, duration] Off resonant Rabi Oscillation.";
@@ -291,6 +195,103 @@ fid2DepolDeph[totfid_, errratio_, nqerr_, errval_, avgfid_:True] := Module[
 ];
 ];	
   {pdepol, pdeph}
+]
+
+
+(*noise forms on the SiliconDelft*)
+exCZON::usage="exCZON[target_qubit,qubitNum,exchangeMatrix]. Exchange C-Rz[j] interaction when CZ gate on";
+exCZON[targ_,nq_,ex_]:=Subscript[C, #-1][Subscript[Rz, #][ex[[targ,#]]]]&/@Delete[Range[nq-1],targ]
+
+
+SiliconDelft[OptionsPattern[]]:=Module[
+{
+(*validate and format parameter specification*)
+(*Numbers*)
+qubitsnum=Catch@validate[OptionValue@qubitsNum,IntegerQ,qubitsNum,"not an integer"],
+bfield=Catch@validate[OptionValue@BField,NumberQ,BField,"not a number."],
+(*Fractions*)
+efsinglexy=Catch@validate[OptionValue@EFSingleXY,(Total[#]==1||Total[#]==0)&,EFSingleXY,"not a fraction with total 1 "],
+efcz=Catch@validate[OptionValue@EFCZ,(Total[#]==1||Total[#]==0)&,EFCZ,"not a fraction with total 1 "],
+(*Number as average or association to specify each*)
+t1=Catch@validate[OptionValue@T1,checkAss[#,OptionValue@qubitsNum]&,T1,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
+t2=Catch@validate[OptionValue@T2,checkAss[#,OptionValue@qubitsNum]&,T2,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
+t2s=Catch@validate[OptionValue@T2s,checkAss[#,OptionValue@qubitsNum]&,T2s,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
+rabifreq=Catch@validate[OptionValue@RabiFreq,checkAss[#,OptionValue@qubitsNum]&,Larmor,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
+exchangerotoff=Catch@validate[OptionValue@ExchangeRotOff,checkAss[#,-1+OptionValue@qubitsNum]&,ExchangeRotOff,numass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
+freqcz=Catch@validate[OptionValue@FreqCZ,checkAss[#,-1+OptionValue@qubitsNum]&,FreqCZ,numass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
+freqcrotx=Catch@validate[OptionValue@FreqCRotX,checkAss[#,-1+OptionValue@qubitsNum]&,FreqCRotXY,numass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
+freqsinglexy=Catch@validate[OptionValue@FreqSingleXY,checkAss[#,OptionValue@qubitsNum]&,FreqSingleXY,numass[OptionValue@qubitsNum],num2Ass[#,OptionValue@qubitsNum]&],
+(*Number as average or association to specify each fidelity*)
+fidcrotxy=Catch@validate[OptionValue@FidCRotX,checkAss[#,-1+OptionValue@qubitsNum,0<=#<=1&]&,FidCRotXY,fidass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
+fidcz=Catch@validate[OptionValue@FidCZ,checkAss[#,-1+OptionValue@qubitsNum,0<=#<=1&]&,FidCZ,fidass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
+fidsinglexy=Catch@validate[OptionValue@FidSingleXY,checkAss[#,OptionValue@qubitsNum,0<=#<=1&]&,FidSingleXY,fidass[OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
+(*a matrix*)
+exchangeroton=Catch@validate[OptionValue@ExchangeRotOn,SquareMatrixQ,ExchangeRotOn,StringForm["not a square matrix with dim ``^2",-1+OptionValue@qubitsNum]],
+(*probability error of depolarising and dephasing noise *)
+er1xy=fid2DepolDeph[#,OptionValue@EFSingleXY,1,FidSingleXY,True]&/@OptionValue[FidSingleXY],
+ercz=fid2DepolDeph[#,OptionValue@EFCZ,2,FidCZ,True]&/@OptionValue[FidCZ],
+ercrot=fid2DepolDeph[#,OptionValue@EFCRotX,2,FidCRotXY,True]&/@OptionValue[FidCRotX],
+
+(* frequently used stuff *)
+qubits=Range[0,-1+OptionValue@qubitsNum]
+},
+
+Module[
+{\[CapitalDelta]t},
+<|
+(*no hidden qubits/ancilla here *)
+DeviceDescription -> "Delft Silicon device with "<>ToString[qubitsnum]<>"-qubits arranged as a linear array with nearest-neighbor connectivity and control qubits are the lower ones.",
+NumAccessibleQubits -> qubitsnum,
+NumTotalQubits -> qubitsnum,
+(* Declare that \[CapitalDelta]t will refer to the duration of the current gate/channel. *)
+DurationSymbol -> \[CapitalDelta]t, 
+Aliases -> {
+	Subscript[Wait, q__][t_] :> {}
+	},	
+Gates ->{
+	Subscript[Wait, -1][t_]:><|
+		NoisyForm->{},
+		GateDuration->t
+	|>,
+(* Singles *)
+	Subscript[Rz, q_][\[Theta]_]:> <|
+		NoisyForm->{Subscript[Rz, q][\[Theta]]},
+		GateDuration->0(*virtual gate, instant, noiseless*)
+		|>,
+	Subscript[Rx,q_][\[Theta]_]:><|
+		NoisyForm->{Subscript[Rx, q][\[Theta]],Subscript[Depol, q][er1xy[q][[1]]],Subscript[Deph, q][er1xy[q][[2]]],Sequence@@Table[Subscript[U, j][OffResRabiOsc[rabifreq[q],rabifreq[j],Abs[\[Theta]]]],{j,Delete[qubits,q+1]}]},
+		GateDuration->Abs[\[Theta]]/(2\[Pi] freqsinglexy[q]) 
+	|>,
+	Subscript[Ry,q_][\[Theta]_]:><|
+		NoisyForm->{Subscript[Ry, q][\[Theta]],Subscript[Depol, q][er1xy[q][[1]]],Subscript[Deph, q][er1xy[q][[2]]],Sequence@@Table[Subscript[U, j][OffResRabiOsc[rabifreq[q],rabifreq[j],Abs[\[Theta]]]],{j,Delete[qubits,q+1]}]},
+		GateDuration->Abs[\[Theta]]/(2\[Pi] freqsinglexy[q])
+	|>,
+(* Twos *)
+	Subscript[C, p_][Subscript[Z, q_]]/; (q-p)===1  :><|
+		(*The last bit undo the exchange in the passive noise *)
+		NoisyForm->{Subscript[C, p][Subscript[Z, q]],Subscript[Depol, p,q][ercz[p][[1]]],Subscript[Deph, p,q][ercz[p][[2]]],Sequence@@exCZON[q,qubitsnum,exchangeroton],Sequence@@Table[Subscript[C, i][Subscript[Rz, i+1][(-\[CapitalDelta]t/\[Pi])*exchangerotoff[i]]],{i,Complement[qubits,{p,q,qubitsnum-1}]}]}, 
+		GateDuration->0.5/freqcz[p] 
+	|>,
+		Subscript[C, p_][Subscript[Rx, q_][\[Theta]_]]/; (q-p)===1  :><|
+		NoisyForm->{Subscript[C, p][Subscript[Rx, q][\[Theta]]],Subscript[Depol, p,q][ercz[p][[1]]],Subscript[Deph, p,q][ercz[p][[2]]]}, 
+		GateDuration->0.5/freqcz[p] 
+	|>
+		
+},
+
+(* Passive noise *)
+Qubits :> {
+		q_/;(q==qubitsnum-1) :> <|
+		PassiveNoise ->{Subscript[Deph, q][.5(1-E^(-\[CapitalDelta]t/t2s[q]))],Subscript[Depol, q][.75(1-E^(-\[CapitalDelta]t/t1[q]))]}
+		|>
+		,
+		q_/;(q<qubitsnum-1) :> <|
+		PassiveNoise ->{Subscript[C, q][Subscript[Rz, q+1][(\[CapitalDelta]t/\[Pi])*exchangerotoff[q]]],Subscript[Deph, q][.5(1-E^(-\[CapitalDelta]t/t2s[q]))],Subscript[Depol, q][.75(1-E^(-\[CapitalDelta]t/t1[q]))]}
+		|>
+				
+		}
+|>
+]
 ]
 
 
