@@ -98,8 +98,6 @@ FidCZ::warning="`1`";
 FidSingleXY::warning="`1`";
 FidMeas::warning="`1`";
 FidInit::warning="`1`";
-
-
 EndPackage[];
 
 (*******All definitions of modules****)
@@ -413,23 +411,30 @@ circ=Delete[circ,{#}&/@Keys@Select[incol,#&]];
 newcircc
 ]
 
-(*indices contraction*)
-contractidx[nq_,idxs__]/;(Max@{idxs}<nq):=Module[{pairs},
-pairs=Table[{i,i+nq},{i,Range[nq]}];
-pairs[[Sequence@@#]]&/@(1+{idxs})
-]
-
 (*Partial trace on n-qubit
 1) reshape to the tensor:ConstantArray[2,2*n]
 2) contract
 3) reshape to matrix with dim2^mx2^mwhere m=(n-#contract)
 *)
-PartialTrace[\[Rho]_,qubits__]:=Module[{\[Rho]mat,tmat,nq,pmat,nfin},
+PartialTrace[\[Rho]_Integer,qubits__]:=Module[{\[Rho]mat,tmat,nq,pmat,nfin,pairs},
 \[Rho]mat=GetQuregMatrix[\[Rho]];
 nq=Log2@Length@\[Rho]mat;
 (*tensorize*)
 tmat=ArrayReshape[\[Rho]mat,ConstantArray[2,2*nq]];
-pmat=TensorContract[tmat,contractidx[nq,qubits]];
+
+(* contraction pairs, beware the least significant bit convention!! *)
+pairs=Reverse@Table[{i,i+nq},{i,Range[nq]}];
+pmat=TensorContract[tmat,pairs[[Sequence@@#]]&/@(1+{qubits})];
+nfin=nq-Length@{qubits};
+ArrayReshape[pmat,{2^nfin,2^nfin}]//Chop
+]
+
+PartialTrace[\[Rho]mat_List,qubits__]:=Module[{tmat,nq,pmat,nfin,pairs},
+nq=Log2@Length@\[Rho]mat;
+(*tensorize*)
+tmat=ArrayReshape[\[Rho]mat,ConstantArray[2,2*nq]];
+pairs=Table[{i,i+nq},{i,Range[nq]}];
+pmat=TensorContract[tmat,pairs[[Sequence@@#]]&/@(1+{qubits})];
 nfin=nq-Length@{qubits};
 ArrayReshape[pmat,{2^nfin,2^nfin}]//Chop
 ]
