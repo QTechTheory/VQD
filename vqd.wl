@@ -31,11 +31,11 @@ NVCenterHub::usage="Returns device specification of a Nitrogen-Vacancy diamond c
 
 ParameterDevices::usage="Show all parameters used to specify all devices. To see parameters related to a device, e.g., NVCenterHub, use Options[NVCenterHub].";
 
+(* Other functions *)
+PartialTrace::usage="PartialTrace[qureg, qubits_to_be_traced_out]. Return the partial trace as a matrix.";
 RandomMixState::usage="RandomMixState[nqubits, nsamples:None]. Return a random mixed quantum density state matrix. It is obtained by the sum random unitary matrices.
 By default, the random unitaries sample is \!\(\*SuperscriptBox[\(2\), \(\(nqubit\)\(\\\ \)\)]\)";
-
-
-
+SerializeCircuit::usage="SerializeCircuit[circuit]. Execute the gates without parallelism with exception. For instance, in the case of neutral atoms, gates parallelism can be done when the spatial distance is outside blockade radius. This function should be executed before InsertCiruitNoise.";
 (* Custom gates *)
 SWAPLoc::usage="Swap the spatial locations of two qubits";
 Wait::usage="Wait gate, doing nothing";
@@ -50,6 +50,7 @@ DurTwoGate::usage="Duration of two qubit gates with rotation of \[Pi]";
 DurMeas::usage="Duration of measurement";
 DurInit::usage="Duration of initialisation";
 DurShuffle::usage="Duration to shuffle location of ions";
+DDActive::usage="Apply dynamical decoupling: use T2 in the model if set True, otherwise use T2* if set False.";
 entangling::usage="Crosstalk error model pre equation (4) on applying the XX M\[OSlash]lmer\[Dash]S\[OSlash]rensen gate";
 ErrCT::usage="Error coefficient of the crosstalk with entanglement model";
 ErrSS::usage="Error coefficient of the crosstalk with stark shift model";
@@ -60,24 +61,23 @@ EFRead::usage="Error fraction/ratio of {depolarising,dephasing} of the readout. 
 ExchangeRotOn::usage="Maximum interaction j on the passive qubit crosstalk when applying CZ gates; The noise form is C[Rz[j.\[Theta]]] It must be a square matrix with size (nqubit-2)x(nqubit-2).";
 ExchangeRotOff::usage="Crosstalks error C-Rz[ex] on the passive qubits when not applying two-qubit gates.";
 FidSingleXY::usage="Fidelity(ies) of single Rx[\[Theta]] and Ry[\[Theta]] rotations obtained by random benchmarking.";
-FidCRotX::usage="The fidelity of controlled-X and controlled-Y gates.";
 FidMeas::usage="Fidelity of measurement";
 FidInit::usage="Fidelity of qubit initialisation";
 FidCZ::usage="Fidelity(ies) of the CZ gates.";
 FreqSingleXY::usage="Rabi frequency(ies) for the single X- and Y- rotations with unit MHz";
-FreqCRotX::usage="Rabi frequency for the controlled-X and controlled-Y rotations with unit MHZ.";
 FreqCZ::usage="Rabi frequency(ies) for the CZ gate with unit MHz.";
 MSCrossTalk::usage="(entangling OR starkshift) The crosstalk model in applying M\[OSlash]lmer\[Dash]S\[OSlash]rensen gate";
 NIons::usage="The total number of ions in a trapped ion device.";
+ParallelGates::usage="Gates that are executed in parallel even with the call SerializeCircuit[]";
 qubitsNum::usage="The number of physical active qubits for computations.";
 RabiFreq::usage="The Rabi frequency frequency in average or on each qubit with unit MHz.";
 starkshift::usage="Crosstalk error model using stark shift on  applying the Exp[-i\[Theta]XX], namely M\[OSlash]lmer\[Dash]S\[OSlash]rensen gate";
 T1::usage="T1 duration(s) in \[Mu]s. Exponential decay time for the state to be complete mixed.";
 T2::usage="T2 duration(s) in \[Mu]s. Exponential decay time for the state to be classical with echo applied.";
 T2s::usage="T2* duration(s) in \[Mu]s. Exponential decay time for the state to be classical.";
-
 BField::error="`1`";
 DurInit::error="`1`";
+DDActive::error="`1`";
 ExchangeRotOff::error="`1`";
 ExchangeRotOn::error="`1`";
 EFRead::error="`1`";
@@ -86,7 +86,6 @@ FidCZ::error="`1`";
 FidSingleXY::error="`1`";
 FidMeas::error="`1`";
 FidInit::error="`1`";
-FreqCRotXY::error="`1`";
 FreqCZ::error="`1`";
 Larmor::error="`1`";
 qubitsNum::error="`1`";
@@ -99,8 +98,6 @@ FidCZ::warning="`1`";
 FidSingleXY::warning="`1`";
 FidMeas::warning="`1`";
 FidInit::warning="`1`";
-
-
 
 
 EndPackage[];
@@ -193,12 +190,8 @@ fid2DepolDeph[totfid_, errratio_, nqerr_, errval_, avgfid_:True] := Module[
 ];	
   {pdepol, pdeph}
 ]
-
-
 grouptwo::usage="grouptwo[list], group a list into two elements";
 grouptwo[list_]:=ReplaceList[Sort@list,{p___,a_,b_,q___}:>{a,b}]
-
-
 (** SILICON_DELFT**)
 SiliconDelft[OptionsPattern[]]:=With[
 {
@@ -228,8 +221,10 @@ fidinit=Catch@validate[OptionValue@FidInit,(And@@Table[0<=j<=1,{j,Values@#}])&,F
 durinit=Catch@validate[OptionValue@DurInit,(And@@Table[j>=0,{j,Values@#}])&,DurInit,"invalid durations"],
 fidmeas=Catch@validate[OptionValue@FidMeas,(And@@Table[0<=j<=1,{j,Values@#}])&,FidMeas,"invalid fidelities"],
 durmeas=Catch@validate[OptionValue@DurMeas,(And@@Table[j>=0,{j,Values@#}])&,DurMeas,"invalid durations"],
-(*a matrix*)
 
+(* True/False*)
+ddactive=Catch@validate[OptionValue@DDActive,BooleanQ,DDActive,"Set to true or false"],
+(*a matrix*)
 exchangeroton=Catch@validate[OptionValue@ExchangeRotOn,SquareMatrixQ,ExchangeRotOn,StringForm["not a square matrix with dim ``^2",-1+OptionValue@qubitsNum]],
 
 (*probability error of depolarising and dephasing noise *)
@@ -242,11 +237,11 @@ qubits=Range[0,-1+OptionValue@qubitsNum]
 },
 
 Module[
-{\[CapitalDelta]t, miseq,initf,measf},
+{\[CapitalDelta]t, miseq,initf,measf, passivenoise},
 
 
 (*measurement and initialisation sequence*)
-miseq[q__]:=(Length@{q}>1)&&((Sort[{q}]==Range[0,Max@q])||(Sort[{q}]==Range[Min@q,qubitsnum]));
+miseq[q__]:=(Length@{q}>1)&&((Sort[{q}]===Range[0,Max@q])||(Sort[{q}]===Range[Min@q,-1+qubitsnum]));
 (* final init state is 011..110 *)
 initf[q__]:=Flatten@{
 		(* perfect init *)
@@ -275,7 +270,33 @@ measf[q__]:=Flatten@{
 		],{pair, grouptwo[{q}]}]
 		,
 		Table[Subscript[M, i],{i,{q}}]
+		,
+		(* more errors after measurement, non-ideal projected state *)
+		Table[
+		(* the ends has more measurement+flip errors *)
+		If[(pair==={0,1})||(pair==={qubitsnum-2,qubitsnum-1}),
+			{Subscript[Depol, Sequence@@pair][erread["01"][[1]]],Subscript[Deph, Sequence@@pair][erread["01"][[1]]]}
+		,
+		(* the middle has rot errors *)
+			{Subscript[Depol, Sequence@@pair][er1xy[Min@pair][[1]]],Subscript[Deph, Sequence@@pair][er1xy[Min@pair][[2]]]}
+		],{pair, grouptwo[{q}]}]
 		};
+
+
+passivenoise[q_]:=If[ddactive,
+	If[(q===qubitsnum-1),
+		{Subscript[Deph, q][.5(1-E^(-\[CapitalDelta]t/t2[q]))],Subscript[Depol, q][.75(1-E^(-\[CapitalDelta]t/t1[q]))]}
+		,
+		{Subscript[C, q][Subscript[Rz, q+1][(\[CapitalDelta]t/\[Pi])*exchangerotoff[q]]],Subscript[Deph, q][.5(1-E^(-\[CapitalDelta]t/t2[q]))],Subscript[Depol, q][.75(1-E^(-\[CapitalDelta]t/t1[q]))]}
+		]
+		,
+	If[(q===qubitsnum-1),
+		{Subscript[Deph, q][.5(1-E^(-\[CapitalDelta]t/t2s[q]))],Subscript[Depol, q][.75(1-E^(-\[CapitalDelta]t/t1[q]))]}
+		,
+		{Subscript[C, q][Subscript[Rz, q+1][(\[CapitalDelta]t/\[Pi])*exchangerotoff[q]]],Subscript[Deph, q][.5(1-E^(-\[CapitalDelta]t/t2s[q]))],Subscript[Depol, q][.75(1-E^(-\[CapitalDelta]t/t1[q]))]}
+		]
+];
+
 
 <|
 (*no hidden qubits/ancilla here *)
@@ -290,8 +311,8 @@ Aliases -> {
 	}
 	,	
 Gates ->{
-	Subscript[Wait, -1][t_]:><|
-		NoisyForm->{},
+	Subscript[Wait, q__][t_]:><|
+		NoisyForm->Flatten@Table[passivenoise[i],{i,Flatten@{q}}],
 		GateDuration->t
 	|>,
 (* Measurements and initialisation *)
@@ -333,28 +354,85 @@ Gates ->{
 (* Declare that \[CapitalDelta]t will refer to the duration of the current gate/channel. *)
 DurationSymbol -> \[CapitalDelta]t, 
 (* Passive noise *)
-Qubits :> 
-		{
-		q_/;(q===qubitsnum-1) :> <|
-		PassiveNoise ->{Subscript[Deph, q][.5(1-E^(-\[CapitalDelta]t/t2s[q]))],Subscript[Depol, q][.75(1-E^(-\[CapitalDelta]t/t1[q]))]}
-		|>
-		,
-		q_/;(q<qubitsnum-1) :> <|
-		PassiveNoise ->{Subscript[C, q][Subscript[Rz, q+1][(\[CapitalDelta]t/\[Pi])*exchangerotoff[q]]],Subscript[Deph, q][.5(1-E^(-\[CapitalDelta]t/t2s[q]))],Subscript[Depol, q][.75(1-E^(-\[CapitalDelta]t/t1[q]))]}
+Qubits :> {
+		q_/;(0<=q<qubitsnum) :> <|
+		PassiveNoise ->passivenoise[q]
 		|>		 
 		}
-|>
+		
+	|>
 ]
 ]
 
-
-(***other functions***)
-RandomMixState[nqubits_,nsamples_:None]:=Module[{randU,n},
-n=If[NumberQ@nsamples, nsamples, 2^nqubits];
-randU=Table[RandomVariate[CircularUnitaryMatrixDistribution[2^nqubits]],{n}];
-(Total@randU) . (Total[ConjugateTranspose[#]&/@randU])/Tr[(Total@randU) . (Total[ConjugateTranspose[#]&/@randU])]
+RandomMixState[nqubits_]:=Module[{size=2^nqubits,gm,um,dm,id},
+(* Random states generation: https://iitis.pl/~miszczak/files/papers/miszczak12generating.pdf *)
+(* random ginibre matrix *)
+gm=RandomReal[NormalDistribution[0,1],{size,size}]+I RandomReal[NormalDistribution[0,1],{size,size}];
+(* random unitatry *)
+um=RandomVariate[CircularUnitaryMatrixDistribution[size]];
+id=IdentityMatrix[size];
+dm=(id+um) . gm . ConjugateTranspose[gm] . (id+ConjugateTranspose[um]);
+dm/Tr[dm]//Chop
 ]
 
+GateIndex::usage="GateIndex[gate], returns {the gate, the indices}.";
+GateIndex[gate_]:=Module[{p,q,g,base,idx},
+{base,idx}=(gate/.{R[t_,Subscript[X, p_] Subscript[X, q_]]-> {XX, {p,q}}, Subscript[g_, q__][_]-> {g, {Sequence@@q}}, Subscript[g_, q__]->{g,{Sequence@@q}}});
+{base,Flatten@idx}
+];
+SetAttributes[SerializeCircuit,HoldAll]
+SerializeCircuit[circuit_]:=Module[{circ=circuit,newcircc,circols,idxcol,incol,g1,g2,idx1,idx2},
+newcircc={};
+While[Length@circ>0 ,
+circols=GetCircuitColumns[circ];
+(* update equivalent ordering of the circuit *)
+circ=Flatten@circols;
+(* get indices partitioned wrt circols *)
+idxcol=TakeList[Range[Length@circ],Length@#&/@circols][[1]];
+
+(* eliminate non-legitimate gates of the first column *)
+AppendTo[newcircc,{}];
+incol=<| #->True & /@idxcol |>;
+
+Table[
+If[incol[i1],
+(* add gate i1 and eliminate the rest *)
+AppendTo[newcircc[[-1]],circ[[i1]]];
+Table[
+If[incol[[i2]],
+{g1,idx1}=GateIndex[circ[[i1]]];
+{g2,idx2}=GateIndex[circ[[i2]]];
+incol[[i2]]=MemberQ[ParallelGates,(g1|g2)]
+];
+,{i2,Complement[idxcol,{i1}]}];
+]
+,{i1,idxcol}];
+(* update circuit *)
+circ=Delete[circ,{#}&/@Keys@Select[incol,#&]];
+];
+newcircc
+]
+
+(*indices contraction*)
+contractidx[nq_,idxs__]/;(Max@{idxs}<nq):=Module[{pairs},
+pairs=Table[{i,i+nq},{i,Range[nq]}];
+pairs[[Sequence@@#]]&/@(1+{idxs})
+]
+
+(*Partial trace on n-qubit
+1) reshape to the tensor:ConstantArray[2,2*n]
+2) contract
+3) reshape to matrix with dim2^mx2^mwhere m=(n-#contract)
+*)
+PartialTrace[\[Rho]_,qubits__]:=Module[{\[Rho]mat,tmat,nq,pmat,nfin},
+\[Rho]mat=GetQuregMatrix[\[Rho]];
+nq=Log2@Length@\[Rho]mat;
+(*tensorize*)
+tmat=ArrayReshape[\[Rho]mat,ConstantArray[2,2*nq]];
+pmat=TensorContract[tmat,contractidx[nq,qubits]];
+nfin=nq-Length@{qubits};
+ArrayReshape[pmat,{2^nfin,2^nfin}]//Chop
+]
 
 End[];
 EndPackage[];
