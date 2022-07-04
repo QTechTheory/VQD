@@ -119,13 +119,16 @@ checkAss[ass_,len_,f_]:=AssociationQ[ass]&&Length[ass]===len&&And@@f/@Values@ass
 num2Ass[arg_Real,len_Integer]:=<|Table[i->arg,{i,0,-1+len}]|>
 num2Ass[arg_Integer,len_Integer]:=<|Table[i->arg,{i,0,-1+len}]|>
 num2Ass[arg_Association,len_Integer]:=arg
+
 OffResRabiOsc::usage="OffResRabiOsc[rabi_freq_active, rabi_freq_passive, duration] Off resonant Rabi Oscillation.";
 OffResRabiOsc[\[CapitalOmega]_,\[CapitalOmega]0_,t_]:=Module[{\[CapitalDelta],\[CapitalOmega]R},
 \[CapitalDelta]=\[CapitalOmega]-\[CapitalOmega]0;
 \[CapitalOmega]R=Sqrt[\[CapitalOmega]^2+\[CapitalDelta]^2];
+
 E^(I \[CapitalDelta] t/2) {{Cos[\[CapitalOmega]R*t/2]-I*Sin[\[CapitalOmega]R*t/2]*\[CapitalDelta]/\[CapitalOmega]R,  -I*Sin[\[CapitalOmega]R*t/2]*\[CapitalOmega]/\[CapitalOmega]R            },
-			  {-I*Sin[\[CapitalOmega]R*t/2]*\[CapitalOmega]/\[CapitalOmega]R,             Cos[\[CapitalOmega]R*t/2]+I Sin[\[CapitalOmega]R*t/2]*\[CapitalDelta]/\[CapitalOmega]R}}
+			  {-I*Sin[\[CapitalOmega]R*t/2]*\[CapitalOmega]/\[CapitalOmega]R,             Cos[\[CapitalOmega]R*t/2]+I Sin[\[CapitalOmega]R*t/2]*\[CapitalDelta]/\[CapitalOmega]R}}				 					  			  
 ]
+
 (*noise forms on the SiliconDelft*)
 exCZON::usage="exCZON[target_qubit,qubitNum,exchangeMatrix]. Exchange C-Rz[j] interaction when CZ gate on";
 exCZON[targ_,nq_,ex_]:=Subscript[C, #-1][Subscript[Rz, #][ex[[targ,#]]]]&/@Delete[Range[nq-1],targ]
@@ -295,7 +298,6 @@ passivenoise[q_]:=If[ddactive,
 		]
 ];
 
-
 <|
 (*no hidden qubits/ancilla here *)
 DeviceDescription -> "Delft Silicon device with "<>ToString[qubitsnum]<>"-qubits arranged as a linear array with nearest-neighbor connectivity and control qubits are the lower ones.",
@@ -361,6 +363,12 @@ Qubits :> {
 	|>
 ]
 ]
+
+
+
+
+
+
 
 RandomMixState[nqubits_]:=Module[{size=2^nqubits,gm,um,dm,id},
 (* Random states generation: https://iitis.pl/~miszczak/files/papers/miszczak12generating.pdf *)
