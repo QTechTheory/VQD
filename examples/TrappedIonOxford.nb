@@ -10,423 +10,113 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[     40970,        984]
-NotebookOptionsPosition[     40387,        967]
-NotebookOutlinePosition[     40819,        984]
-CellTagsIndexPosition[     40776,        981]
+NotebookDataLength[     29147,        720]
+NotebookOptionsPosition[     26774,        674]
+NotebookOutlinePosition[     27206,        691]
+CellTagsIndexPosition[     27163,        688]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
 Notebook[{
-Cell[BoxData[
- RowBox[{
-  RowBox[{"nodes", "=", 
-   RowBox[{"<|", "\[IndentingNewLine]", 
-    RowBox[{
-     RowBox[{"\"\<Alice\>\"", "->", 
-      RowBox[{"<|", 
-       RowBox[{
-        RowBox[{"1", "->", 
-         RowBox[{"{", 
-          RowBox[{"0", ",", "1"}], "}"}]}], ",", 
-        RowBox[{"2", "->", 
-         RowBox[{"{", 
-          RowBox[{"2", ",", "3"}], "}"}]}], ",", 
-        RowBox[{"3", "->", 
-         RowBox[{"{", "}"}]}], ",", 
-        RowBox[{"4", "->", 
-         RowBox[{"{", "}"}]}]}], "|>"}]}], "\[IndentingNewLine]", ",", 
-     "\[IndentingNewLine]", 
-     RowBox[{"\"\<Bob\>\"", "->", 
-      RowBox[{"<|", 
-       RowBox[{
-        RowBox[{"1", "->", 
-         RowBox[{"{", "0", "}"}]}], ",", 
-        RowBox[{"2", "->", 
-         RowBox[{"{", 
-          RowBox[{"1", ",", "2"}], "}"}]}], ",", 
-        RowBox[{"3", "->", 
-         RowBox[{"{", "}"}]}], ",", 
-        RowBox[{"4", "->", 
-         RowBox[{"{", "3", "}"}]}]}], "|>"}]}], "\[IndentingNewLine]", ",", 
-     "\[IndentingNewLine]", 
-     RowBox[{"\"\<Charlie\>\"", "->", 
-      RowBox[{"<|", 
-       RowBox[{
-        RowBox[{"1", "->", 
-         RowBox[{"{", "0", "}"}]}], ",", 
-        RowBox[{"2", "->", 
-         RowBox[{"{", 
-          RowBox[{"1", ",", "2"}], "}"}]}], ",", 
-        RowBox[{"3", "->", 
-         RowBox[{"{", "}"}]}], ",", 
-        RowBox[{"4", "->", 
-         RowBox[{"{", "3", "}"}]}]}], "|>"}]}]}], "\[IndentingNewLine]", 
-    "|>"}]}], ";"}]], "Input",
- CellChangeTimes->{{3.8585110177577543`*^9, 3.858511143278747*^9}, {
-  3.85851164940306*^9, 3.858511652468376*^9}, {3.858511696592697*^9, 
-  3.858511696896679*^9}, {3.8585323494430113`*^9, 3.8585323627863503`*^9}, {
-  3.858608916764924*^9, 3.858608924424385*^9}, {3.8586090492516537`*^9, 
-  3.858609105505123*^9}, {3.8586094658271847`*^9, 3.8586094692994432`*^9}, {
-  3.858609522813272*^9, 3.8586095536433287`*^9}, {3.858609734109164*^9, 
-  3.858609734899912*^9}, {3.858609992780058*^9, 3.858610020001067*^9}, {
-  3.85861021938951*^9, 3.858610314394657*^9}, {3.858610517812005*^9, 
-  3.8586105423945293`*^9}, {3.866138489289823*^9, 3.866138489755163*^9}, {
-  3.866138754785808*^9, 3.8661388049061327`*^9}},
- CellLabel->
-  "In[109]:=",ExpressionUUID->"89e8d526-dc6a-4200-a2cf-7ad6a9e7d605"],
+
+Cell[CellGroupData[{
+Cell["Trapped-Ions Oxford/Hub  virtual device", "Title",
+ CellChangeTimes->{{3.866179584565133*^9, 3.866179602585011*^9}, {
+  3.866740794334939*^9, 
+  3.8667408151039267`*^9}},ExpressionUUID->"a51a1c00-1c1e-4809-99a7-\
+9b45151e9214"],
+
+Cell[TextData[StyleBox["Set environment, such as threads, gpu, etc.",
+ FontSlant->"Italic"]], "Text",
+ CellChangeTimes->{{3.8344802680745296`*^9, 3.83448027667835*^9}, {
+  3.8528844215679693`*^9, 3.8528844367050333`*^9}},
+ Background->RGBColor[
+  0.87, 0.94, 1],ExpressionUUID->"c34d2386-44e3-4d12-8bcd-6e0adf0c59d5"],
 
 Cell[BoxData[
- RowBox[{"\[IndentingNewLine]", 
+ RowBox[{"SetEnvironment", "[", 
+  RowBox[{"\"\<OMP_NUM_THREADS\>\"", "\[Rule]", "\"\<8\>\""}], "]"}]], "Input",\
+
+ CellLabel->
+  "In[2064]:=",ExpressionUUID->"4fb6ff86-df9c-4786-aab4-c5b29d03d1f8"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"SetDirectory", "[", 
+   RowBox[{"NotebookDirectory", "[", "]"}], "]"}], ";"}]], "Input",
+ CellLabel->
+  "In[2065]:=",ExpressionUUID->"375243d7-4772-44fa-afc6-813eab02e3ff"],
+
+Cell[TextData[StyleBox["Load the QuESTLink",
+ FontSlant->"Italic"]], "Text",
+ CellChangeTimes->{{3.8344802680745296`*^9, 3.83448027667835*^9}},
+ Background->RGBColor[
+  0.87, 0.94, 1],ExpressionUUID->"c91ba40d-3b6c-42cd-bdae-10c38124ceab"],
+
+Cell[BoxData[{
+ RowBox[{
   RowBox[{
-   RowBox[{
-    RowBox[{"rainbowcol", "[", "n_", "]"}], ":=", 
-    RowBox[{"Reverse", "@", 
-     RowBox[{"Table", "[", 
-      RowBox[{
-       RowBox[{"ColorData", "[", 
-        RowBox[{"\"\<Rainbow\>\"", ",", 
-         RowBox[{
-          RowBox[{"(", 
-           RowBox[{"i", "-", "1"}], ")"}], "/", "n"}]}], "]"}], ",", 
-       RowBox[{"{", 
-        RowBox[{"i", ",", "n"}], "}"}]}], "]"}]}]}], "\[IndentingNewLine]", 
-   RowBox[{
-    RowBox[{"drawZone", "[", 
-     RowBox[{"locszone_", ",", "label_", ",", "color_"}], "]"}], ":=", 
-    RowBox[{"Show", "[", 
-     RowBox[{
-      RowBox[{"Graphics", "[", 
-       RowBox[{"Table", "[", 
-        RowBox[{
-         RowBox[{"{", 
-          RowBox[{"Thick", ",", "color", ",", 
-           RowBox[{"Sphere", "[", 
-            RowBox[{"loc", ",", ".25"}], "]"}]}], "}"}], ",", 
-         RowBox[{"{", 
-          RowBox[{"loc", ",", 
-           RowBox[{"Values", "@", "locszone"}]}], "}"}]}], "]"}], "]"}], ",", 
-      
-      RowBox[{"Graphics", "[", 
-       RowBox[{"Table", "[", 
-        RowBox[{
-         RowBox[{"Text", "[", 
-          RowBox[{"k", ",", 
-           RowBox[{"locszone", "[", "k", "]"}]}], "]"}], ",", 
-         RowBox[{"{", 
-          RowBox[{"k", ",", 
-           RowBox[{"Keys", "@", "locszone"}]}], "}"}]}], "]"}], "]"}], ",", 
-      RowBox[{"ImageSize", "->", 
-       RowBox[{"{", 
-        RowBox[{
-         RowBox[{"50", "*", 
-          RowBox[{"Max", "[", 
-           RowBox[{"1", ",", 
-            RowBox[{"Length", "@", "locszone"}]}], "]"}]}], ",", "50"}], 
-        "}"}]}], ",", " ", 
-      RowBox[{"Frame", "->", "True"}], ",", 
-      RowBox[{"FrameTicks", "->", "False"}], ",", 
-      RowBox[{"FrameStyle", "->", "Black"}], ",", 
-      RowBox[{"FrameLabel", "->", "label"}], ",", 
-      RowBox[{"FrameMargins", "->", "Tiny"}]}], "]"}]}], 
-   "\[IndentingNewLine]", "\[IndentingNewLine]", "\[IndentingNewLine]", 
-   RowBox[{"ClearAll", "[", "showIons", "]"}], "\[IndentingNewLine]", 
-   RowBox[{
-    RowBox[{"showIons", "[", "nodes_", "]"}], ":=", 
-    RowBox[{"Module", "[", "\[IndentingNewLine]", 
-     RowBox[{
-      RowBox[{"{", 
-       RowBox[{"qulocs", ",", "i", ",", "colors"}], "}"}], ",", 
-      "\[IndentingNewLine]", 
-      RowBox[{
-       RowBox[{"colors", "=", 
-        RowBox[{"rainbowcol", "[", 
-         RowBox[{"Length", "@", "nodes"}], "]"}]}], ";", 
-       "\[IndentingNewLine]", 
-       RowBox[{"qulocs", "=", 
-        RowBox[{"<|", 
-         RowBox[{"Table", "[", 
-          RowBox[{
-           RowBox[{"node", "->", 
-            RowBox[{"<|", 
-             RowBox[{"Table", "[", 
-              RowBox[{
-               RowBox[{
-                RowBox[{"i", "=", "0"}], ";", 
-                RowBox[{"zone", "->", 
-                 RowBox[{"<|", 
-                  RowBox[{"Table", "[", 
-                   RowBox[{
-                    RowBox[{"qubit", "->", 
-                    RowBox[{"{", 
-                    RowBox[{
-                    RowBox[{"i", "++"}], ",", "0"}], "}"}]}], ",", 
-                    RowBox[{"{", 
-                    RowBox[{"qubit", ",", 
-                    RowBox[{
-                    RowBox[{"nodes", "[", "node", "]"}], "[", "zone", "]"}]}],
-                     "}"}]}], "]"}], "|>"}]}]}], ",", 
-               RowBox[{"{", 
-                RowBox[{"zone", ",", 
-                 RowBox[{"Keys", "@", 
-                  RowBox[{"nodes", "[", "node", "]"}]}]}], "}"}]}], "]"}], 
-             "|>"}]}], ",", 
-           RowBox[{"{", 
-            RowBox[{"node", ",", 
-             RowBox[{"Keys", "@", "nodes"}]}], "}"}]}], "]"}], "|>"}]}], ";", 
-       "\[IndentingNewLine]", 
-       RowBox[{"i", "=", "0"}], ";", "\[IndentingNewLine]", 
-       RowBox[{"Grid", "[", 
-        RowBox[{
-         RowBox[{"Table", "[", "\[IndentingNewLine]", 
-          RowBox[{
-           RowBox[{
-            RowBox[{"i", "++"}], ";", 
-            RowBox[{"{", 
-             RowBox[{"node", ",", 
-              RowBox[{"Sequence", "@@", 
-               RowBox[{"Table", "[", 
-                RowBox[{
-                 RowBox[{"drawZone", "[", 
-                  RowBox[{
-                   RowBox[{
-                    RowBox[{"qulocs", "[", "node", "]"}], "[", "zone", "]"}], 
-                   ",", 
-                   RowBox[{"\"\<zone \>\"", "<>", 
-                    RowBox[{"ToString", "@", "zone"}]}], ",", 
-                   RowBox[{"colors", "[", 
-                    RowBox[{"[", "i", "]"}], "]"}]}], "]"}], ",", 
-                 RowBox[{"{", 
-                  RowBox[{"zone", ",", 
-                   RowBox[{"Keys", "@", 
-                    RowBox[{"nodes", "[", "node", "]"}]}]}], "}"}]}], 
-                "]"}]}]}], "}"}]}], ",", 
-           RowBox[{"{", 
-            RowBox[{"node", ",", 
-             RowBox[{"Keys", "@", "nodes"}]}], "}"}]}], "]"}], ",", 
-         RowBox[{"Spacings", "->", 
-          RowBox[{"{", 
-           RowBox[{"0", ",", "1"}], "}"}]}]}], "]"}]}]}], 
-     "\[IndentingNewLine]", "]"}]}], "\[IndentingNewLine]", 
-   "\[IndentingNewLine]", "\[IndentingNewLine]", 
-   RowBox[{
-    RowBox[{
-     RowBox[{"createNodes", "::", "usage"}], "=", 
-     "\"\<createNodes[ <| zone1 -> nq1, zone2 -> nq2,...|>]. Return nodes \
-with 4 zones, its map to qubits register, and the total number of qubits. \
-Initially, all qubits are in zone 1\>\""}], ";"}], "\[IndentingNewLine]", 
-   RowBox[{
-    RowBox[{"createNodes", "[", "args__Association", "]"}], ":=", 
-    RowBox[{"Module", "[", 
-     RowBox[{
-      RowBox[{"{", 
-       RowBox[{"q", ",", 
-        RowBox[{"qglob", "=", "0"}], ",", "nodes", ",", "qmap"}], "}"}], ",", 
-      "\[IndentingNewLine]", 
-      RowBox[{
-       RowBox[{"nodes", "=", 
-        RowBox[{"Map", "[", 
-         RowBox[{
-          RowBox[{
-           RowBox[{"<|", 
-            RowBox[{
-             RowBox[{"1", "->", 
-              RowBox[{"Range", "[", "#", "]"}]}], ",", 
-             RowBox[{"2", "->", 
-              RowBox[{"{", "}"}]}], ",", 
-             RowBox[{"3", "->", 
-              RowBox[{"{", "}"}]}], ",", 
-             RowBox[{"4", "->", 
-              RowBox[{"{", "}"}]}]}], "|>"}], "&"}], ",", "args"}], "]"}]}], 
-       ";", "\[IndentingNewLine]", 
-       RowBox[{"qmap", "=", 
-        RowBox[{"Map", "[", 
-         RowBox[{
-          RowBox[{
-           RowBox[{"<|", 
-            RowBox[{
-             RowBox[{"#", "[", "1", "]"}], "/.", 
-             RowBox[{"{", 
-              RowBox[{"q_Integer", ":>", 
-               RowBox[{"(", 
-                RowBox[{"q", "->", 
-                 RowBox[{"qglob", "++"}]}], ")"}]}], "}"}]}], "|>"}], "&"}], 
-          ",", "nodes"}], "]"}]}], ";", "\[IndentingNewLine]", 
-       RowBox[{"{", 
-        RowBox[{"nodes", ",", " ", "qmap", ",", "qglob"}], "}"}]}]}], 
-     "\[IndentingNewLine]", "]"}]}], "\[IndentingNewLine]", 
-   "\[IndentingNewLine]", "\[IndentingNewLine]", 
-   RowBox[{"(*", 
-    RowBox[{
-     RowBox[{"**", "**", " ", "TRAPPED_IONS"}], "_OXFORD"}], " ", "*****)"}], 
-   "\[IndentingNewLine]", 
-   RowBox[{
-    RowBox[{"toZone", "[", "nodes_", "]"}], ":=", 
-    RowBox[{"<|", 
-     RowBox[{"Table", "[", 
-      RowBox[{
-       RowBox[{"node", "->", 
-        RowBox[{"Association", "@", 
-         RowBox[{"Flatten", "@", 
-          RowBox[{"Table", "[", 
-           RowBox[{
-            RowBox[{"Table", "[", 
-             RowBox[{
-              RowBox[{"v", "->", "k"}], ",", 
-              RowBox[{"{", 
-               RowBox[{"v", ",", 
-                RowBox[{
-                 RowBox[{"nodes", "[", "node", "]"}], "[", "k", "]"}]}], 
-               "}"}]}], "]"}], ",", 
-            RowBox[{"{", 
-             RowBox[{"k", ",", 
-              RowBox[{"Keys", "[", 
-               RowBox[{"nodes", "[", "node", "]"}], "]"}]}], "}"}]}], 
-           "]"}]}]}]}], ",", 
-       RowBox[{"{", 
-        RowBox[{"node", ",", 
-         RowBox[{"Keys", "@", "nodes"}]}], "}"}]}], "]"}], "|>"}]}], "\n", 
-   "\[IndentingNewLine]", 
-   RowBox[{
-    RowBox[{"getZone", "[", 
-     RowBox[{"q_", ",", "node_"}], "]"}], ":=", 
-    RowBox[{
-     RowBox[{"(", 
-      RowBox[{"Association", "@", 
-       RowBox[{"Flatten", "@", 
-        RowBox[{"Table", "[", 
-         RowBox[{
-          RowBox[{"Table", "[", 
-           RowBox[{
-            RowBox[{"v", "->", "k"}], ",", 
-            RowBox[{"{", 
-             RowBox[{"v", ",", 
-              RowBox[{"node", "[", "k", "]"}]}], "}"}]}], "]"}], ",", 
-          RowBox[{"{", 
-           RowBox[{"k", ",", 
-            RowBox[{"Keys", "@", "node"}]}], "}"}]}], "]"}]}]}], ")"}], "[", 
-     "q", "]"}]}], "\[IndentingNewLine]", "\[IndentingNewLine]", 
-   RowBox[{"(*", "\[IndentingNewLine]", 
-    StyleBox[
-     RowBox[{
-      RowBox[{
-       RowBox[{"Zone1", " ", ":", "prepare"}], ",", " ", "store", ",", " ", 
-       "detect"}], "\n", 
-      RowBox[{
-       RowBox[{"Zone2", " ", ":", "prepare"}], ",", " ", "store", ",", " ", 
-       "detect", ",", " ", "logic"}], "\n", 
-      RowBox[{
-       RowBox[{"Zone3", " ", ":", "prepare"}], ",", " ", "store", ",", " ", 
-       "detect", ",", " ", "logic"}], "\n", 
-      RowBox[{"Zone4", " ", ":", 
-       RowBox[{"remote", " ", "entangle"}]}]}],
-     FontSlant->"Italic"], "\[IndentingNewLine]", "*)"}], 
-   "\[IndentingNewLine]", 
-   RowBox[{
-    RowBox[{"TrappedIonOxford", "[", 
-     RowBox[{"OptionsPattern", "[", "]"}], "]"}], ":=", 
-    RowBox[{"With", "[", "\n", 
-     RowBox[{
-      RowBox[{"{", "}"}], ",", "\n", 
-      RowBox[{"Module", "[", "\n", 
-       RowBox[{
-        RowBox[{"{", 
-         RowBox[{"\[CapitalDelta]t", ",", "nodes", ",", "qmap", ",", "nq"}], 
-         "}"}], ",", "\n", 
-        RowBox[{
-         RowBox[{
-          RowBox[{"{", 
-           RowBox[{"nodes", ",", "qmap", ",", "nq"}], "}"}], "=", 
-          RowBox[{"createNodes", "[", 
-           RowBox[{"OptionValue", "@", "Nodes"}], "]"}]}], ";", "\n", 
-         RowBox[{"<|", "\n", 
-          RowBox[{"(*", 
-           RowBox[{"no", " ", "hidden", " ", 
-            RowBox[{"qubits", "/", "ancilla"}], " ", "here"}], " ", "*)"}], 
-          "\n", 
-          RowBox[{
-           RowBox[{
-           "DeviceDescription", " ", "->", " ", 
-            "\"\<Trapped ion device.\>\""}], ",", "\n", 
-           RowBox[{"NumAccessibleQubits", " ", "->", "nq"}], ",", "\n", 
-           RowBox[{"NumTotalQubits", " ", "->", " ", "nq"}], ",", "\n", 
-           RowBox[{"ShowIons", ":>", 
-            RowBox[{"showIons", "[", "nodes", "]"}]}], ",", 
-           "\[IndentingNewLine]", 
-           RowBox[{"AllIons", ":>", "nodes"}], ",", "\n", 
-           RowBox[{"Aliases", " ", "->", " ", 
-            RowBox[{"{", "\n", "\t", 
-             RowBox[{
-              RowBox[{
-               RowBox[{
-                RowBox[{"Subscript", "[", 
-                 RowBox[{"Wait", ",", " ", "q__"}], "]"}], "[", "t_", "]"}], 
-               " ", ":>", " ", 
-               RowBox[{"{", "}"}]}], "\n", "\t", ",", "\n", "\t", 
-              RowBox[{
-               RowBox[{"Subscript", "[", 
-                RowBox[{"Init", ",", " ", "i__"}], "]"}], ":>", " ", 
-               RowBox[{"{", "}"}]}]}], "\n", "\t", "}"}]}], "\n", "\t", ",", 
-           "\t", "\n", 
-           RowBox[{"Gates", " ", "->", 
-            RowBox[{"{", "\n", "\t", 
-             RowBox[{
-              RowBox[{
-               RowBox[{"Subscript", "[", 
-                RowBox[{"Wait", ",", " ", "q__"}], "]"}], "[", "t_", "]"}], ":>", 
-              RowBox[{"<|", "\n", "\t\t", 
-               RowBox[{
-                RowBox[{"NoisyForm", "->", 
-                 RowBox[{"Flatten", "@", 
-                  RowBox[{"Table", "[", 
-                   RowBox[{
-                    RowBox[{"passivenoise", "[", "i", "]"}], ",", 
-                    RowBox[{"{", 
-                    RowBox[{"i", ",", 
-                    RowBox[{"Flatten", "@", 
-                    RowBox[{"{", "q", "}"}]}]}], "}"}]}], "]"}]}]}], ",", 
-                "\n", "\t\t", 
-                RowBox[{"GateDuration", "->", "t"}]}], "\n", "\t", "|>"}]}], 
-             "\t\t", "\n", "}"}]}], ",", "\n", 
-           RowBox[{"(*", " ", 
-            RowBox[{
-            "Declare", " ", "that", " ", "\[CapitalDelta]t", " ", "will", " ",
-              "refer", " ", "to", " ", "the", " ", "duration", " ", "of", " ",
-              "the", " ", "current", " ", 
-             RowBox[{"gate", "/", 
-              RowBox[{"channel", "."}]}]}], " ", "*)"}], "\n", 
-           RowBox[{"DurationSymbol", " ", "->", " ", "\[CapitalDelta]t"}], 
-           ",", " ", "\n", 
-           RowBox[{"(*", " ", 
-            RowBox[{"Passive", " ", "noise"}], " ", "*)"}], "\n", 
-           RowBox[{"Qubits", " ", ":>", " ", 
-            RowBox[{"{", "\n", "\t\t", 
-             RowBox[{"q_", " ", ":>", " ", 
-              RowBox[{"<|", "\n", "\t\t", 
-               RowBox[{"PassiveNoise", " ", "->", 
-                RowBox[{"passivenoise", "[", "q", "]"}]}], "\n", "\t\t", 
-               "|>"}]}], "\t\t ", "\n", "\t\t", "}"}]}]}], "\n", "\t\t", "\n",
-           "\t", "|>"}]}]}], "\n", "]"}]}], "\n", "]"}]}], "\n", 
-   RowBox[{
-    RowBox[{
-     RowBox[{"AllIons", "::", "usage"}], "=", 
-     "\"\<Show all Ions on every nodes within the zones\>\""}], ";"}], 
-   "\[IndentingNewLine]", "\[IndentingNewLine]", 
-   RowBox[{
-    RowBox[{
-     RowBox[{"Options", "[", "TrappedIonOxford", "]"}], "=", 
-     RowBox[{"{", "\[IndentingNewLine]", 
-      RowBox[{"(*", " ", 
-       RowBox[{
-       "the", " ", "nodes", " ", "name", " ", "together", " ", "with", " ", 
-        "the", " ", "total", " ", "qubits", " ", "on", " ", "each", " ", 
-        "node"}], " ", "*)"}], "\[IndentingNewLine]", 
-      RowBox[{"Nodes", "->", 
-       RowBox[{"<|", 
-        RowBox[{
-         RowBox[{"\"\<Alice\>\"", "->", "4"}], ",", 
-         RowBox[{"\"\<Bob\>\"", "->", "4"}]}], "|>"}]}], 
-      "\[IndentingNewLine]", "}"}]}], ";"}]}]}]], "Input",
+  "Import", "[", "\"\</home/cica/programs/QuESTlink/Link/QuESTlink.m\>\"", 
+   "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"CreateLocalQuESTEnv", "[", "\"\<quest_link_cpu\>\"", "]"}], 
+  ";"}]}], "Input",
+ CellChangeTimes->{{3.82497505062926*^9, 3.8249750506297073`*^9}, 
+   3.824994043627574*^9, 3.825001607792643*^9, {3.825001692867886*^9, 
+   3.825001693910748*^9}, 3.825005541672139*^9, {3.8257703632332573`*^9, 
+   3.8257703928999557`*^9}, {3.8257705549908867`*^9, 
+   3.8257705572226887`*^9}, {3.827395402084569*^9, 3.827395414565299*^9}, 
+   3.8273959879208593`*^9, {3.8273960394479303`*^9, 3.8273960853619223`*^9}, {
+   3.8273961168062162`*^9, 3.827396123715522*^9}, {3.827396318549856*^9, 
+   3.827396412632536*^9}, {3.8274045827011538`*^9, 3.82740458379325*^9}, {
+   3.8278173564819393`*^9, 3.827817361228321*^9}, {3.830976734134877*^9, 
+   3.8309767494625072`*^9}, {3.834480282684927*^9, 3.834480283538302*^9}, {
+   3.834480426528635*^9, 3.834480438344689*^9}, {3.840643429673587*^9, 
+   3.84064343214264*^9}, {3.840644090065632*^9, 3.840644110294639*^9}, {
+   3.841376639126837*^9, 3.841376652890356*^9}, {3.852805051225027*^9, 
+   3.852805051940732*^9}, 3.852866941489101*^9, 3.863433244574464*^9, {
+   3.863444417946168*^9, 3.8634444207524557`*^9}, {3.863758485466724*^9, 
+   3.8637585009226294`*^9}, {3.863763334072833*^9, 3.8637633356047773`*^9}},
+ CellLabel->
+  "In[2066]:=",ExpressionUUID->"df0ec05c-7c65-422e-9507-d63ba1cb5d39"],
+
+Cell[TextData[StyleBox["Virtual quantum devices, loaded after questlink",
+ FontSlant->"Italic"]], "Text",
+ CellChangeTimes->{{3.8344802680745296`*^9, 3.83448027667835*^9}, {
+  3.8406416900502462`*^9, 3.840641698118609*^9}, {3.840641813367085*^9, 
+  3.840641822804656*^9}, {3.853839759327433*^9, 3.853839762140107*^9}, {
+  3.86344845184791*^9, 3.863448455324099*^9}, {3.8637680860803547`*^9, 
+  3.863768086918572*^9}},
+ Background->RGBColor[
+  0.87, 0.94, 1],ExpressionUUID->"5f37c9ba-3582-4916-b8a6-b00b0ad21432"],
+
+Cell[BoxData[
+ RowBox[{"Get", "[", "\"\<../vqd.wl\>\"", "]"}]], "Input",
+ CellChangeTimes->{{3.840641143565943*^9, 3.840641172251192*^9}, {
+   3.852799583306651*^9, 3.85279959973236*^9}, 3.8626416092550993`*^9, {
+   3.8634335183180933`*^9, 3.863433525482596*^9}, {3.863433568660131*^9, 
+   3.863433569874107*^9}, {3.863433692497489*^9, 3.863433694465293*^9}, {
+   3.863445057138888*^9, 3.86344507880478*^9}, {3.863445347209435*^9, 
+   3.8634453507921267`*^9}, {3.863445650432852*^9, 3.863445652815689*^9}, {
+   3.863445897019453*^9, 3.8634458974688377`*^9}, {3.86344607759472*^9, 
+   3.863446078099331*^9}, {3.863446143635272*^9, 3.863446143966124*^9}, {
+   3.863446177367778*^9, 3.86344617796842*^9}, {3.8634467623389387`*^9, 
+   3.863446816486045*^9}, {3.863446923713131*^9, 3.863446924990855*^9}, {
+   3.863447604132453*^9, 3.8634476320572042`*^9}, {3.863448157317191*^9, 
+   3.863448185412036*^9}, {3.86344848550739*^9, 3.863448486307929*^9}, {
+   3.863730635263914*^9, 3.863730645543404*^9}, {3.863730806825498*^9, 
+   3.863730825085904*^9}, {3.864798306500605*^9, 3.864798308030095*^9}, {
+   3.864808339041327*^9, 3.864808339281568*^9}},
+ CellLabel->
+  "In[2068]:=",ExpressionUUID->"fbda1cba-5510-430b-ae7f-72219c40e12c"],
+
+Cell["\<\
+
+Zone1 :prepare, store, detect
+Zone2 :prepare, store, detect, logic
+Zone3 :prepare, store, detect, logic
+Zone4 :remote entangle\
+\>", "Text",
  CellChangeTimes->{{3.858511682984825*^9, 3.8585117206624537`*^9}, {
    3.858532783530438*^9, 3.858532794430283*^9}, {3.8585328288728857`*^9, 
    3.858532836244565*^9}, {3.8585348912361193`*^9, 3.858534927815724*^9}, {
@@ -469,504 +159,521 @@ Initially, all qubits are in zone 1\>\""}], ";"}], "\[IndentingNewLine]",
    3.866539515190145*^9, 3.866539517991475*^9}, {3.866539549153495*^9, 
    3.8665395801368237`*^9}, {3.86654002249362*^9, 3.866540108925919*^9}, {
    3.866540445744959*^9, 3.866540492102893*^9}, {3.866540624508171*^9, 
-   3.866540627272105*^9}, {3.866714295397747*^9, 3.8667142955580053`*^9}},
- CellLabel->
-  "In[471]:=",ExpressionUUID->"41a87dc7-d840-4718-a684-be84a54c9c2b"],
+   3.866540627272105*^9}, {3.866714295397747*^9, 3.8667142955580053`*^9}, 
+   3.866739782353863*^9, 3.8667399426908627`*^9, {3.866740068638999*^9, 
+   3.86674009195735*^9}, {3.866740180208103*^9, 3.866740201477502*^9}, 
+   3.866740290954389*^9, {3.866740719835416*^9, 3.8667407218073874`*^9}, {
+   3.8667416909391613`*^9, 
+   3.866741763053393*^9}},ExpressionUUID->"41a87dc7-d840-4718-a684-\
+be84a54c9c2b"],
 
-Cell[BoxData[
- RowBox[{"\[IndentingNewLine]", 
-  RowBox[{"(*", " ", 
-   RowBox[{"Legitimate", " ", "split", " ", "move"}], " ", "*)"}], 
-  "\[IndentingNewLine]", 
+Cell[BoxData[{
+ RowBox[{
   RowBox[{
    RowBox[{
-    RowBox[{"legSplit", "[", 
-     RowBox[{"nodename_", ",", "q1_", ",", "q2_", ",", "zone_"}], "]"}], ":=", 
-    RowBox[{"With", "[", 
-     RowBox[{
-      RowBox[{"{", 
-       RowBox[{
-        RowBox[{"z1", "=", 
-         RowBox[{"getZone", "[", 
-          RowBox[{"q1", ",", 
-           RowBox[{"nodes", "[", "nodename", "]"}]}], "]"}]}], ",", 
-        RowBox[{"z2", "=", 
-         RowBox[{"getZone", "[", 
-          RowBox[{"q2", ",", 
-           RowBox[{"nodes", "[", "nodename", "]"}]}], "]"}]}], ",", 
-        RowBox[{"node", "=", 
-         RowBox[{"nodes", "[", "nodename", "]"}]}]}], "}"}], ",", 
-      "\[IndentingNewLine]", 
+    RowBox[{"Options", "[", "TrappedIonOxford", "]"}], "=", 
+    RowBox[{"{", "\[IndentingNewLine]", 
+     RowBox[{"(*", 
       RowBox[{
-       RowBox[{"If", "[", 
-        RowBox[{
-         RowBox[{"z1", "!=", "z2"}], ",", 
-         RowBox[{"Return", "@", "False"}]}], "]"}], ";", 
-       "\[IndentingNewLine]", 
-       RowBox[{"If", "[", 
-        RowBox[{
-         RowBox[{
-          RowBox[{
-           RowBox[{"Abs", "[", 
-            RowBox[{
-             RowBox[{
-              RowBox[{"Position", "[", 
-               RowBox[{
-                RowBox[{"node", "[", "z1", "]"}], ",", "q1"}], "]"}], "[", 
-              RowBox[{"[", 
-               RowBox[{"1", ",", "1"}], "]"}], "]"}], "-", " ", 
-             RowBox[{"Position", "[", 
-              RowBox[{
-               RowBox[{"node", "[", "z1", "]"}], ",", "q2"}], "]"}]}], "]"}], 
-           "[", 
-           RowBox[{"[", 
-            RowBox[{"1", ",", "1"}], "]"}], "]"}], "!=", "1"}], ",", 
-         RowBox[{"Return", "@", "False"}]}], "]"}], ";", 
-       "\[IndentingNewLine]", 
-       RowBox[{"If", "[", 
-        RowBox[{
-         RowBox[{
-          RowBox[{"Length", "@", 
-           RowBox[{"Flatten", "[", 
-            RowBox[{"Table", "[", 
-             RowBox[{
-              RowBox[{"node", "[", "z", "]"}], ",", 
-              RowBox[{"{", 
-               RowBox[{"z", ",", 
-                RowBox[{"Range", "[", 
-                 RowBox[{
-                  RowBox[{
-                   RowBox[{"Min", "[", 
-                    RowBox[{"z1", ",", "zone"}], "]"}], "+", "1"}], ",", 
-                  RowBox[{
-                   RowBox[{"Max", "[", 
-                    RowBox[{"z1", ",", "zone"}], "]"}], "-", "1"}]}], "]"}]}],
-                "}"}]}], "]"}], "]"}]}], ">", "0"}], ",", 
-         RowBox[{"Return", "@", "False"}]}], "]"}], ";", 
-       "\[IndentingNewLine]", "True"}]}], "\[IndentingNewLine]", "]"}]}], 
-   "\n", 
-   RowBox[{
-    RowBox[{
-     SubscriptBox["SplitZ", 
-      RowBox[{"i_", ",", "j_"}]], "[", 
-     RowBox[{"node_", ",", "zone_"}], "]"}], ":=", 
-    RowBox[{"Module", "[", 
-     RowBox[{
-      RowBox[{"{", 
-       RowBox[{"zq1", ",", "zq2", ",", "pos", ",", "sq", ",", "szone"}], 
-       "}"}], ",", "\[IndentingNewLine]", 
-      RowBox[{
-       RowBox[{"zq1", "=", 
-        RowBox[{"getZone", "[", 
-         RowBox[{"i", ",", 
-          RowBox[{"nodes", "@", "node"}]}], "]"}]}], ";", 
-       "\[IndentingNewLine]", 
-       RowBox[{"zq2", "=", 
-        RowBox[{"getZone", "[", 
-         RowBox[{"j", ",", 
-          RowBox[{"nodes", "@", "node"}]}], "]"}]}], ";", 
-       "\[IndentingNewLine]", 
-       RowBox[{"Assert", "[", 
-        RowBox[{
-         RowBox[{"zq1", "===", "zq2"}], ",", 
-         "\"\<both qubits must have the same zone\>\""}], "]"}], ";", 
-       "\[IndentingNewLine]", 
-       RowBox[{"pos", "=", 
-        RowBox[{"<|", 
-         RowBox[{
-          RowBox[{"i", "->", 
-           RowBox[{
-            RowBox[{"Position", "[", 
-             RowBox[{
-              RowBox[{
-               RowBox[{"nodes", "[", "node", "]"}], "[", "zq1", "]"}], ",", 
-              "i"}], "]"}], "[", 
-            RowBox[{"[", 
-             RowBox[{"1", ",", "1"}], "]"}], "]"}]}], ",", 
-          RowBox[{"j", "->", 
-           RowBox[{
-            RowBox[{"Position", "[", 
-             RowBox[{
-              RowBox[{
-               RowBox[{"nodes", "[", "node", "]"}], "[", "zq1", "]"}], ",", 
-              "j"}], "]"}], "[", 
-            RowBox[{"[", 
-             RowBox[{"1", ",", "1"}], "]"}], "]"}]}]}], "|>"}]}], ";", 
-       "\[IndentingNewLine]", 
-       RowBox[{"sq", "=", 
-        RowBox[{"Keys", "@", "pos"}]}], ";", " ", 
-       RowBox[{"(*", 
-        RowBox[{"sorted", " ", "qubits", " ", "by", " ", "its", " ", 
-         RowBox[{"post", ":", " ", 
-          RowBox[{"{", 
-           RowBox[{"low", ",", "high"}], "}"}]}]}], "*)"}], 
-       "\[IndentingNewLine]", "\[IndentingNewLine]", 
-       RowBox[{"(*", 
-        RowBox[{"split", " ", "the", " ", "zone"}], "*)"}], 
-       "\[IndentingNewLine]", 
-       RowBox[{"szone", "=", 
-        RowBox[{"TakeDrop", "[", 
-         RowBox[{
-          RowBox[{
-           RowBox[{"nodes", "[", "node", "]"}], "[", "zq1", "]"}], ",", 
-          RowBox[{
-           RowBox[{"Values", "[", "pos", "]"}], "[", 
-           RowBox[{"[", "1", "]"}], "]"}]}], "]"}]}], ";", 
-       "\[IndentingNewLine]", 
-       RowBox[{"If", "[", 
-        RowBox[{
-         RowBox[{"zone", ">", "zq1"}], ",", "\[IndentingNewLine]", 
-         RowBox[{"(*", " ", 
-          RowBox[{
-           RowBox[{"move", " ", "to", " ", "a", " ", "higher", " ", "zone"}], 
-           ",", " ", 
-           RowBox[{"lower", " ", "qubit", " ", "remains"}]}], " ", "*)"}], 
-         "\[IndentingNewLine]", 
-         RowBox[{
-          RowBox[{
-           RowBox[{
-            RowBox[{"nodes", "[", "node", "]"}], "[", "zq1", "]"}], "=", 
-           RowBox[{"szone", "[", 
-            RowBox[{"[", "1", "]"}], "]"}]}], ";", "\[IndentingNewLine]", 
-          RowBox[{
-           RowBox[{
-            RowBox[{"nodes", "[", "node", "]"}], "[", "zone", "]"}], "=", 
-           RowBox[{"Join", "[", 
-            RowBox[{
-             RowBox[{"szone", "[", 
-              RowBox[{"[", "2", "]"}], "]"}], ",", 
-             RowBox[{
-              RowBox[{"nodes", "[", "node", "]"}], "[", "zone", "]"}]}], 
-            "]"}]}], ";"}], "\[IndentingNewLine]", ",", "\[IndentingNewLine]", 
-         RowBox[{"(*", " ", 
-          RowBox[{
-           RowBox[{"move", " ", "to", " ", "a", " ", "lower", " ", "zone"}], 
-           ",", " ", 
-           RowBox[{"high", " ", "qubit", " ", "remains"}]}], " ", "*)"}], 
-         "\[IndentingNewLine]", 
-         RowBox[{
-          RowBox[{
-           RowBox[{
-            RowBox[{"nodes", "[", "node", "]"}], "[", "zone", "]"}], "=", 
-           RowBox[{"Join", "[", 
-            RowBox[{
-             RowBox[{
-              RowBox[{"nodes", "[", "node", "]"}], "[", "zone", "]"}], ",", 
-             RowBox[{"szone", "[", 
-              RowBox[{"[", "1", "]"}], "]"}]}], "]"}]}], ";", 
-          "\[IndentingNewLine]", 
-          RowBox[{
-           RowBox[{
-            RowBox[{"nodes", "[", "node", "]"}], "[", "zq1", "]"}], "=", 
-           RowBox[{"szone", "[", 
-            RowBox[{"[", "2", "]"}], "]"}]}], ";"}]}], "\[IndentingNewLine]", 
-        "]"}], ";"}]}], "\[IndentingNewLine]", "]"}]}], "\[IndentingNewLine]",
-    "\[IndentingNewLine]", 
-   RowBox[{"(*", 
-    RowBox[{"Legitimate", " ", "combine", " ", "moves"}], " ", "*)"}], 
-   "\[IndentingNewLine]", 
-   RowBox[{
-    RowBox[{"legComb", "[", 
-     RowBox[{"nodename_", ",", "q1_", ",", "q2_", ",", "zone_"}], "]"}], ":=", 
-    RowBox[{"Module", "[", 
-     RowBox[{
-      RowBox[{"{", 
+      "the", " ", "nodes", " ", "name", " ", "together", " ", "with", " ", 
+       "the", " ", "total", " ", "qubits", " ", "on", " ", "each", " ", 
+       "node"}], "*)"}], "\[IndentingNewLine]", 
+     RowBox[{"Nodes", "->", 
+      RowBox[{"<|", 
        RowBox[{
-        RowBox[{"node", "=", 
-         RowBox[{"nodes", "[", "nodename", "]"}]}], ",", "z1", ",", "z2", ",",
-         "cond1", ",", "cond2", ",", "zstart", ",", "ps", ",", "pz", ",", 
-        "qs", ",", "qz", ",", "cond3"}], "}"}], ",", "\[IndentingNewLine]", 
-      RowBox[{"(*", " ", 
-       RowBox[{
-       "combine", " ", "to", " ", "the", " ", "one", " ", "of", " ", "the", 
-        " ", "zone"}], " ", "*)"}], "\[IndentingNewLine]", 
-      RowBox[{
-       RowBox[{"z1", "=", 
-        RowBox[{"getZone", "[", 
-         RowBox[{"q1", ",", "node"}], "]"}]}], ";", "\[IndentingNewLine]", 
-       RowBox[{"z2", "=", 
-        RowBox[{"getZone", "[", 
-         RowBox[{"q2", ",", "node"}], "]"}]}], ";", "\[IndentingNewLine]", 
-       RowBox[{"cond1", "=", 
-        RowBox[{"Or", "[", 
-         RowBox[{
-          RowBox[{"z1", "===", "zone"}], ",", 
-          RowBox[{"z2", "===", "zone"}]}], "]"}]}], ";", 
-       "\[IndentingNewLine]", 
-       RowBox[{"If", "[", 
-        RowBox[{
-         RowBox[{"\[Not]", "cond1"}], ",", 
-         RowBox[{"Return", "[", "False", "]"}]}], "]"}], ";", 
-       "\[IndentingNewLine]", "\[IndentingNewLine]", 
-       RowBox[{"If", "[", 
-        RowBox[{
-         RowBox[{"z1", "===", "zone"}], ",", "\[IndentingNewLine]", 
-         RowBox[{
-          RowBox[{"zstart", "=", "z2"}], ";", 
-          RowBox[{"qs", "=", "q2"}], ";", 
-          RowBox[{"qz", "=", "q1"}]}], ",", "\[IndentingNewLine]", " ", 
-         RowBox[{
-          RowBox[{"zstart", "=", "z1"}], ";", 
-          RowBox[{"qs", "=", "q1"}], ";", 
-          RowBox[{"qz", "=", "q2"}]}]}], "\[IndentingNewLine]", "]"}], ";", 
-       "\[IndentingNewLine]", "\[IndentingNewLine]", 
-       RowBox[{"(*", " ", 
-        RowBox[{
-        "merge", " ", "from", " ", "start", " ", "zone", " ", "to", " ", 
-         "zone", " ", "destination"}], " ", "*)"}], "\[IndentingNewLine]", 
-       RowBox[{"ps", "=", 
-        RowBox[{
-         RowBox[{"Position", "[", 
-          RowBox[{
-           RowBox[{"node", "[", "zstart", "]"}], ",", "qs"}], "]"}], "[", 
-         RowBox[{"[", 
-          RowBox[{"1", ",", "1"}], "]"}], "]"}]}], ";", "\[IndentingNewLine]", 
-       RowBox[{"pz", "=", 
-        RowBox[{
-         RowBox[{"Position", "[", 
-          RowBox[{
-           RowBox[{"node", "[", "zone", "]"}], ",", "qz"}], "]"}], "[", 
-         RowBox[{"[", 
-          RowBox[{"1", ",", "1"}], "]"}], "]"}]}], ";", "\[IndentingNewLine]",
-        "\[IndentingNewLine]", 
-       RowBox[{"cond2", "=", 
-        RowBox[{"Which", "[", "\[IndentingNewLine]", 
-         RowBox[{"(*", " ", 
-          RowBox[{
-          "move", " ", "down", " ", "to", " ", "a", " ", "higher", " ", 
-           "zone"}], " ", "*)"}], "\[IndentingNewLine]", 
-         RowBox[{
-          RowBox[{"zstart", "<", "zone"}], "\[IndentingNewLine]", ",", 
-          "\[IndentingNewLine]", 
-          RowBox[{
-           RowBox[{"Length", "@", 
-            RowBox[{
-             RowBox[{"node", "[", "zstart", "]"}], "[", 
-             RowBox[{"[", 
-              RowBox[{
-               RowBox[{"ps", "+", "1"}], ";;"}], "]"}], "]"}]}], "+", 
-           RowBox[{"Length", "@", 
-            RowBox[{
-             RowBox[{"node", "[", "zone", "]"}], "[", 
-             RowBox[{"[", 
-              RowBox[{";;", 
-               RowBox[{"pz", "-", "1"}]}], "]"}], "]"}]}]}], 
-          "\[IndentingNewLine]", ",", "\[IndentingNewLine]", 
-          RowBox[{"zstart", ">", "zone"}], ",", "\[IndentingNewLine]", 
-          RowBox[{"(*", 
-           RowBox[{
-           "move", " ", "up", " ", "to", " ", "a", " ", "lower", " ", 
-            "zone"}], " ", "*)"}], "\[IndentingNewLine]", 
-          RowBox[{
-           RowBox[{"Length", "@", 
-            RowBox[{
-             RowBox[{"node", "[", "zone", "]"}], "[", 
-             RowBox[{"[", 
-              RowBox[{
-               RowBox[{"pz", "+", "1"}], ";;"}], "]"}], "]"}]}], "+", 
-           RowBox[{"Length", "@", 
-            RowBox[{
-             RowBox[{"node", "[", "zstart", "]"}], "[", 
-             RowBox[{"[", 
-              RowBox[{";;", 
-               RowBox[{"ps", "-", "1"}]}], "]"}], "]"}]}]}], 
-          "\[IndentingNewLine]", ",", "\[IndentingNewLine]", 
-          RowBox[{"zstart", "===", "zone"}], ",", "\[IndentingNewLine]", 
-          RowBox[{"(*", " ", 
-           RowBox[{
-            RowBox[{"doesn", "'"}], "t", " ", "move"}], " ", "*)"}], 
-          "\[IndentingNewLine]", 
-          RowBox[{"Length", "@", 
-           RowBox[{
-            RowBox[{"node", "[", "zone", "]"}], "[", 
-            RowBox[{"[", 
-             RowBox[{
-              RowBox[{
-               RowBox[{"Min", "[", 
-                RowBox[{"ps", ",", "pz"}], "]"}], "+", "1"}], ";;", 
-              RowBox[{
-               RowBox[{"Max", "[", 
-                RowBox[{"ps", ",", "pz"}], "]"}], "-", "1"}]}], "]"}], 
-            "]"}]}]}], "\[IndentingNewLine]", "]"}]}], ";", 
-       "\[IndentingNewLine]", 
-       RowBox[{"If", "[", 
-        RowBox[{
-         RowBox[{"cond2", "!=", "0"}], ",", 
-         RowBox[{"Return", "[", "False", "]"}]}], "]"}], ";", 
-       "\[IndentingNewLine]", "\[IndentingNewLine]", 
-       RowBox[{"(*", " ", 
-        RowBox[{
-        "no", " ", "qubits", " ", "in", " ", "between", " ", "zones"}], " ", 
-        "*)"}], "\[IndentingNewLine]", 
-       RowBox[{"cond3", "=", 
-        RowBox[{"If", "[", 
-         RowBox[{
-          RowBox[{"zone", "===", "zstart"}], ",", "\[IndentingNewLine]", 
-          "True", "\[IndentingNewLine]", ",", "\[IndentingNewLine]", 
-          RowBox[{
-           RowBox[{"Length", "@", 
-            RowBox[{"Flatten", "[", 
-             RowBox[{"Table", "[", 
-              RowBox[{
-               RowBox[{"node", "[", "z", "]"}], ",", 
-               RowBox[{"{", 
-                RowBox[{"z", ",", 
-                 RowBox[{"Range", "[", 
-                  RowBox[{
-                   RowBox[{
-                    RowBox[{"Min", "[", 
-                    RowBox[{"zstart", ",", "zone"}], "]"}], "+", "1"}], ",", 
-                   RowBox[{
-                    RowBox[{"Max", "[", 
-                    RowBox[{"zstart", ",", "zone"}], "]"}], "-", "1"}]}], 
-                  "]"}]}], "}"}]}], "]"}], "]"}]}], "===", "0"}]}], 
-         "\[IndentingNewLine]", "]"}]}], ";", "\[IndentingNewLine]", 
-       RowBox[{"If", "[", 
-        RowBox[{
-         RowBox[{"\[Not]", "cond3"}], ",", 
-         RowBox[{"Return", "[", "False", "]"}]}], "]"}], ";", 
-       "\[IndentingNewLine]", "True"}]}], "\[IndentingNewLine]", "]"}]}], 
-   "\[IndentingNewLine]", "\[IndentingNewLine]", 
-   RowBox[{
-    RowBox[{
-     SubscriptBox["CombZ", 
-      RowBox[{"i_", ",", "j_"}]], "[", 
-     RowBox[{"nodename_", ",", "zone_"}], "]"}], ":=", 
-    RowBox[{"Module", "[", 
-     RowBox[{
-      RowBox[{"{", 
-       RowBox[{
-       "node", ",", "z1", ",", "z2", ",", "ps", ",", "pz", ",", "sq", ",", 
-        "zstart", ",", "qs", ",", "qz"}], "}"}], ",", "\[IndentingNewLine]", 
-      RowBox[{
-       RowBox[{"node", "=", 
-        RowBox[{"nodes", "[", "nodename", "]"}]}], ";", "\[IndentingNewLine]", 
-       RowBox[{"z1", "=", 
-        RowBox[{"getZone", "[", 
-         RowBox[{"i", ",", "node"}], "]"}]}], ";", "\[IndentingNewLine]", 
-       RowBox[{"z2", "=", 
-        RowBox[{"getZone", "[", 
-         RowBox[{"j", ",", "node"}], "]"}]}], ";", "\[IndentingNewLine]", 
-       RowBox[{"If", "[", 
-        RowBox[{
-         RowBox[{"z1", "===", "zone"}], ",", "\[IndentingNewLine]", 
-         RowBox[{
-          RowBox[{"zstart", "=", "z2"}], ";", 
-          RowBox[{"qs", "=", "j"}], ";", 
-          RowBox[{"qz", "=", "i"}]}], ",", "\[IndentingNewLine]", " ", 
-         RowBox[{
-          RowBox[{"zstart", "=", "z1"}], ";", 
-          RowBox[{"qs", "=", "i"}], ";", 
-          RowBox[{"qz", "=", "j"}]}]}], "\[IndentingNewLine]", "]"}], ";", 
-       "\[IndentingNewLine]", 
-       RowBox[{"(*", " ", 
-        RowBox[{
-        "merge", " ", "from", " ", "start", " ", "zone", " ", "to", " ", 
-         "zone", " ", "destination"}], " ", "*)"}], "\[IndentingNewLine]", 
-       RowBox[{"ps", "=", 
-        RowBox[{
-         RowBox[{"Position", "[", 
-          RowBox[{
-           RowBox[{"node", "[", "zstart", "]"}], ",", "qs"}], "]"}], "[", 
-         RowBox[{"[", 
-          RowBox[{"1", ",", "1"}], "]"}], "]"}]}], ";", "\[IndentingNewLine]", 
-       RowBox[{"pz", "=", 
-        RowBox[{
-         RowBox[{"Position", "[", 
-          RowBox[{
-           RowBox[{"node", "[", "zone", "]"}], ",", "qz"}], "]"}], "[", 
-         RowBox[{"[", 
-          RowBox[{"1", ",", "1"}], "]"}], "]"}]}], ";", "\[IndentingNewLine]", 
-       RowBox[{"Which", "[", "\[IndentingNewLine]", 
-        RowBox[{"(*", " ", 
-         RowBox[{
-         "move", " ", "down", " ", "to", " ", "a", " ", "higher", " ", 
-          "zone"}], " ", "*)"}], "\[IndentingNewLine]", 
-        RowBox[{
-         RowBox[{"zstart", "<", "zone"}], "\[IndentingNewLine]", ",", 
-         "\[IndentingNewLine]", 
-         RowBox[{
-          RowBox[{
-           RowBox[{
-            RowBox[{"nodes", "[", "nodename", "]"}], "[", "zone", "]"}], "=", 
-           
-           RowBox[{"Join", "[", 
-            RowBox[{
-             RowBox[{"{", "qs", "}"}], ",", 
-             RowBox[{"node", "[", "zone", "]"}]}], "]"}]}], ";", 
-          "\[IndentingNewLine]", 
-          RowBox[{
-           RowBox[{
-            RowBox[{"nodes", "[", "nodename", "]"}], "[", "zstart", "]"}], 
-           "=", 
-           RowBox[{
-            RowBox[{"node", "[", "zstart", "]"}], "[", 
-            RowBox[{"[", 
-             RowBox[{";;", 
-              RowBox[{"-", "2"}]}], "]"}], "]"}]}], ";"}], 
-         "\[IndentingNewLine]", ",", "\[IndentingNewLine]", 
-         RowBox[{"zstart", ">", "zone"}], ",", "\[IndentingNewLine]", 
-         RowBox[{"(*", 
-          RowBox[{
-          "move", " ", "up", " ", "to", " ", "a", " ", "lower", " ", "zone"}],
-           " ", "*)"}], "\[IndentingNewLine]", 
-         RowBox[{
-          RowBox[{
-           RowBox[{
-            RowBox[{"nodes", "[", "nodename", "]"}], "[", "zone", "]"}], "=", 
-           
-           RowBox[{"Join", "[", 
-            RowBox[{
-             RowBox[{"node", "[", "zone", "]"}], ",", 
-             RowBox[{"{", "qs", "}"}]}], "]"}]}], ";", "\[IndentingNewLine]", 
-          
-          RowBox[{
-           RowBox[{
-            RowBox[{"nodes", "[", "nodename", "]"}], "[", "zstart", "]"}], 
-           "=", 
-           RowBox[{
-            RowBox[{"node", "[", "zstart", "]"}], "[", 
-            RowBox[{"[", 
-             RowBox[{"2", ";;"}], "]"}], "]"}]}], ";"}]}], 
-        "\[IndentingNewLine]", "]"}], ";"}]}], "\[IndentingNewLine]", 
-     "]"}]}]}]}]], "Input",
- CellChangeTimes->{{3.866540543522171*^9, 3.866540638446156*^9}, {
-   3.8665407961812363`*^9, 3.8665408483057528`*^9}, {3.8665408797886133`*^9, 
-   3.866541010336628*^9}, {3.8665411729029303`*^9, 3.8665413720842752`*^9}, {
-   3.86654145604377*^9, 3.866541532319922*^9}, 3.8667142261253567`*^9, {
-   3.866714348313373*^9, 3.866714393048127*^9}, {3.8667144338509293`*^9, 
-   3.866714517310082*^9}, {3.866715070465889*^9, 3.866715085097372*^9}, {
-   3.8667152143843718`*^9, 3.866715283392561*^9}, {3.866715999567168*^9, 
-   3.86671601459137*^9}, {3.866716316933103*^9, 3.8667163338686666`*^9}, {
-   3.866717291713141*^9, 3.866717293170011*^9}, {3.8667176835507*^9, 
-   3.866717693417734*^9}, {3.866717753112357*^9, 3.8667177938599567`*^9}, {
-   3.866717825411051*^9, 3.866717850963808*^9}, {3.8667200893790007`*^9, 
-   3.866720089648423*^9}, {3.866720128333826*^9, 3.86672017612144*^9}, {
-   3.866720417788143*^9, 3.866720453587528*^9}, {3.866720523273775*^9, 
-   3.866720528395113*^9}, {3.866720581691636*^9, 3.86672064813171*^9}, {
-   3.8667207813733788`*^9, 3.866721060376561*^9}, {3.8667223931165037`*^9, 
-   3.866722421255965*^9}, {3.8667224556506557`*^9, 3.866722517373839*^9}, {
-   3.86672256552736*^9, 3.866722686255857*^9}, {3.8667228168347673`*^9, 
-   3.866722837705099*^9}, {3.866722953542946*^9, 3.866722999049842*^9}, {
-   3.8667230327784767`*^9, 3.866723252505555*^9}, {3.866723292721971*^9, 
-   3.866723305569824*^9}, {3.8667233377598867`*^9, 3.8667233720271387`*^9}, {
-   3.8667234035812273`*^9, 3.8667234866605663`*^9}, {3.86672357984488*^9, 
-   3.8667236647941093`*^9}, {3.8667237077331944`*^9, 
-   3.8667238703873367`*^9}, {3.866723930875963*^9, 3.8667240060096416`*^9}, {
-   3.866724070473583*^9, 3.8667240916830053`*^9}, {3.866724986584463*^9, 
-   3.866725021126082*^9}, {3.866725324251997*^9, 3.866725328453842*^9}, 
-   3.86672556674965*^9, {3.8667256026343307`*^9, 3.8667256112803698`*^9}, {
-   3.8667259478565617`*^9, 3.8667259539749737`*^9}, {3.866726171379366*^9, 
-   3.8667261899085207`*^9}, {3.8667262997569532`*^9, 3.866726305604269*^9}, {
-   3.866727108221044*^9, 3.866727130262895*^9}, {3.8667271684997807`*^9, 
-   3.866727178352952*^9}, {3.8667272111785507`*^9, 3.866727368765671*^9}, {
-   3.866727450965537*^9, 3.866727508246557*^9}, {3.8667275430816803`*^9, 
-   3.866727609237668*^9}, {3.866727692913721*^9, 3.866727693144205*^9}},
+        RowBox[{"\"\<Alice\>\"", "->", "4"}], ",", 
+        RowBox[{"\"\<Bob\>\"", "->", "4"}]}], "|>"}]}], "\[IndentingNewLine]",
+      "}"}]}], ";"}], "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"dev", "=", 
+   RowBox[{"TrappedIonOxford", "[", "]"}]}], ";"}]}], "Input",
+ CellChangeTimes->{{3.866741525798813*^9, 3.8667415268823643`*^9}, {
+  3.866741663432423*^9, 3.866741665522397*^9}, {3.866741745552545*^9, 
+  3.86674175266329*^9}},
  CellLabel->
-  "In[545]:=",ExpressionUUID->"60abfd29-a235-464e-8ef6-f3530f23545a"]
+  "In[2069]:=",ExpressionUUID->"786b6905-0c83-4785-9309-62848193302e"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"dev", "[", "ShowNodes", "]"}]], "Input",
+ CellChangeTimes->{{3.866741666908177*^9, 3.8667416725596*^9}, {
+  3.866741768161387*^9, 3.866741771763123*^9}},
+ CellLabel->
+  "In[2071]:=",ExpressionUUID->"99c6e818-f027-42e1-b4de-6749f298a403"],
+
+Cell[BoxData[
+ TagBox[GridBox[{
+    {"\<\"Alice\"\>", 
+     GraphicsBox[{{
+        {RGBColor[0.513417, 0.72992, 0.440682], Thickness[Large], 
+         TagBox[CircleBox[{0, 0}, 0.25],
+          "Sphere"]}, 
+        {RGBColor[0.513417, 0.72992, 0.440682], Thickness[Large], 
+         TagBox[CircleBox[{1, 0}, 0.25],
+          "Sphere"]}, 
+        {RGBColor[0.513417, 0.72992, 0.440682], Thickness[Large], 
+         TagBox[CircleBox[{2, 0}, 0.25],
+          "Sphere"]}, 
+        {RGBColor[0.513417, 0.72992, 0.440682], Thickness[Large], 
+         TagBox[CircleBox[{3, 0}, 0.25],
+          "Sphere"]}}, {InsetBox["1", {0, 0}], InsetBox["2", {1, 0}], 
+        InsetBox["3", {2, 0}], InsetBox["4", {3, 0}]}},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 1\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{200, 50}], 
+     GraphicsBox[{{}, {}},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 2\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{50, 50}], 
+     GraphicsBox[{{}, {}},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 3\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{50, 50}], 
+     GraphicsBox[{{}, {}},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 4\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{50, 50}]},
+    {"\<\"Bob\"\>", 
+     GraphicsBox[{{
+        {RGBColor[0.471412, 0.108766, 0.527016], Thickness[Large], 
+         TagBox[CircleBox[{0, 0}, 0.25],
+          "Sphere"]}, 
+        {RGBColor[0.471412, 0.108766, 0.527016], Thickness[Large], 
+         TagBox[CircleBox[{1, 0}, 0.25],
+          "Sphere"]}, 
+        {RGBColor[0.471412, 0.108766, 0.527016], Thickness[Large], 
+         TagBox[CircleBox[{2, 0}, 0.25],
+          "Sphere"]}, 
+        {RGBColor[0.471412, 0.108766, 0.527016], Thickness[Large], 
+         TagBox[CircleBox[{3, 0}, 0.25],
+          "Sphere"]}}, {InsetBox["1", {0, 0}], InsetBox["2", {1, 0}], 
+        InsetBox["3", {2, 0}], InsetBox["4", {3, 0}]}},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 1\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{200, 50}], 
+     GraphicsBox[{{}, {}},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 2\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{50, 50}], 
+     GraphicsBox[{{}, {}},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 3\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{50, 50}], 
+     GraphicsBox[{{}, {}},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 4\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{50, 50}]}
+   },
+   AutoDelete->False,
+   GridBoxItemSize->{"Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}},
+   GridBoxSpacings->{"Columns" -> {{0}}, "Rows" -> {{1}}}],
+  "Grid"]], "Output",
+ CellChangeTimes->{
+  3.866741673008059*^9, {3.866741766789317*^9, 3.86674177206769*^9}, 
+   3.86674239492371*^9, 3.866742645952829*^9, 3.866742781046424*^9, 
+   3.866742942885195*^9, 3.866743020438588*^9, 3.866743057777688*^9, 
+   3.86674316332473*^9, {3.866743245316538*^9, 3.866743263398672*^9}, 
+   3.866743357092432*^9},
+ CellLabel->
+  "Out[2071]=",ExpressionUUID->"cb6d71b0-6af7-44ec-92ee-4a1f7804cb38"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"dev", "[", "NumTotalQubits", "]"}]], "Input",
+ CellChangeTimes->{{3.8667423970586243`*^9, 3.86674241582827*^9}},
+ CellLabel->
+  "In[2072]:=",ExpressionUUID->"2b17c304-8e15-4363-bf59-3ce3a692885e"],
+
+Cell[BoxData["8"], "Output",
+ CellChangeTimes->{
+  3.866742416416012*^9, 3.866742645975967*^9, {3.866742778046001*^9, 
+   3.86674278191549*^9}, 3.866743265159451*^9, 3.8667433571084223`*^9},
+ CellLabel->
+  "Out[2072]=",ExpressionUUID->"a014e7c2-56e9-4a6f-92de-23361d37a481"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"InsertCircuitNoise", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{
+       SubscriptBox["SplitZ", 
+        RowBox[{"2", ",", "3"}]], "[", 
+       RowBox[{"\"\<Alice\>\"", ",", "4"}], "]"}], ",", 
+      RowBox[{
+       SubscriptBox["SplitZ", 
+        RowBox[{"2", ",", "3"}]], "[", 
+       RowBox[{"\"\<Bob\>\"", ",", "4"}], "]"}]}], "}"}], ",", "dev"}], "]"}],
+   ";"}], "\[IndentingNewLine]", 
+ RowBox[{"dev", "@", "ShowNodes"}]}], "Input",
+ CellChangeTimes->{{3.866742437488888*^9, 3.8667425168509912`*^9}, {
+  3.8667426506096497`*^9, 3.8667426560836487`*^9}, {3.866742722307536*^9, 
+  3.8667427368733997`*^9}, {3.866742964754422*^9, 3.866742967895761*^9}, {
+  3.866743256375643*^9, 3.866743266866007*^9}},
+ CellLabel->
+  "In[2073]:=",ExpressionUUID->"0ae86fa7-43ea-4f90-bf5d-bb8d491baa02"],
+
+Cell[BoxData[
+ TagBox[GridBox[{
+    {"\<\"Alice\"\>", 
+     GraphicsBox[{{
+        {RGBColor[0.513417, 0.72992, 0.440682], Thickness[Large], 
+         TagBox[CircleBox[{0, 0}, 0.25],
+          "Sphere"]}, 
+        {RGBColor[0.513417, 0.72992, 0.440682], Thickness[Large], 
+         TagBox[CircleBox[{1, 0}, 0.25],
+          "Sphere"]}}, {InsetBox["1", {0, 0}], InsetBox["2", {1, 0}]}},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 1\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{100, 50}], 
+     GraphicsBox[{{}, {}},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 2\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{50, 50}], 
+     GraphicsBox[{{}, {}},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 3\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{50, 50}], 
+     GraphicsBox[{{
+        {RGBColor[0.513417, 0.72992, 0.440682], Thickness[Large], 
+         TagBox[CircleBox[{0, 0}, 0.25],
+          "Sphere"]}, 
+        {RGBColor[0.513417, 0.72992, 0.440682], Thickness[Large], 
+         TagBox[CircleBox[{1, 0}, 0.25],
+          "Sphere"]}}, {InsetBox["3", {0, 0}], InsetBox["4", {1, 0}]}},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 4\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{100, 50}]},
+    {"\<\"Bob\"\>", 
+     GraphicsBox[{{
+        {RGBColor[0.471412, 0.108766, 0.527016], Thickness[Large], 
+         TagBox[CircleBox[{0, 0}, 0.25],
+          "Sphere"]}, 
+        {RGBColor[0.471412, 0.108766, 0.527016], Thickness[Large], 
+         TagBox[CircleBox[{1, 0}, 0.25],
+          "Sphere"]}}, {InsetBox["1", {0, 0}], InsetBox["2", {1, 0}]}},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 1\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{100, 50}], 
+     GraphicsBox[{{}, {}},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 2\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{50, 50}], 
+     GraphicsBox[{{}, {}},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 3\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{50, 50}], 
+     GraphicsBox[{{
+        {RGBColor[0.471412, 0.108766, 0.527016], Thickness[Large], 
+         TagBox[CircleBox[{0, 0}, 0.25],
+          "Sphere"]}, 
+        {RGBColor[0.471412, 0.108766, 0.527016], Thickness[Large], 
+         TagBox[CircleBox[{1, 0}, 0.25],
+          "Sphere"]}}, {InsetBox["3", {0, 0}], InsetBox["4", {1, 0}]}},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 4\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{100, 50}]}
+   },
+   AutoDelete->False,
+   GridBoxItemSize->{"Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}},
+   GridBoxSpacings->{"Columns" -> {{0}}, "Rows" -> {{1}}}],
+  "Grid"]], "Output",
+ CellChangeTimes->{{3.866742493931459*^9, 3.866742546602536*^9}, {
+   3.8667426460524073`*^9, 3.866742656424837*^9}, {3.866742706593731*^9, 
+   3.866742708084364*^9}, {3.866742738353595*^9, 3.866742751371203*^9}, 
+   3.86674278404574*^9, {3.866742883970661*^9, 3.866742885908266*^9}, {
+   3.866742921719185*^9, 3.866742987355488*^9}, 3.866743022691805*^9, 
+   3.866743166186905*^9, {3.866743239863106*^9, 3.8667432673456383`*^9}, 
+   3.8667433571228123`*^9},
+ CellLabel->
+  "Out[2074]=",ExpressionUUID->"3e804e27-0e18-4552-b857-a721105d6516"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"InsertCircuitNoise", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{
+       SubscriptBox["SplitZ", 
+        RowBox[{"1", ",", "2"}]], "[", 
+       RowBox[{"\"\<Alice\>\"", ",", "3"}], "]"}], ",", 
+      RowBox[{
+       SubscriptBox["SplitZ", 
+        RowBox[{"1", ",", "2"}]], "[", 
+       RowBox[{"\"\<Bob\>\"", ",", "2"}], "]"}]}], "}"}], ",", "dev"}], "]"}],
+   ";"}], "\[IndentingNewLine]", 
+ RowBox[{"dev", "@", "ShowNodes"}]}], "Input",
+ CellChangeTimes->{{3.86674327578863*^9, 3.8667432949657993`*^9}},
+ CellLabel->
+  "In[2075]:=",ExpressionUUID->"0fab345f-a822-4aae-b386-898a69d829f4"],
+
+Cell[BoxData[
+ TagBox[GridBox[{
+    {"\<\"Alice\"\>", 
+     GraphicsBox[{
+       {RGBColor[0.513417, 0.72992, 0.440682], Thickness[Large], 
+        TagBox[CircleBox[{0, 0}, 0.25],
+         "Sphere"]}, InsetBox["1", {0, 0}]},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 1\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{50, 50}], 
+     GraphicsBox[{{}, {}},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 2\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{50, 50}], 
+     GraphicsBox[{
+       {RGBColor[0.513417, 0.72992, 0.440682], Thickness[Large], 
+        TagBox[CircleBox[{0, 0}, 0.25],
+         "Sphere"]}, InsetBox["2", {0, 0}]},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 3\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{50, 50}], 
+     GraphicsBox[{{
+        {RGBColor[0.513417, 0.72992, 0.440682], Thickness[Large], 
+         TagBox[CircleBox[{0, 0}, 0.25],
+          "Sphere"]}, 
+        {RGBColor[0.513417, 0.72992, 0.440682], Thickness[Large], 
+         TagBox[CircleBox[{1, 0}, 0.25],
+          "Sphere"]}}, {InsetBox["3", {0, 0}], InsetBox["4", {1, 0}]}},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 4\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{100, 50}]},
+    {"\<\"Bob\"\>", 
+     GraphicsBox[{
+       {RGBColor[0.471412, 0.108766, 0.527016], Thickness[Large], 
+        TagBox[CircleBox[{0, 0}, 0.25],
+         "Sphere"]}, InsetBox["1", {0, 0}]},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 1\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{50, 50}], 
+     GraphicsBox[{
+       {RGBColor[0.471412, 0.108766, 0.527016], Thickness[Large], 
+        TagBox[CircleBox[{0, 0}, 0.25],
+         "Sphere"]}, InsetBox["2", {0, 0}]},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 2\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{50, 50}], 
+     GraphicsBox[{{}, {}},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 3\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{50, 50}], 
+     GraphicsBox[{{
+        {RGBColor[0.471412, 0.108766, 0.527016], Thickness[Large], 
+         TagBox[CircleBox[{0, 0}, 0.25],
+          "Sphere"]}, 
+        {RGBColor[0.471412, 0.108766, 0.527016], Thickness[Large], 
+         TagBox[CircleBox[{1, 0}, 0.25],
+          "Sphere"]}}, {InsetBox["3", {0, 0}], InsetBox["4", {1, 0}]}},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 4\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{100, 50}]}
+   },
+   AutoDelete->False,
+   GridBoxItemSize->{"Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}},
+   GridBoxSpacings->{"Columns" -> {{0}}, "Rows" -> {{1}}}],
+  "Grid"]], "Output",
+ CellChangeTimes->{3.866743295365941*^9, 3.8667433571423483`*^9},
+ CellLabel->
+  "Out[2076]=",ExpressionUUID->"4f3a208a-e111-4a55-b89d-36e2b5029564"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"InsertCircuitNoise", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{
+      SubscriptBox["CombZ", 
+       RowBox[{"1", ",", "2"}]], "[", 
+      RowBox[{"\"\<Bob\>\"", ",", "2"}], "]"}], "}"}], ",", "dev"}], "]"}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{"dev", "@", "ShowNodes"}]}], "Input",
+ CellChangeTimes->{{3.866743304832603*^9, 3.866743321769257*^9}},
+ CellLabel->
+  "In[2077]:=",ExpressionUUID->"a6ba5114-c441-4c04-b1cd-6ec943612a6e"],
+
+Cell[BoxData[
+ TagBox[GridBox[{
+    {"\<\"Alice\"\>", 
+     GraphicsBox[{
+       {RGBColor[0.513417, 0.72992, 0.440682], Thickness[Large], 
+        TagBox[CircleBox[{0, 0}, 0.25],
+         "Sphere"]}, InsetBox["1", {0, 0}]},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 1\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{50, 50}], 
+     GraphicsBox[{{}, {}},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 2\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{50, 50}], 
+     GraphicsBox[{
+       {RGBColor[0.513417, 0.72992, 0.440682], Thickness[Large], 
+        TagBox[CircleBox[{0, 0}, 0.25],
+         "Sphere"]}, InsetBox["2", {0, 0}]},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 3\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{50, 50}], 
+     GraphicsBox[{{
+        {RGBColor[0.513417, 0.72992, 0.440682], Thickness[Large], 
+         TagBox[CircleBox[{0, 0}, 0.25],
+          "Sphere"]}, 
+        {RGBColor[0.513417, 0.72992, 0.440682], Thickness[Large], 
+         TagBox[CircleBox[{1, 0}, 0.25],
+          "Sphere"]}}, {InsetBox["3", {0, 0}], InsetBox["4", {1, 0}]}},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 4\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{100, 50}]},
+    {"\<\"Bob\"\>", 
+     GraphicsBox[{{}, {}},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 1\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{50, 50}], 
+     GraphicsBox[{{
+        {RGBColor[0.471412, 0.108766, 0.527016], Thickness[Large], 
+         TagBox[CircleBox[{0, 0}, 0.25],
+          "Sphere"]}, 
+        {RGBColor[0.471412, 0.108766, 0.527016], Thickness[Large], 
+         TagBox[CircleBox[{1, 0}, 0.25],
+          "Sphere"]}}, {InsetBox["1", {0, 0}], InsetBox["2", {1, 0}]}},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 2\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{100, 50}], 
+     GraphicsBox[{{}, {}},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 3\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{50, 50}], 
+     GraphicsBox[{{
+        {RGBColor[0.471412, 0.108766, 0.527016], Thickness[Large], 
+         TagBox[CircleBox[{0, 0}, 0.25],
+          "Sphere"]}, 
+        {RGBColor[0.471412, 0.108766, 0.527016], Thickness[Large], 
+         TagBox[CircleBox[{1, 0}, 0.25],
+          "Sphere"]}}, {InsetBox["3", {0, 0}], InsetBox["4", {1, 0}]}},
+      FrameMargins -> Tiny,
+      Frame->True,
+      FrameLabel->FormBox["\"zone 4\"", TraditionalForm],
+      FrameStyle->GrayLevel[0],
+      FrameTicks->False,
+      ImageSize->{100, 50}]}
+   },
+   AutoDelete->False,
+   GridBoxItemSize->{"Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}},
+   GridBoxSpacings->{"Columns" -> {{0}}, "Rows" -> {{1}}}],
+  "Grid"]], "Output",
+ CellChangeTimes->{3.866743322613855*^9, 3.866743357163653*^9},
+ CellLabel->
+  "Out[2078]=",ExpressionUUID->"8e56828d-fbe9-45ba-b1cf-49e458357cb5"]
+}, Open  ]]
+}, Open  ]]
 },
 WindowSize->{1919., 1063.5},
-WindowMargins->{{Automatic, 1296.5}, {Automatic, 16}},
+WindowMargins->{{Automatic, 1297}, {Automatic, 15.5}},
 Magnification:>0.9 Inherited,
 FrontEndVersion->"13.0 for Linux x86 (64-bit) (December 2, 2021)",
 StyleDefinitions->"Default.nb",
@@ -983,9 +690,38 @@ CellTagsIndex->{}
 *)
 (*NotebookFileOutline
 Notebook[{
-Cell[558, 20, 2249, 56, 227, "Input",ExpressionUUID->"89e8d526-dc6a-4200-a2cf-7ad6a9e7d605"],
-Cell[2810, 78, 17073, 395, 2336, "Input",ExpressionUUID->"41a87dc7-d840-4718-a684-be84a54c9c2b"],
-Cell[19886, 475, 20497, 490, 2706, "Input",ExpressionUUID->"60abfd29-a235-464e-8ef6-f3530f23545a"]
+Cell[CellGroupData[{
+Cell[580, 22, 233, 4, 131, "Title",ExpressionUUID->"a51a1c00-1c1e-4809-99a7-9b45151e9214"],
+Cell[816, 28, 317, 5, 67, "Text",ExpressionUUID->"c34d2386-44e3-4d12-8bcd-6e0adf0c59d5"],
+Cell[1136, 35, 212, 5, 57, "Input",ExpressionUUID->"4fb6ff86-df9c-4786-aab4-c5b29d03d1f8"],
+Cell[1351, 42, 207, 5, 57, "Input",ExpressionUUID->"375243d7-4772-44fa-afc6-813eab02e3ff"],
+Cell[1561, 49, 239, 4, 67, "Text",ExpressionUUID->"c91ba40d-3b6c-42cd-bdae-10c38124ceab"],
+Cell[1803, 55, 1497, 25, 86, "Input",ExpressionUUID->"df0ec05c-7c65-422e-9507-d63ba1cb5d39"],
+Cell[3303, 82, 513, 8, 67, "Text",ExpressionUUID->"5f37c9ba-3582-4916-b8a6-b00b0ad21432"],
+Cell[3819, 92, 1227, 18, 57, "Input",ExpressionUUID->"fbda1cba-5510-430b-ae7f-72219c40e12c"],
+Cell[5049, 112, 3657, 55, 166, "Text",ExpressionUUID->"41a87dc7-d840-4718-a684-be84a54c9c2b"],
+Cell[8709, 169, 995, 24, 198, "Input",ExpressionUUID->"786b6905-0c83-4785-9309-62848193302e"],
+Cell[CellGroupData[{
+Cell[9729, 197, 261, 5, 57, "Input",ExpressionUUID->"99c6e818-f027-42e1-b4de-6749f298a403"],
+Cell[9993, 204, 3661, 98, 195, "Output",ExpressionUUID->"cb6d71b0-6af7-44ec-92ee-4a1f7804cb38"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[13691, 307, 220, 4, 57, "Input",ExpressionUUID->"2b17c304-8e15-4363-bf59-3ce3a692885e"],
+Cell[13914, 313, 274, 5, 62, "Output",ExpressionUUID->"a014e7c2-56e9-4a6f-92de-23361d37a481"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[14225, 323, 846, 21, 89, "Input",ExpressionUUID->"0ae86fa7-43ea-4f90-bf5d-bb8d491baa02"],
+Cell[15074, 346, 3770, 97, 195, "Output",ExpressionUUID->"3e804e27-0e18-4552-b857-a721105d6516"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[18881, 448, 646, 18, 89, "Input",ExpressionUUID->"0fab345f-a822-4aae-b386-898a69d829f4"],
+Cell[19530, 468, 3339, 91, 195, "Output",ExpressionUUID->"4f3a208a-e111-4a55-b89d-36e2b5029564"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[22906, 564, 481, 13, 87, "Input",ExpressionUUID->"a6ba5114-c441-4c04-b1cd-6ec943612a6e"],
+Cell[23390, 579, 3356, 91, 195, "Output",ExpressionUUID->"8e56828d-fbe9-45ba-b1cf-49e458357cb5"]
+}, Open  ]]
+}, Open  ]]
 }
 ]
 *)

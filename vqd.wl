@@ -18,7 +18,7 @@ SuperconductingFZJ::usage="Returns device specification of a Superconducting qub
 SuperconductingHub::usage="Returns device specification of a Superconducting qubit device based on the device built by the QCSHub.";
 
 (*trapped ion devices*)
-TrappedIonHub::usage="Returns device specification of a multi-nodes Trapped ions based on the device built by the QCSHub.";
+TrappedIonOxford::usage="Returns device specification of a multi-nodes Trapped ions based on the device built by the Oxford/Hub.";
 TrappedIonInnsbruck::usage="Returns device specification of a string of Trapped ions base on the device built by the University of Innsbruck.";
 
 (*rydberg quantum devices/neutral atoms.*)
@@ -67,12 +67,16 @@ FidCZ::usage="Fidelity(ies) of the CZ gates.";
 FreqSingleXY::usage="Rabi frequency(ies) for the single X- and Y- rotations with unit MHz";
 FreqCZ::usage="Rabi frequency(ies) for the CZ gate with unit MHz.";
 MSCrossTalk::usage="(entangling OR starkshift) The crosstalk model in applying M\[OSlash]lmer\[Dash]S\[OSlash]rensen gate";
+Nodes::usage="Entire nodes of a trapped ions system <|node1 -> number_of_qubits_1, ... |>";
 NIons::usage="The total number of ions in a trapped ion device.";
 OffResonantRabi::usage="Put the noise due to off-resonant Rabi oscillation when applying single qubit rotations.";
 ParallelGates::usage="Gates that are executed in parallel even with the call SerializeCircuit[]";
 qubitsNum::usage="The number of physical active qubits for computations.";
 RabiFreq::usage="The Rabi frequency frequency in average or on each qubit with unit MHz.";
 starkshift::usage="Crosstalk error model using stark shift on  applying the Exp[-i\[Theta]XX], namely M\[OSlash]lmer\[Dash]S\[OSlash]rensen gate";
+ShowNodes::usage="Draw all Ions on every nodes within the zones";
+SplitZ::usage="SplitZ[node, zone_destination]. Split a string of ions in a zone of a trapped-ion Oxford device";
+CombZ::usage="CombZ[node, zone_destination]. Combine a string of ions to a zone of a trapped-ion Oxford device";
 T1::usage="T1 duration(s) in \[Mu]s. Exponential decay time for the state to be complete mixed.";
 T2::usage="T2 duration(s) in \[Mu]s. Exponential decay time for the state to be classical with echo applied.";
 T2s::usage="T2* duration(s) in \[Mu]s. Exponential decay time for the state to be classical.";
@@ -90,6 +94,7 @@ FidMeas::error="`1`";
 FidInit::error="`1`";
 FreqCZ::error="`1`";
 Larmor::error="`1`";
+Nodes::error="`1`";
 qubitsNum::error="`1`";
 OffResonantRabi::error="`1`";
 StdPassiveNoise::error="`1`";
@@ -301,9 +306,6 @@ offresrabi[q_,\[Theta]_]:=If[offresonantrabi,Table[Subscript[U, j][OffResRabiOsc
 (*Exchange rotation C-Rz[j] interaction when CZ gate on*)
 exczon[targ_]:=If[ListQ@exchangeroton,Subscript[C, #-1][Subscript[Rz, #][exchangeroton[[targ,#]]]]&/@Delete[Range[qubitsnum-1],targ],{}];
 
-
-
-
 <|
 (*no hidden qubits/ancilla here *)
 DeviceDescription -> "Delft Silicon device with "<>ToString[qubitsnum]<>"-qubits arranged as a linear array with nearest-neighbor connectivity and control qubits are the lower ones.",
@@ -373,45 +375,191 @@ Qubits :> {
 ]
 (***** ENDOF SILICON_DELFT *****)
 
+createNodes::usage="createNodes[ <| zone1 -> nq1, zone2 -> nq2,...|>]. Return nodes with 4 zones, its map to qubits register, and the total number of qubits. Initially, all qubits are in zone 1";
+createNodes[args__Association]:=Module[{q,qglob=0,nodes,qmap},
+nodes=Map[<|1->Range[#],2->{},3->{},4->{}|>&,args];
+qmap=Map[<|#[1]/.{q_Integer:>(q->qglob++)}|>&,nodes];
+{nodes, qmap,qglob}
+]
+
+(** drawing-related trapped ions **)
+showIons[nodes_]:=Module[
+{qulocs,i,colors},
+colors=rainbowcol[Length@nodes];
+qulocs=<|Table[node-><|Table[i=0;zone-><|Table[qubit->{i++,0},{qubit,nodes[node][zone]}]|>,{zone,Keys@nodes[node]}]|>,{node,Keys@nodes}]|>;
+i=0;
+Grid[Table[
+i++;{node,Sequence@@Table[drawZone[qulocs[node][zone],"zone "<>ToString@zone,colors[[i]]],{zone,Keys@nodes[node]}]},{node,Keys@nodes}],Spacings->{0,1}]
+]
+rainbowcol[n_]:=Reverse@Table[ColorData["Rainbow",(i-1)/n],{i,n}]
+drawZone[locszone_,label_,color_]:=Show[Graphics[Table[{Thick,color,Sphere[loc,.25]},{loc,Values@locszone}]],Graphics[Table[Text[k,locszone[k]],{k,Keys@locszone}]],
+ImageSize->{50*Max[1,Length@locszone],50}, Frame->True,FrameTicks->False,FrameStyle->Black,FrameLabel->label,FrameMargins->Tiny]
+
+(* zone-related functions *)
+getZone[q_,node_]:=(Association@Flatten@Table[Table[v->k,{v,node[k]}],{k,Keys@node}])[q]
+
+(* Legitimate split move *)
+legSplit[nodes_,nodename_,q1_,q2_,zone_]:=With[{z1=getZone[q1,nodes[nodename]],z2=getZone[q2,nodes[nodename]],node=nodes[nodename]},
+If[z1!=z2,Return@False];
+If[Abs[Position[node[z1],q1][[1,1]]- Position[node[z1],q2]][[1,1]]!=1,Return@False];
+If[Length@Flatten[Table[node[z],{z,Range[Min[z1,zone]+1,Max[z1,zone]-1]}]]>0,Return@False];
+True
+]
+
+(*Legitimate combine moves *)
+legComb[nodes_,nodename_,q1_,q2_,zone_]:=Module[{node=nodes[nodename],z1,z2,cond1,cond2,zstart,ps,pz,qs,qz,cond3},
+(* combine to the one of the zone *)
+z1=getZone[q1,node];
+z2=getZone[q2,node];
+cond1=Or[z1===zone,z2===zone];
+If[\[Not]cond1,Return[False]];
+
+If[z1===zone,
+zstart=z2;qs=q2;qz=q1,
+zstart=z1;qs=q1;qz=q2
+];
+
+(* merge from start zone to zone destination *)
+ps=Position[node[zstart],qs][[1,1]];
+pz=Position[node[zone],qz][[1,1]];
+
+cond2=Which[
+(* move down to a higher zone *)
+zstart<zone
+,
+Length@node[zstart][[ps+1;;]]+Length@node[zone][[;;pz-1]]
+,
+zstart>zone,
+(*move up to a lower zone *)
+Length@node[zone][[pz+1;;]]+Length@node[zstart][[;;ps-1]]
+,
+zstart===zone,
+(* doesn't move *)
+Length@node[zone][[Min[ps,pz]+1;;Max[ps,pz]-1]]
+];
+If[cond2!=0,Return[False]];
+
+(* no qubits in between zones *)
+cond3=If[zone===zstart,
+True
+,
+Length@Flatten[Table[node[z],{z,Range[Min[zstart,zone]+1,Max[zstart,zone]-1]}]]===0
+];
+If[\[Not]cond3,Return[False]];
+True
+]
+
+(* Legitimate split move *)
+Subscript[splitZ, i_,j_][inodes_,node_,zone_]:=Module[{zq1,zq2,pos,sq,szone,nodes},
+nodes=inodes;
+
+zq1=getZone[i,nodes@node];
+zq2=getZone[j,nodes@node];
+Assert[zq1===zq2,"both qubits must have the same zone"];
+pos=<|i->Position[nodes[node][zq1],i][[1,1]],j->Position[nodes[node][zq1],j][[1,1]]|>;
+sq=Keys@pos; (*sorted qubits by its post: {low,high}*)
+
+(*split the zone*)
+szone=TakeDrop[nodes[node][zq1],Values[pos][[1]]];
+If[zone>zq1,
+(* move to a higher zone, lower qubit remains *)
+nodes[node][zq1]=szone[[1]];
+nodes[node][zone]=Join[szone[[2]],nodes[node][zone]];
+,
+(* move to a lower zone, high qubit remains *)
+nodes[node][zone]=Join[nodes[node][zone],szone[[1]]];
+nodes[node][zq1]=szone[[2]];
+];
+nodes
+]
+
+Subscript[combZ, i_,j_][inodes_,nodename_,zone_]:=Module[{nodes,node,z1,z2,ps,pz,sq,zstart,qs,qz},
+nodes=inodes;
+node=nodes[nodename];
+z1=getZone[i,node];
+z2=getZone[j,node];
+If[z1===zone,
+zstart=z2;qs=j;qz=i,
+ zstart=z1;qs=i;qz=j
+];
+(* merge from start zone to zone destination *)
+ps=Position[node[zstart],qs][[1,1]];
+pz=Position[node[zone],qz][[1,1]];
+Which[
+(* move down to a higher zone *)
+zstart<zone
+,
+nodes[nodename][zone]=Join[{qs},node[zone]];
+nodes[nodename][zstart]=node[zstart][[;;-2]];
+,
+zstart>zone,
+(*move up to a lower zone *)
+nodes[nodename][zone]=Join[node[zone],{qs}];
+nodes[nodename][zstart]=node[zstart][[2;;]];
+];
+nodes
+]
 (***** TRAPPED_IONS_OXFORD *****)
 TrappedIonOxford[OptionsPattern[]]:=With[
 {
-
+initnodes=OptionValue@Nodes
 },
 
 Module[
-{\[CapitalDelta]t, miseq,initf,measf, passivenoise},
+{\[CapitalDelta]t, nodes, qmap, qnum, passivenoisecirc},
+
+
+{nodes,qmap,qnum}=createNodes[initnodes];
 
 <|
 (*no hidden qubits/ancilla here *)
-DeviceDescription -> "Trapped ion device.",
-NumAccessibleQubits -> qubitsnum,
-NumTotalQubits -> qubitsnum,
-
+DeviceDescription -> StringForm["Trapped ion device Oxford style with ``. nodes",Length@nodes],
+NumAccessibleQubits -> qnum,
+NumTotalQubits -> qnum,
+Nodes:>nodes,
+ShowNodes:>showIons[nodes],
 Aliases -> {
 	Subscript[Wait, q__][t_] :> {}
 	,
 	Subscript[Init, i__]:> {}
+	,
+	Subscript[SplitZ, i_,j_]:>{}
+	,
+	Subscript[CombZ, i_,j_]:>{}
 	}
 	,	
 Gates ->{
 	Subscript[Wait, q__][t_]:><|
 		NoisyForm->Flatten@Table[passivenoisecirc[i],{i,Flatten@{q}}],
 		GateDuration->t
-	|>		
-},
+	|>,
+	
+	Subscript[SplitZ, i_,j_][nodename_,zone_]/;legSplit[nodes,nodename,i,j,zone] :><|
+		NoisyForm->{Subscript[Id, i],Subscript[Id, j]},
+		GateDuration->1,
+		UpdateVariables->Function[nodes=Subscript[splitZ, i,j][nodes,nodename,zone] ]
+	|>
+	,
+	Subscript[CombZ, i_,j_][nodename_,zone_]/;legComb[nodes,nodename,i,j,zone]:><|
+		NoisyForm->{Subscript[Id, i],Subscript[Id, j]},
+		GateDuration->1,
+		UpdateVariables->Function[nodes=Subscript[combZ, i,j][nodes,nodename,zone]]
+	|>	
+}
+,
 (* Declare that \[CapitalDelta]t will refer to the duration of the current gate/channel. *)
 DurationSymbol -> \[CapitalDelta]t, 
 (* Passive noise *)
 Qubits :> {
 		q_ :> <|
-		PassiveNoise ->If[passivenoise===True, passivenoisecirc[q],{}]
+		PassiveNoise -> {}
 		|>		 
 		}
 		
 	|>
 ]
 ]
+
 RandomMixState[nqubits_]:=Module[{size=2^nqubits,gm,um,dm,id},
 (* Random states generation: https://iitis.pl/~miszczak/files/papers/miszczak12generating.pdf *)
 (* random ginibre matrix *)
