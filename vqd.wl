@@ -68,6 +68,7 @@ FreqSingleXY::usage="Rabi frequency(ies) for the single X- and Y- rotations with
 FreqCZ::usage="Rabi frequency(ies) for the CZ gate with unit MHz.";
 MSCrossTalk::usage="(entangling OR starkshift) The crosstalk model in applying M\[OSlash]lmer\[Dash]S\[OSlash]rensen gate";
 NIons::usage="The total number of ions in a trapped ion device.";
+OffResonantRabi::usage="Put the noise due to off-resonant Rabi oscillation when applying single qubit rotations.";
 ParallelGates::usage="Gates that are executed in parallel even with the call SerializeCircuit[]";
 qubitsNum::usage="The number of physical active qubits for computations.";
 RabiFreq::usage="The Rabi frequency frequency in average or on each qubit with unit MHz.";
@@ -75,6 +76,7 @@ starkshift::usage="Crosstalk error model using stark shift on  applying the Exp[
 T1::usage="T1 duration(s) in \[Mu]s. Exponential decay time for the state to be complete mixed.";
 T2::usage="T2 duration(s) in \[Mu]s. Exponential decay time for the state to be classical with echo applied.";
 T2s::usage="T2* duration(s) in \[Mu]s. Exponential decay time for the state to be classical.";
+StdPassiveNoise::usage="Set to True/False. Use the standard passive noise that involves T1, T2 or T2s inputs.";
 BField::error="`1`";
 DurInit::error="`1`";
 DDActive::error="`1`";
@@ -89,6 +91,8 @@ FidInit::error="`1`";
 FreqCZ::error="`1`";
 Larmor::error="`1`";
 qubitsNum::error="`1`";
+OffResonantRabi::error="`1`";
+StdPassiveNoise::error="`1`";
 T1::error="`1`";
 T2::error="`1`";
 T2s::error="`1`";
@@ -128,10 +132,6 @@ OffResRabiOsc[\[CapitalOmega]_,\[CapitalOmega]0_,t_]:=Module[{\[CapitalDelta],\[
 E^(I \[CapitalDelta] t/2) {{Cos[\[CapitalOmega]R*t/2]-I*Sin[\[CapitalOmega]R*t/2]*\[CapitalDelta]/\[CapitalOmega]R,  -I*Sin[\[CapitalOmega]R*t/2]*\[CapitalOmega]/\[CapitalOmega]R            },
 			  {-I*Sin[\[CapitalOmega]R*t/2]*\[CapitalOmega]/\[CapitalOmega]R,             Cos[\[CapitalOmega]R*t/2]+I Sin[\[CapitalOmega]R*t/2]*\[CapitalDelta]/\[CapitalOmega]R}}				 					  			  
 ]
-
-(*noise forms on the SiliconDelft*)
-exCZON::usage="exCZON[target_qubit,qubitNum,exchangeMatrix]. Exchange C-Rz[j] interaction when CZ gate on";
-exCZON[targ_,nq_,ex_]:=Subscript[C, #-1][Subscript[Rz, #][ex[[targ,#]]]]&/@Delete[Range[nq-1],targ]
 
 fid2DepolDeph::usage = "fid2DepolDeph[totFid, {ratio.Depol,ratio.Deph}, nqerr, err, avgfid:True]. 
 Return the parameter for depolarizing and dephasing noise that gives the total fidelity totFid [0,1], where totFid is the average fidelity obtained from random benchmarking (set avgfid:False if it's the worst fidelity)
@@ -193,9 +193,11 @@ fid2DepolDeph[totfid_, errratio_, nqerr_, errval_, avgfid_:True] := Module[
 ]
 grouptwo::usage="grouptwo[list], group a list into two elements";
 grouptwo[list_]:=ReplaceList[Sort@list,{p___,a_,b_,q___}:>{a,b}]
-(** SILICON_DELFT**)
+
+(***** SILICON_DELFT *****)
 SiliconDelft[OptionsPattern[]]:=With[
 {
+
 (*validate and format parameter specification*)
 (*Numbers*)
 qubitsnum=Catch@validate[OptionValue@qubitsNum,IntegerQ,qubitsNum,"not an integer"],
@@ -210,7 +212,6 @@ t1=Catch@validate[OptionValue@T1,checkAss[#,OptionValue@qubitsNum]&,T1,numass@Op
 t2=Catch@validate[OptionValue@T2,checkAss[#,OptionValue@qubitsNum]&,T2,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
 t2s=Catch@validate[OptionValue@T2s,checkAss[#,OptionValue@qubitsNum]&,T2s,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
 rabifreq=Catch@validate[OptionValue@RabiFreq,checkAss[#,OptionValue@qubitsNum]&,Larmor,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
-exchangerotoff=Catch@validate[OptionValue@ExchangeRotOff,checkAss[#,-1+OptionValue@qubitsNum]&,ExchangeRotOff,numass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
 freqcz=Catch@validate[OptionValue@FreqCZ,checkAss[#,-1+OptionValue@qubitsNum]&,FreqCZ,numass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
 freqsinglexy=Catch@validate[OptionValue@FreqSingleXY,checkAss[#,OptionValue@qubitsNum]&,FreqSingleXY,numass[OptionValue@qubitsNum],num2Ass[#,OptionValue@qubitsNum]&],
 (*Number as average or association to specify each fidelity*)
@@ -223,10 +224,17 @@ durinit=Catch@validate[OptionValue@DurInit,(And@@Table[j>=0,{j,Values@#}])&,DurI
 fidmeas=Catch@validate[OptionValue@FidMeas,(And@@Table[0<=j<=1,{j,Values@#}])&,FidMeas,"invalid fidelities"],
 durmeas=Catch@validate[OptionValue@DurMeas,(And@@Table[j>=0,{j,Values@#}])&,DurMeas,"invalid durations"],
 
+(* assoc or boolean *)
+exchangerotoff=Catch@validate[OptionValue@ExchangeRotOff,Or[AssociationQ@#,#===False]&,ExchangeRotOff,"Set to association or False"],
+
 (* True/False*)
 ddactive=Catch@validate[OptionValue@DDActive,BooleanQ,DDActive,"Set to true or false"],
-(*a matrix*)
-exchangeroton=Catch@validate[OptionValue@ExchangeRotOn,SquareMatrixQ,ExchangeRotOn,StringForm["not a square matrix with dim ``^2",-1+OptionValue@qubitsNum]],
+offresonantrabi=Catch@validate[OptionValue@OffResonantRabi,BooleanQ,OffResonantRabi,"Set to true or false"],
+stdpassivenoise=Catch@validate[OptionValue@StdPassiveNoise,BooleanQ,StdPassiveNoise,"Set to true or false"],
+
+
+(*a matrix or a boolean*)
+exchangeroton=Catch@validate[OptionValue@ExchangeRotOn,Or[SquareMatrixQ[#],BooleanQ[#]]&,ExchangeRotOn,StringForm["set to false or specify with a square matrix with dim ``^2",-1+OptionValue@qubitsNum]],
 
 (*probability error of depolarising and dephasing noise *)
 er1xy=fid2DepolDeph[#,OptionValue@EFSingleXY,1,FidSingleXY,True]&/@OptionValue[FidSingleXY],
@@ -238,8 +246,7 @@ qubits=Range[0,-1+OptionValue@qubitsNum]
 },
 
 Module[
-{\[CapitalDelta]t, miseq,initf,measf, passivenoise},
-
+{\[CapitalDelta]t, miseq,initf,measf, passivenoisecirc, offresrabi, stdpn, exczon},
 
 (*measurement and initialisation sequence*)
 miseq[q__]:=(Length@{q}>1)&&((Sort[{q}]===Range[0,Max@q])||(Sort[{q}]===Range[Min@q,-1+qubitsnum]));
@@ -284,19 +291,18 @@ measf[q__]:=Flatten@{
 		};
 
 
-passivenoise[q_]:=If[ddactive,
-	If[(q===qubitsnum-1),
-		{Subscript[Deph, q][.5(1-E^(-\[CapitalDelta]t/t2[q]))],Subscript[Depol, q][.75(1-E^(-\[CapitalDelta]t/t1[q]))]}
-		,
-		{Subscript[C, q][Subscript[Rz, q+1][(\[CapitalDelta]t/\[Pi])*exchangerotoff[q]]],Subscript[Deph, q][.5(1-E^(-\[CapitalDelta]t/t2[q]))],Subscript[Depol, q][.75(1-E^(-\[CapitalDelta]t/t1[q]))]}
-		]
-		,
-	If[(q===qubitsnum-1),
-		{Subscript[Deph, q][.5(1-E^(-\[CapitalDelta]t/t2s[q]))],Subscript[Depol, q][.75(1-E^(-\[CapitalDelta]t/t1[q]))]}
-		,
-		{Subscript[C, q][Subscript[Rz, q+1][(\[CapitalDelta]t/\[Pi])*exchangerotoff[q]]],Subscript[Deph, q][.5(1-E^(-\[CapitalDelta]t/t2s[q]))],Subscript[Depol, q][.75(1-E^(-\[CapitalDelta]t/t1[q]))]}
-		]
-];
+stdpn[q_,dd:True]:=If[stdpassivenoise,{Subscript[Deph, q][.5(1-E^(-\[CapitalDelta]t/t2[q]))],Subscript[Depol, q][.75(1-E^(-\[CapitalDelta]t/t1[q]))]},{}];
+stdpn[q_,dd:False]:=If[stdpassivenoise,{Subscript[Deph, q][.5(1-E^(-\[CapitalDelta]t/t2s[q]))],Subscript[Depol, q][.75(1-E^(-\[CapitalDelta]t/t1[q]))]},{}];
+passivenoisecirc[q_]:=Flatten@{If[q<qubitsnum-1 && AssociationQ@exchangerotoff,Subscript[C, q][Subscript[Rz, q+1][(\[CapitalDelta]t/\[Pi])*exchangerotoff[q]]],{}],stdpn[q,stdpassivenoise]};
+
+(*single rotation noise *)
+offresrabi[q_,\[Theta]_]:=If[offresonantrabi,Table[Subscript[U, j][OffResRabiOsc[rabifreq[q],rabifreq[j],Abs[\[Theta]]]],{j,Delete[qubits,q+1]}],{}];
+
+(*Exchange rotation C-Rz[j] interaction when CZ gate on*)
+exczon[targ_]:=If[ListQ@exchangeroton,Subscript[C, #-1][Subscript[Rz, #][exchangeroton[[targ,#]]]]&/@Delete[Range[qubitsnum-1],targ],{}];
+
+
+
 
 <|
 (*no hidden qubits/ancilla here *)
@@ -312,7 +318,7 @@ Aliases -> {
 	,	
 Gates ->{
 	Subscript[Wait, q__][t_]:><|
-		NoisyForm->Flatten@Table[passivenoise[i],{i,Flatten@{q}}],
+		NoisyForm->Flatten@Table[passivenoisecirc[i],{i,Flatten@{q}}],
 		GateDuration->t
 	|>,
 (* Measurements and initialisation *)
@@ -332,22 +338,24 @@ Gates ->{
 		GateDuration->0(*virtual gate, instant, noiseless*)
 		|>,
 	Subscript[Rx,q_][\[Theta]_]:><|
-		NoisyForm->{Subscript[Rx, q][\[Theta]],Subscript[Depol, q][er1xy[q][[1]]],Subscript[Deph, q][er1xy[q][[2]]],Sequence@@Table[Subscript[U, j][OffResRabiOsc[rabifreq[q],rabifreq[j],Abs[\[Theta]]]],{j,Delete[qubits,q+1]}]},
+		NoisyForm->{Subscript[Rx, q][\[Theta]],Subscript[Depol, q][er1xy[q][[1]]],Subscript[Deph, q][er1xy[q][[2]]], Sequence@@offresrabi[q,\[Theta]]},
 		GateDuration->Abs[\[Theta]]/(2\[Pi] freqsinglexy[q]) 
 	|>,
 	Subscript[Ry,q_][\[Theta]_]:><|
-		NoisyForm->{Subscript[Ry, q][\[Theta]],Subscript[Depol, q][er1xy[q][[1]]],Subscript[Deph, q][er1xy[q][[2]]],Sequence@@Table[Subscript[U, j][OffResRabiOsc[rabifreq[q],rabifreq[j],Abs[\[Theta]]]],{j,Delete[qubits,q+1]}]},
-		GateDuration->Abs[\[Theta]]/(2\[Pi] freqsinglexy[q])
+		NoisyForm->{Subscript[Ry, q][\[Theta]],Subscript[Depol, q][er1xy[q][[1]]],Subscript[Deph, q][er1xy[q][[2]]], Sequence@@offresrabi[q,\[Theta]]},
+		GateDuration->Abs[\[Theta]]/Subscript[(2\[Pi] freqsinglexy[q]), \[Placeholder]]
 	|>,
 (* Twos *)
 	Subscript[C, p_][Subscript[Z, q_]]/; (q-p)===1  :><|
 		(*The last bit undo the exchange in the passive noise *)
-		NoisyForm->{Subscript[C, p][Subscript[Z, q]],Subscript[Depol, p,q][ercz[p][[1]]],Subscript[Deph, p,q][ercz[p][[2]]],Sequence@@exCZON[q,qubitsnum,exchangeroton],Sequence@@Table[Subscript[C, i][Subscript[Rz, i+1][(-\[CapitalDelta]t/\[Pi])*exchangerotoff[i]]],{i,Complement[qubits,{p,q,qubitsnum-1}]}]}, 
+		NoisyForm->{Subscript[C, p][Subscript[Z, q]],Subscript[Depol, p,q][ercz[p][[1]]],Subscript[Deph, p,q][ercz[p][[2]]],Sequence@@exczon[q]}, 
 		GateDuration->0.5/freqcz[p] 
 	|>,
+	
+	(* This is technically single x conditioned on outcome *)
 		Subscript[C, p_][Subscript[Rx, q_][\[Theta]_]]/; Abs[(q-p)]===1  :><|
-		NoisyForm->{Subscript[C, p][Subscript[Rx, q][\[Theta]]],Subscript[Depol, p,q][ercz[p][[1]]],Subscript[Deph, p,q][ercz[p][[2]]]}, 
-		GateDuration->0.5/freqcz[Min[p,q]]  
+		NoisyForm->{Subscript[C, p][Subscript[Rx, q][\[Theta]]],Sequence@@passivenoisecirc[p],Subscript[Depol, q][er1xy[q][[1]]],Subscript[Deph, q][er1xy[q][[2]]],Sequence@@offresrabi[q,\[Theta]]}, 
+		GateDuration->Abs[\[Theta]]/(2\[Pi] freqsinglexy[q])   
 	|>
 		
 },
@@ -356,20 +364,54 @@ DurationSymbol -> \[CapitalDelta]t,
 (* Passive noise *)
 Qubits :> {
 		q_/;(0<=q<qubitsnum) :> <|
-		PassiveNoise ->passivenoise[q]
+		PassiveNoise ->passivenoisecirc[q]
 		|>		 
 		}
 		
 	|>
 ]
 ]
+(***** ENDOF SILICON_DELFT *****)
 
+(***** TRAPPED_IONS_OXFORD *****)
+TrappedIonOxford[OptionsPattern[]]:=With[
+{
 
+},
 
+Module[
+{\[CapitalDelta]t, miseq,initf,measf, passivenoise},
 
+<|
+(*no hidden qubits/ancilla here *)
+DeviceDescription -> "Trapped ion device.",
+NumAccessibleQubits -> qubitsnum,
+NumTotalQubits -> qubitsnum,
 
-
-
+Aliases -> {
+	Subscript[Wait, q__][t_] :> {}
+	,
+	Subscript[Init, i__]:> {}
+	}
+	,	
+Gates ->{
+	Subscript[Wait, q__][t_]:><|
+		NoisyForm->Flatten@Table[passivenoisecirc[i],{i,Flatten@{q}}],
+		GateDuration->t
+	|>		
+},
+(* Declare that \[CapitalDelta]t will refer to the duration of the current gate/channel. *)
+DurationSymbol -> \[CapitalDelta]t, 
+(* Passive noise *)
+Qubits :> {
+		q_ :> <|
+		PassiveNoise ->If[passivenoise===True, passivenoisecirc[q],{}]
+		|>		 
+		}
+		
+	|>
+]
+]
 RandomMixState[nqubits_]:=Module[{size=2^nqubits,gm,um,dm,id},
 (* Random states generation: https://iitis.pl/~miszczak/files/papers/miszczak12generating.pdf *)
 (* random ginibre matrix *)
