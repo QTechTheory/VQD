@@ -343,7 +343,7 @@ Gates ->{
 	|>,
 	Subscript[Ry,q_][\[Theta]_]:><|
 		NoisyForm->{Subscript[Ry, q][\[Theta]],Subscript[Depol, q][er1xy[q][[1]]],Subscript[Deph, q][er1xy[q][[2]]], Sequence@@offresrabi[q,\[Theta]]},
-		GateDuration->Abs[\[Theta]]/Subscript[(2\[Pi] freqsinglexy[q]), \[Placeholder]]
+		GateDuration->Abs[\[Theta]]/(2\[Pi] freqsinglexy[q])
 	|>,
 (* Twos *)
 	Subscript[C, p_][Subscript[Z, q_]]/; (q-p)===1  :><|
