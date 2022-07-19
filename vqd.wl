@@ -40,6 +40,10 @@ SerializeCircuit::usage="SerializeCircuit[circuit]. Execute the gates without pa
 SWAPLoc::usage="Swap the spatial locations of two qubits";
 Wait::usage="Wait gate, doing nothing";
 Init::usage="Initialise qubit to state |0>";
+CZ::usage="Controlled-Z operation";
+Ent::usage="Remote entanglement operation";
+SplitZ::usage="SplitZ[node, zone_destination]. Split a string of ions in a zone of a trapped-ion Oxford device";
+CombS::usage="CombS[node, zone_destination]. Combine a string of ions to a zone of a trapped-ion Oxford device";
 
 (*Visualisations*)
 DrawIons::usage="Draw the current string of ions";
@@ -51,7 +55,7 @@ DurMeas::usage="Duration of measurement";
 DurInit::usage="Duration of initialisation";
 DurRead::usage="Readout duration in \[Mu]s";
 DurShuffle::usage="Duration to shuffle location of ions";
-DurMove::usage="Duration for moving operation in Trapped Ions such as SplitZ and CombZ.";
+DurMove::usage="Duration for physically moving operation in Trapped Ions such as SplitZ and CombS.";
 DDActive::usage="Apply dynamical decoupling: use T2 in the model if set True, otherwise use T2* if set False.";
 entangling::usage="Crosstalk error model pre equation (4) on applying the XX M\[OSlash]lmer\[Dash]S\[OSlash]rensen gate";
 ErrCT::usage="Error coefficient of the crosstalk with entanglement model";
@@ -60,15 +64,18 @@ EFSingleXY::usage="Error fraction/ratio, {depolarising, dephasing} of the single
 EFCZ::usage="Error fraction/ratio, {depolarising, dephasing} of the controlled-Z gates. Sum of the ratio must be 1 or 0 (off).";
 EFInit::usage="Error fraction/ratio {depolarising, dephasing} of the initialisation gate.  Sum of the ratio must be 1 or 0 (off).";
 EFCRot::usage="Error fraction/ratio, {depolarising, dephasing} of the controlled-Rx and -Ry gates. Sum of the ratio must be 1 or 0 (off).";
+EFEnt::usage="Error fraction/ratio {depolarising, dephasing} of remote entanglement.  Sum of the ratio must be 1 or 0 (off).";
 EFRead::usage="Error fraction/ratio of {depolarising,dephasing} of the readout. Sum of the ratio must be 1 or 0 (off)." ;
 ExchangeRotOn::usage="Maximum interaction j on the passive qubit crosstalk when applying CZ gates; The noise form is C[Rz[j.\[Theta]]] It must be a square matrix with size (nqubit-2)x(nqubit-2).";
 ExchangeRotOff::usage="Crosstalks error C-Rz[ex] on the passive qubits when not applying two-qubit gates.";
 FidSingleXY::usage="Fidelity(ies) of single Rx[\[Theta]] and Ry[\[Theta]] rotations obtained by random benchmarking.";
+FidEnt::usage="Fidelity of remote entanglement operation.";
 FidMeas::usage="Fidelity of measurement";
 FidInit::usage="Fidelity of qubit initialisation";
 FidCZ::usage="Fidelity(ies) of the CZ gates.";
 FreqSingleXY::usage="Rabi frequency(ies) for the single X- and Y- rotations with unit MHz";
 FreqCZ::usage="Rabi frequency(ies) for the CZ gate with unit MHz.";
+FreqEnt::usage="Frequency of remote entanglement.";
 FidRead::usage="Readout fidelity";
 MSCrossTalk::usage="(entangling OR starkshift) The crosstalk model in applying M\[OSlash]lmer\[Dash]S\[OSlash]rensen gate";
 Nodes::usage="Entire nodes of a trapped ions system <|node1 -> number_of_qubits_1, ... |>";
@@ -82,8 +89,6 @@ RepeatRead::usage="The number of repeated readout (n) performed. The final fidel
 Meas::usage="Perform measurement on the qubits";
 starkshift::usage="Crosstalk error model using stark shift on  applying the Exp[-i\[Theta]XX], namely M\[OSlash]lmer\[Dash]S\[OSlash]rensen gate";
 ShowNodes::usage="Draw all Ions on every nodes within the zones";
-SplitZ::usage="SplitZ[node, zone_destination]. Split a string of ions in a zone of a trapped-ion Oxford device";
-CombZ::usage="CombZ[node, zone_destination]. Combine a string of ions to a zone of a trapped-ion Oxford device";
 T1::usage="T1 duration(s) in \[Mu]s. Exponential decay time for the state to be complete mixed.";
 T2::usage="T2 duration(s) in \[Mu]s. Exponential decay time for the state to be classical with echo applied.";
 T2s::usage="T2* duration(s) in \[Mu]s. Exponential decay time for the state to be classical.";
@@ -110,7 +115,6 @@ StdPassiveNoise::error="`1`";
 T1::error="`1`";
 T2::error="`1`";
 T2s::error="`1`";
-
 FidCRotXY::warning="`1`";
 FidCZ::warning="`1`";
 FidSingleXY::warning="`1`";
@@ -477,7 +481,7 @@ Subscript[splitZ, i_,j_][inodes_,node_,zone_]:=Module[{zq1,zq2,pos,sq,szone,node
 	nodes
 ]
 
-Subscript[combZ, i_,j_][inodes_,nodename_,zone_]:=Module[{nodes,node,z1,z2,ps,pz,sq,zstart,qs,qz},
+Subscript[CombS, i_,j_][inodes_,nodename_,zone_]:=Module[{nodes,node,z1,z2,ps,pz,sq,zstart,qs,qz},
 	nodes=inodes;
 	node=nodes[nodename];
 	z1=getZone[i,node];
@@ -511,35 +515,55 @@ Zone4 :remote entangle
 *)
 TrappedIonOxford[OptionsPattern[]]:=With[
 {
+initnodes=OptionValue@Nodes,
 durinit=OptionValue@DurInit,
 durmove=OptionValue@DurMove,
 durread=OptionValue@DurRead,
+efent=OptionValue@EFEnt,
 fidinit=OptionValue@FidInit,
 fidread=OptionValue@FidRead,
-
-initnodes=OptionValue@Nodes,
+freqcz=OptionValue@FreqCZ,
+freqent=OptionValue@FreqEnt,
+fident=OptionValue@FidEnt,
+rabifreq=OptionValue@RabiFreq,
 t1=OptionValue@T1,
 t2=OptionValue@T2,
 
 (*probability error of depolarising and dephasing noise *)
-ef1xy=fid2DepolDeph[OptionValue@FidSingleXY,OptionValue@EFSingleXY,1,FidSingleXY,True], 
-efcz=fid2DepolDeph[OptionValue@FidCZ,OptionValue@EFCZ,1,FidCZ,True]
+er1xy=Association[#->fid2DepolDeph[OptionValue[FidSingleXY][#],OptionValue[EFSingleXY][#],1,FidSingleXY,True]&/@Keys[OptionValue@Nodes]], 
+ercz=Association[#->fid2DepolDeph[OptionValue[FidCZ][#],OptionValue[EFCZ][#],2,FidCZ,True]&/@Keys[OptionValue@Nodes]],
+erent=fid2DepolDeph[OptionValue@FidEnt,OptionValue@EFEnt,2,FidEnt,True]
 },
-
 Module[
-{\[CapitalDelta]t, nodes, qmap, qnum, passivenoise,checkpsd,checklog,checkrent},
+{\[CapitalDelta]t, nodes, qmap, qnum, passivenoise,checkpsd,checklog,checkrent,gnoise,swaploc},
 {nodes,qmap,qnum}=createNodes[initnodes];
 
-(*get standard passive noise when certain qubits are acted on*)
+(*TODO:get standard passive noise when certain qubits are acted on*)
 passivenoise[node_,t_,q__]:=Flatten@Table[{Subscript[Depol, qmap[node][i]][.75(1-E^(-t/t1[node]))],Subscript[Deph, qmap[node][i]][.5(1-E^(-t/t2[node]))]},{i,Complement[Flatten@Values[nodes[node]],{q}]}];
 passivenoise[node_,t_]:=Flatten@Table[{Subscript[Depol, qmap[node][i]][.75(1-E^(-t/t1[node]))],Subscript[Deph, qmap[node][i]][.5(1-E^(-t/t2[node]))]},{i,Flatten@Values[nodes[node]]}];
 
+(** check zones **)
 (* prepare, store, detect *)
 checkpsd[q_,node_]:=If[MemberQ[{1,2,3},getZone[q,nodes[node]]],True,False];
 (*logic*)
-checklog[q__,node_]:=If[And@@Table[MemberQ[{2,3},getZone[i,nodes[node]]],{i,{q}}],True,False];
+checklog[q_,node_]:=If[MemberQ[{2,3},getZone[q,nodes[node]]],True,False];
+checklog[p_,q_,node_]:=If[MemberQ[{2,3},getZone[q,nodes[node]]]&&(getZone[q,nodes@node]===getZone[p,nodes@node]),True,False];
 (*remote entangle*)
-checkrent[q_,node_]:=If[4===getZone[q,nodes[node]],True,False];
+checkrent[q1_,node1_,q2_,node2_]:=If[(4===getZone[q1,nodes[node1]])&&(4===getZone[q2,nodes[node2]]),True,False];
+
+(**gate noise **)
+gnoise[q_,node_,\[Theta]_]:=Sequence@@{Subscript[Depol, qmap[node][q]][er1xy[node][[1]]],Subscript[Deph, qmap[node][q]][er1xy[node][[2]]]};
+gnoise[p_,q_,node_,\[Theta]_]:=Sequence@@{Subscript[Depol, qmap[node][p],qmap[node][q]][ercz[node][[1]]],Subscript[Deph, qmap[node][p],qmap[node][q]][ercz[node][[2]]]};
+gnoise[q1_,q2_,node1_,node2_,t_]:=Sequence@@{Subscript[Depol, qmap[node1][q1],qmap[node2][q2]][erent[[1]]],Subscript[Deph, qmap[node1][q1],qmap[node2][q2]][erent[[2]]]};
+
+(** extra operations **)
+swaploc[p_,q_,node_]:=Module[{z=getZone[q,nodes[node]],pos,lst},
+	lst=nodes[node][z];
+	pos=Flatten@{Position[lst,p],Position[lst,q]};
+	lst[[pos]]=lst[[Reverse@pos]];
+	nodes[node][z]=lst;
+	nodes
+];
 
 <|
 (*no hidden qubits/ancilla here *)
@@ -548,19 +572,33 @@ NumAccessibleQubits -> qnum,
 NumTotalQubits -> qnum,
 Nodes:>nodes,
 ShowNodes:>showIons[nodes],
-(* Init, Read, Rx, Ry, C[Z], Ent[node1,node2], SWAP, SplitZ, CombZ  *)
+(* Init, Read, Rx, Ry, C[Z], Ent[node1,node2], SWAP, SplitZ, CombS  *)
 Aliases -> {
 	Subscript[Wait, q__][node_,t_] :> {},
 	Subscript[Init, q_][fid_]:> Subscript[Damp, q][fid],
 	Subscript[SplitZ, i_,j_]:> Sequence@@{},
-	Subscript[CombZ, i_,j_]:>Sequence@@{},
-	Subscript[Read, q_]:>Subscript[M, q]
+	Subscript[CombS, i_,j_]:>Sequence@@{},
+	Subscript[Read, q_]:>Subscript[M, q],
+	Subscript[Ent, p_,q_]:>Sequence@@{Subscript[H, p],Subscript[C, p][Subscript[X, q]]},
+	Subscript[SWAP, i_,j_][t_]:>Sequence@@{}
 	}
 	,	
 Gates ->{
 	Subscript[Rx, q_][node_,\[Theta]_]/;checklog[q,node]:><|
-		NoisyForm->{Subscript[Rx, qmap[node][q]][\[Theta]]},
-		GateDuration->{}
+		NoisyForm->{Subscript[Rx, qmap[node][q]][\[Theta]],gnoise[q,node,\[Theta]]},
+		GateDuration->rabifreq[node]*Abs[\[Theta]]/(2\[Pi])
+	|>,
+	Subscript[Ry, q_][node_,\[Theta]_]/;checklog[q,node]:><|
+		NoisyForm->{Subscript[Ry, qmap[node][q]][\[Theta]],gnoise[q,node,\[Theta]]},
+		GateDuration->rabifreq[node]*Abs[\[Theta]]/(2\[Pi])
+	|>,
+	Subscript[CZ, i_,j_][node_]/;checklog[i,j,node]:><|
+		NoisyForm->{Subscript[C, qmap[node][i]][Subscript[Z, qmap[node][j]]],gnoise[i,j,node,\[Pi]]},
+		GateDuration->freqcz[node]*0.5
+	|>,
+	Subscript[Ent, q1_,q2_][node1_,node2_]/;checkrent[q1,node1,q2,node2]:><|
+		NoisyForm-> {Subscript[Ent, qmap[node1][q1],qmap[node2][q2]],gnoise[q1,q2,node1,node2,1/freqent]},
+		GateDuration->1/freqent
 	|>,
 	Subscript[Read, q_][node_]/; checkpsd[q,node] :><|
 		NoisyForm->{bitFlip[fidread@node,qmap[node][q]],Subscript[Read, qmap[node][q]]},
@@ -574,17 +612,21 @@ Gates ->{
 		NoisyForm->passivenoise[node,t],
 		GateDuration->t
 	|>,
+	Subscript[SWAP, i_,j_][node_]/;checklog[i,j,node] :><|
+		NoisyForm->{Subscript[SWAP, i,j][durmove[node]]},
+		GateDuration->durmove[node],
+		UpdateVariables->Function[nodes=swaploc[i,j,node]]
+	|>,
 	Subscript[SplitZ, i_,j_][node_,zone_]/;legSplit[nodes,node,i,j,zone] :><|
-		NoisyForm-> Flatten@{Subscript[SplitZ, qmap[node][i],qmap[node][j]],passivenoise[node,durmove@node]},
+		NoisyForm-> Flatten@{Subscript[SplitZ, qmap[node][i],qmap[node][j]]},
 		GateDuration->durmove[node],
 		UpdateVariables->Function[nodes=Subscript[splitZ, i,j][nodes,node,zone]]
 	|>,
-	Subscript[CombZ, i_,j_][node_,zone_]/;legComb[nodes,node,i,j,zone]:><|
-		NoisyForm->Flatten@{Subscript[CombZ, qmap[node][i],qmap[node][j]],passivenoise[node,durmove@node]},
+	Subscript[CombS, i_,j_][node_,zone_]/;legComb[nodes,node,i,j,zone]:><|
+		NoisyForm->Flatten@{Subscript[CombS, qmap[node][i],qmap[node][j]]},
 		GateDuration->durmove[node],
-		UpdateVariables->Function[nodes=Subscript[combZ, i,j][nodes,node,zone]]
-	|>
-	
+		UpdateVariables->Function[nodes=Subscript[CombS, i,j][nodes,node,zone]]
+	|>	
 }
 ,
 (* Declare that \[CapitalDelta]t will refer to the duration of the current gate/channel. *)
