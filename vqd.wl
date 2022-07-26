@@ -271,11 +271,11 @@ qubits=Range[0,-1+OptionValue@qubitsNum]
 },
 
 Module[
-{\[CapitalDelta]t, miseq,initf,measf, passivenoisecirc, offresrabi, stdpn, exczon,durinit,sroterr},
+{\[CapitalDelta]t, miseq,initf,measf, passivenoisecirc, offresrabi, stdpn, exczon,durinit,sroterr,g2=False},
 
 stdpn[q_,dd:True]:=If[stdpassivenoise,{Subscript[Deph, q][.5(1-E^(-\[CapitalDelta]t/t2[q]))],Subscript[Depol, q][.75(1-E^(-\[CapitalDelta]t/t1[q]))]},{}];
 stdpn[q_,dd:False]:=If[stdpassivenoise,{Subscript[Deph, q][.5(1-E^(-\[CapitalDelta]t/t2s[q]))],Subscript[Depol, q][.75(1-E^(-\[CapitalDelta]t/t1[q]))]},{}];
-passivenoisecirc[q_Integer]:=Flatten@{If[q<qubitsnum-1 && AssociationQ@exchangerotoff,Subscript[C, q][Subscript[Rz, q+1][(\[CapitalDelta]t/\[Pi])*exchangerotoff[q]]],{}],stdpn[q,stdpassivenoise]};
+passivenoisecirc[q_Integer,g2_:False]:=Flatten@{If[\[Not]g2&&q<qubitsnum-1 && AssociationQ@exchangerotoff,Subscript[C, q][Subscript[Rz, q+1][(\[CapitalDelta]t/\[Pi])*exchangerotoff[q]]],{}],stdpn[q,stdpassivenoise]};
 
 (*single rotation noise *)
 offresrabi[q_,\[Theta]_]:=If[offresonantrabi,Table[Subscript[U, j][OffResRabiOsc[rabifreq[q],qubitfreq[j]-qubitfreq[q],Abs[\[Theta]]]],{j,Delete[qubits,q+1]}],{}];
@@ -354,31 +354,37 @@ Aliases -> {
 Gates ->{
 	Subscript[Wait, q__][t_]:><|
 		NoisyForm->Flatten@Table[passivenoisecirc[i],{i,Flatten@{q}}],
-		GateDuration->t
+		GateDuration->t,
+		UpdateVariables->Function[g2=False]
 	|>,
 (* Measurements and initialisation *)
 	Subscript[Meas, q__]/; miseq[q] :><|
 		NoisyForm-> measf[q],
-		GateDuration->durread
+		GateDuration->durread,
+		UpdateVariables->Function[g2=False]
 	|>,
 	Subscript[Init, q__]/; miseq[q] :><|
 		NoisyForm-> initf[q],
-		GateDuration-> durinit[q]
+		GateDuration-> durinit[q],
+		UpdateVariables->Function[g2=False]
 	|>,		
 (* Singles *)
 	Subscript[Rx,q_][\[Theta]_]:><|
 		NoisyForm->Flatten@{Subscript[Rx, q][\[Theta]],sroterr[q,\[Theta]]},
-		GateDuration->Abs[\[Theta]]/(2\[Pi] rabifreq[q]) 
+		GateDuration->Abs[\[Theta]]/(2\[Pi] rabifreq[q]),
+		UpdateVariables->Function[g2=False] 
 	|>,
 	Subscript[Ry,q_][\[Theta]_]:><|
 		NoisyForm->Flatten@{Subscript[Ry, q][\[Theta]],sroterr[q,\[Theta]]},
-		GateDuration->Abs[\[Theta]]/(2\[Pi] rabifreq[q])
+		GateDuration->Abs[\[Theta]]/(2\[Pi] rabifreq[q]),
+		UpdateVariables->Function[g2=False]
 	|>,
 (* Twos *)
 	Subscript[C, p_][Subscript[Z, q_]]/; (q-p)===1  :><|
 		(*The last bit undo the exchange in the passive noise *)
 		NoisyForm->{Subscript[C, p][Subscript[Z, q]],Subscript[Depol, p,q][ercz[p][[1]]],Subscript[Deph, p,q][ercz[p][[2]]],Sequence@@exczon[q]}, 
-		GateDuration->0.5/freqcz[p] 
+		GateDuration->0.5/freqcz[p],
+		UpdateVariables->Function[g2=True]
 	|>		
 },
 (* Declare that \[CapitalDelta]t will refer to the duration of the current gate/channel. *)
@@ -386,7 +392,7 @@ DurationSymbol -> \[CapitalDelta]t,
 (* Passive noise *)
 Qubits :> {
 		q_/;(0<=q<qubitsnum) :> <|
-		PassiveNoise ->passivenoisecirc[q]
+		PassiveNoise ->passivenoisecirc[q,g2]
 		|>		 
 		}	
 	|>
