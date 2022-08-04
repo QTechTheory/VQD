@@ -30,12 +30,13 @@ NVCenterDelft::usage="Returns device specification of a Nitrogen-Vacancy diamond
 NVCenterHub::usage="Returns device specification of a Nitrogen-Vacancy diamond center device based on the device built by the QCSHub.";
 
 ParameterDevices::usage="Show all parameters used to specify all devices. To see parameters related to a device, e.g., NVCenterHub, use Options[NVCenterHub].";
+GetNoisyForm::usage="GetNoisyForm[circuit,dev,ReplaceAlises->False,Parallel->None]. Return the noisy form of circuit with device specification dev. Parameter dev might be altered after this. Set CheckOnly->True to preserves the device states";
 
 (* Other functions *)
-PartialTrace::usage="PartialTrace[qureg, qubits_to_be_traced_out]. Return the partial trace as a matrix.";
+CheckOnly::usage="Set to True or False. True, then the device is copied and device state remains. This is useful for virtual devices with swapping spatial locations.";
+PartialTrace::usage="PartialTrace[qureg/density matrix, qubits_to_be_traced_out]. Return the partial trace as a matrix.";
 RandomMixState::usage="RandomMixState[nqubits, nsamples:None]. Return a random mixed quantum density state matrix. It is obtained by the sum random unitary matrices.
 By default, the random unitaries sample is \!\(\*SuperscriptBox[\(2\), \(\(nqubit\)\(\\\ \)\)]\)";
-SerializeCircuit::usage="SerializeCircuit[circuit]. Execute the gates without parallelism with exception. For instance, in the case of neutral atoms, gates parallelism can be done when the spatial distance is outside blockade radius. This function should be executed before InsertCiruitNoise.";
 (* Custom gates *)
 SWAPLoc::usage="Swap the spatial locations of two qubits";
 Wait::usage="Wait gate, doing nothing";
@@ -46,7 +47,9 @@ SplitZ::usage="SplitZ[node, zone_destination]. Split a string of ions in a zone 
 CombS::usage="CombS[node, zone_destination]. Combine a string of ions to a zone of a trapped-ion Oxford device";
 
 (*Visualisations*)
+DeviceType::usage="The type of device. Normally, the name of the function that generates it.";
 DrawIons::usage="Draw the current string of ions";
+
 BeginPackage["`ParameterDevices`"];
 (* Parameters *)
 BField::usage="The electromagnetic field strength in the z-direction from the lab reference with unit Tesla.";
@@ -82,6 +85,7 @@ Nodes::usage="Entire nodes of a trapped ions system <|node1 -> number_of_qubits_
 NIons::usage="The total number of ions in a trapped ion device.";
 OffResonantRabi::usage="Put the noise due to off-resonant Rabi oscillation when applying single qubit rotations.";
 ParallelGates::usage="Gates that are executed in parallel even with the call SerializeCircuit[]";
+Parallel::usage="Parallelize the circuit according to the device rule. Set to None(complete serial), Automatic (parallelise automatically), All(parallelise completely), False(do nothing).";
 qubitsNum::usage="The number of physical active qubits for computations.";
 QubitFreq::usage="The Qubit frequency for each qubit with unit MHz.";
 RabiFreq::usage="The Rabi frequency frequency in average or on each qubit with unit MHz.";
@@ -271,11 +275,13 @@ qubits=Range[0,-1+OptionValue@qubitsNum]
 },
 
 Module[
-{\[CapitalDelta]t, miseq,initf,measf, passivenoisecirc, offresrabi, stdpn, exczon,durinit,sroterr,g2=False},
+{\[CapitalDelta]T, miseq,initf,measf, passivenoisecirc, offresrabi, stdpn, exczon,durinit,sroterr,g2=False},
 
-stdpn[q_,dd:True]:=If[stdpassivenoise,{Subscript[Deph, q][.5(1-E^(-\[CapitalDelta]t/t2[q]))],Subscript[Depol, q][.75(1-E^(-\[CapitalDelta]t/t1[q]))]},{}];
-stdpn[q_,dd:False]:=If[stdpassivenoise,{Subscript[Deph, q][.5(1-E^(-\[CapitalDelta]t/t2s[q]))],Subscript[Depol, q][.75(1-E^(-\[CapitalDelta]t/t1[q]))]},{}];
-passivenoisecirc[q_Integer,g2_:False]:=Flatten@{If[\[Not]g2&&q<qubitsnum-1 && AssociationQ@exchangerotoff,Subscript[C, q][Subscript[Rz, q+1][(\[CapitalDelta]t/\[Pi])*exchangerotoff[q]]],{}],stdpn[q,stdpassivenoise]};
+stdpn[q_,dd_,dur_]:=If[stdpassivenoise,
+If[dd,{Subscript[Deph, q][.5(1-E^(-dur/t2[q]))],Subscript[Depol, q][.75(1-E^(-dur/t1[q]))]},
+{Subscript[Deph, q][.5(1-E^(-dur/t2s[q]))],Subscript[Depol, q][.75(1-E^(-dur/t1[q]))]}],
+{}];
+passivenoisecirc[q_Integer,g2_,dur_]:=Flatten@{If[\[Not]g2&&q<qubitsnum-1 && AssociationQ@exchangerotoff,Subscript[C, q][Subscript[Rz, q+1][(dur/\[Pi])*exchangerotoff[q]]],{}],stdpn[q,ddactive,dur]};
 
 (*single rotation noise *)
 offresrabi[q_,\[Theta]_]:=If[offresonantrabi,Table[Subscript[U, j][OffResRabiOsc[rabifreq[q],qubitfreq[j]-qubitfreq[q],Abs[\[Theta]]]],{j,Delete[qubits,q+1]}],{}];
@@ -315,7 +321,7 @@ initf[q__]:=Which[MemberQ[{q},0],(*start*)
 
 		
 (*duration of a single initialisation: 3 readout + 2X + 1 CX *)	
-durinit[q__]:=durread*3+1.5*Total@@Table[rabifreq[i],{i, Complement[{q},{0,qubitsnum-1}]}]; 
+durinit[q__]:=durread*3+1.5*Total[Flatten@Table[rabifreq[i],{i, Complement[{q},{0,qubitsnum-1}]}]]; 
 						
 (* measurment has bitflip errors at the edge and single qubit errors in the middle *)		
 measf[q__]:=Which[
@@ -341,6 +347,7 @@ measf[q__]:=Which[
 
 <|
 (*no hidden qubits/ancilla here *)
+DeviceType->"SiliconDelft",
 DeviceDescription -> "Delft Silicon device with "<>ToString[qubitsnum]<>"-qubits arranged as a linear array with nearest-neighbor connectivity and control qubits are the lower ones.",
 NumAccessibleQubits -> qubitsnum,
 NumTotalQubits -> qubitsnum,
@@ -353,7 +360,7 @@ Aliases -> {
 	,	
 Gates ->{
 	Subscript[Wait, q__][t_]:><|
-		NoisyForm->Flatten@Table[passivenoisecirc[i],{i,Flatten@{q}}],
+		NoisyForm->Flatten@Table[passivenoisecirc[i,False,t],{i,Flatten@{q}}],
 		GateDuration->t,
 		UpdateVariables->Function[g2=False]
 	|>,
@@ -371,12 +378,12 @@ Gates ->{
 (* Singles *)
 	Subscript[Rx,q_][\[Theta]_]:><|
 		NoisyForm->Flatten@{Subscript[Rx, q][\[Theta]],sroterr[q,\[Theta]]},
-		GateDuration->Abs[\[Theta]]/(2\[Pi] rabifreq[q]),
+		GateDuration->Abs[\[Theta]]/(2\[Pi]*rabifreq[q]),
 		UpdateVariables->Function[g2=False] 
 	|>,
 	Subscript[Ry,q_][\[Theta]_]:><|
 		NoisyForm->Flatten@{Subscript[Ry, q][\[Theta]],sroterr[q,\[Theta]]},
-		GateDuration->Abs[\[Theta]]/(2\[Pi] rabifreq[q]),
+		GateDuration->Abs[\[Theta]]/(2\[Pi]*rabifreq[q]),
 		UpdateVariables->Function[g2=False]
 	|>,
 (* Twos *)
@@ -388,11 +395,11 @@ Gates ->{
 	|>		
 },
 (* Declare that \[CapitalDelta]t will refer to the duration of the current gate/channel. *)
-DurationSymbol -> \[CapitalDelta]t, 
+DurationSymbol -> \[CapitalDelta]T, 
 (* Passive noise *)
 Qubits :> {
 		q_/;(0<=q<qubitsnum) :> <|
-		PassiveNoise ->passivenoisecirc[q,g2]
+		PassiveNoise ->passivenoisecirc[q,g2,\[CapitalDelta]T]
 		|>		 
 		}	
 	|>
@@ -573,6 +580,7 @@ swaploc[p_,q_,node_]:=Module[{z=getZone[q,nodes[node]],pos,lst},
 
 <|
 (*no hidden qubits/ancilla here *)
+DeviceType->"TrappedIonOxford",
 DeviceDescription -> StringForm["Trapped ion device Oxford style with ``. nodes",Length@nodes],
 NumAccessibleQubits -> qnum,
 NumTotalQubits -> qnum,
@@ -638,11 +646,44 @@ Gates ->{
 (* Declare that \[CapitalDelta]t will refer to the duration of the current gate/channel. *)
 DurationSymbol -> \[CapitalDelta]t, 
 (* Passive noise *)
-Qubits :> {}
-		
+Qubits :> {}	
 	|>
 ]
 ]
+SetAttributes[GetNoisyForm,HoldAll]
+Options[GetNoisyForm]={
+ReplaceAliases->True,
+Parallel->None,
+CheckOnly->False
+};
+GetNoisyForm[circuit_,device_,OptionsPattern[]]:=Module[{
+parallel=OptionValue[Parallel],
+dev=device[DeviceType],
+check=OptionValue[CheckOnly],
+copydev=device,
+circ}
+,
+circ=Which[
+	(* completely serialised*)
+	parallel===None,
+	List/@Flatten[circuit],
+	(* default parallelism in quantum mechanics *)
+	parallel===All,
+	Flatten@circuit,
+	parallel===Automatic,
+	(* it depends on the cases of the virtual device *)
+	parallelizeCircuit[Flatten@circuit,dev],
+	True,
+	(* do nothing *)
+	circ=circuit
+];
+If[
+OptionValue[CheckOnly],
+	InsertCircuitNoise[circ,copydev,ReplaceAliases->OptionValue[ReplaceAliases]],
+	InsertCircuitNoise[circ,device,ReplaceAliases->OptionValue[ReplaceAliases]]
+]
+]
+
 
 RandomMixState[nqubits_]:=Module[{size=2^nqubits,gm,um,dm,id},
 (* Random states generation: https://iitis.pl/~miszczak/files/papers/miszczak12generating.pdf *)
@@ -655,13 +696,41 @@ dm=(id+um) . gm . ConjugateTranspose[gm] . (id+ConjugateTranspose[um]);
 dm/Tr[dm]//Chop
 ]
 
-GateIndex::usage="GateIndex[gate], returns {the gate, the indices}.";
-GateIndex[gate_]:=Module[{p,q,g,base,idx},
-{base,idx}=(gate/.{R[t_,Subscript[X, p_] Subscript[X, q_]]-> {XX, {p,q}}, Subscript[g_, q__][_]-> {g, {Sequence@@q}}, Subscript[g_, q__]->{g,{Sequence@@q}}});
-{base,Flatten@idx}
+SetAttributes[symbolNameJoin, HoldAll];
+symbolNameJoin[symbols__Symbol] := Symbol @ Apply[
+  StringJoin,
+  Map[
+   Function[s, ToString[Unevaluated[s]], HoldFirst],
+   Hold[symbols]
+  ]
 ];
+
+gateIndex::usage="gateIndex[gate], returns {the gate, the indices}.";
+gateIndex[gate_]:=With[{
+gpattern={
+R[t_,Subscript[g1_, p_] Subscript[g2_, q_]]:> {symbolNameJoin[g1,g2], {p,q}}, 
+Subscript[C, p__][Subscript[g_, q__]]:>{symbolNameJoin[C,g], {Sequence@@Flatten@{p,q}}},
+Subscript[g_, q__]:> {g, {Sequence@@Flatten@{q}}},
+Subscript[g_, q__][_]:> {g, {Sequence@@Flatten@{q}}}
+}},
+gate/. gpattern
+];
+
+ParallelGates=<|
+"SiliconDelft"->{Wait},
+"SiliconHub"->{},
+"SuperconductingFZJ"->{},
+"SuperconductingHub"->{},
+"TrappedIonOxford"->{},
+"TrappedIonInnsbruck"->{},
+"RydbergHub"->{},
+"RydbergWisconsin"->{},
+"NVCenterDelft"->{},
+"NVCenterHub"->{}
+|>;
+
 SetAttributes[SerializeCircuit,HoldAll]
-SerializeCircuit[circuit_]:=Module[{circ=circuit,newcircc,circols,idxcol,incol,g1,g2,idx1,idx2},
+parallelizeCircuit[circuit_,devicetype_]:=Module[{circ=circuit,newcircc,circols,idxcol,incol,g1,g2,idx1,idx2},
 newcircc={};
 While[Length@circ>0 ,
 circols=GetCircuitColumns[circ];
@@ -676,30 +745,32 @@ incol=<| #->True & /@idxcol |>;
 
 Table[
 If[incol[i1],
-(* add gate i1 and eliminate the rest *)
-AppendTo[newcircc[[-1]],circ[[i1]]];
-Table[
-If[incol[[i2]],
-{g1,idx1}=GateIndex[circ[[i1]]];
-{g2,idx2}=GateIndex[circ[[i2]]];
-incol[[i2]]=MemberQ[ParallelGates,(g1|g2)]
-];
-,{i2,Complement[idxcol,{i1}]}];
-]
-,{i1,idxcol}];
+	(* add gate i1 and eliminate the rest *)
+	AppendTo[newcircc[[-1]],circ[[i1]]];
+	Table[
+	If[incol[[i2]],
+		{g1,idx1}=gateIndex[circ[[i1]]];
+		{g2,idx2}=gateIndex[circ[[i2]]];
+		incol[[i2]]=MemberQ[ParallelGates[devicetype],(g1|g2)]
+	],{i2,Complement[idxcol,{i1}]}];
+],{i1,idxcol}];
 (* update circuit *)
 circ=Delete[circ,{#}&/@Keys@Select[incol,#&]];
 ];
 newcircc
 ]
 
+
+
 (*Partial trace on n-qubit
 1) reshape to the tensor:ConstantArray[2,2*n]
 2) contract
 3) reshape to matrix with dim2^mx2^mwhere m=(n-#contract)
 *)
-PartialTrace[\[Rho]_Integer,qubits__]:=Module[{\[Rho]mat,tmat,nq,pmat,nfin,pairs},
-\[Rho]mat=GetQuregMatrix[\[Rho]];
+PartialTrace[\[Rho]_List,qubits__]:=ptrace[\[Rho],qubits]
+PartialTrace[\[Rho]_Integer,qubits__]:=ptrace[GetQuregMatrix[\[Rho]],qubits]
+
+ptrace[\[Rho]mat_List,qubits__]:=Module[{tmat,nq,pmat,nfin,pairs},
 nq=Log2@Length@\[Rho]mat;
 (*tensorize*)
 tmat=ArrayReshape[\[Rho]mat,ConstantArray[2,2*nq]];
@@ -711,19 +782,6 @@ nfin=nq-Length@{qubits};
 ArrayReshape[pmat,{2^nfin,2^nfin}]//Chop
 ]
 
-PartialTrace[\[Rho]mat_List,qubits__]:=Module[{tmat,nq,pmat,nfin,pairs},
-nq=Log2@Length@\[Rho]mat;
-(*tensorize*)
-tmat=ArrayReshape[\[Rho]mat,ConstantArray[2,2*nq]];
-pairs=Table[{i,i+nq},{i,Range[nq]}];
-pmat=TensorContract[tmat,pairs[[Sequence@@#]]&/@(1+{qubits})];
-nfin=nq-Length@{qubits};
-ArrayReshape[pmat,{2^nfin,2^nfin}]//Chop
-]
-
 End[];
 EndPackage[];
 Needs["VQD`ParameterDevices`"]
-
-
-
