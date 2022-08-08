@@ -29,14 +29,16 @@ RydbergWisconsin::usage="Returns device specification of a Rydberg/Neutral Atom 
 NVCenterDelft::usage="Returns device specification of a Nitrogen-Vacancy diamond center device based on the device built by the University of Delft.";
 NVCenterHub::usage="Returns device specification of a Nitrogen-Vacancy diamond center device based on the device built by the QCSHub.";
 
+(* toy device *)
+ToyDevice::usage="Return a specification with simple standard model.";
+
 ParameterDevices::usage="Show all parameters used to specify all devices. To see parameters related to a device, e.g., NVCenterHub, use Options[NVCenterHub].";
 GetNoisyForm::usage="GetNoisyForm[circuit,dev,ReplaceAlises->False,Parallel->None]. Return the noisy form of circuit with device specification dev. Parameter dev might be altered after this. Set CheckOnly->True to preserves the device states";
 
 (* Other functions *)
 CheckOnly::usage="Set to True or False. True, then the device is copied and device state remains. This is useful for virtual devices with swapping spatial locations.";
 PartialTrace::usage="PartialTrace[qureg/density matrix, qubits_to_be_traced_out]. Return the partial trace as a matrix.";
-RandomMixState::usage="RandomMixState[nqubits, nsamples:None]. Return a random mixed quantum density state matrix. It is obtained by the sum random unitary matrices.
-By default, the random unitaries sample is \!\(\*SuperscriptBox[\(2\), \(\(nqubit\)\(\\\ \)\)]\)";
+RandomMixState::usage="RandomMixState[nqubits, nsamples:None]. Return a random mixed quantum density state matrix.";
 (* Custom gates *)
 SWAPLoc::usage="Swap the spatial locations of two qubits";
 Wait::usage="Wait gate, doing nothing";
@@ -64,6 +66,8 @@ entangling::usage="Crosstalk error model pre equation (4) on applying the XX M\[
 ErrCT::usage="Error coefficient of the crosstalk with entanglement model";
 ErrSS::usage="Error coefficient of the crosstalk with stark shift model";
 EFSingleXY::usage="Error fraction/ratio, {depolarising, dephasing} of the single qubit X and Y rotations. Sum of the ratio must be 1 or 0 (off).";
+EFSingle::usage="Error fraction/ratio, {depolarising, dephasing} of the single qubit X, Y, and Z rotations. Sum of the ratio must be 1 or 0 (off).";
+EFTwo::usage="Error fraction/ratio, {depolarising, dephasing} of controlled-rotation. Sum of the ratio must be 1 or 0 (off).";
 EFCZ::usage="Error fraction/ratio, {depolarising, dephasing} of the controlled-Z gates. Sum of the ratio must be 1 or 0 (off).";
 EFInit::usage="Error fraction/ratio {depolarising, dephasing} of the initialisation gate.  Sum of the ratio must be 1 or 0 (off).";
 EFCRot::usage="Error fraction/ratio, {depolarising, dephasing} of the controlled-Rx and -Ry gates. Sum of the ratio must be 1 or 0 (off).";
@@ -72,6 +76,8 @@ EFRead::usage="Error fraction/ratio of {depolarising,dephasing} of the readout. 
 ExchangeRotOn::usage="Maximum interaction j on the passive qubit crosstalk when applying CZ gates; The noise form is C[Rz[j.\[Theta]]] It must be a square matrix with size (nqubit-2)x(nqubit-2).";
 ExchangeRotOff::usage="Crosstalks error C-Rz[ex] on the passive qubits when not applying two-qubit gates.";
 FidSingleXY::usage="Fidelity(ies) of single Rx[\[Theta]] and Ry[\[Theta]] rotations obtained by random benchmarking.";
+FidSingle::usage="Fidelity(ies) of single rotations: Rx[\[Theta]], Ry[\[Theta]], Rz[\[Theta]] obtained by random benchmarking.";
+FidTwo::usage="Fidelity(ies) of two qubit gates obtained by random benchmarking.";
 FidEnt::usage="Fidelity of remote entanglement operation.";
 FidMeas::usage="Fidelity of measurement";
 FidInit::usage="Fidelity of qubit initialisation";
@@ -91,6 +97,7 @@ QubitFreq::usage="The Qubit frequency for each qubit with unit MHz.";
 RabiFreq::usage="The Rabi frequency frequency in average or on each qubit with unit MHz.";
 RepeatRead::usage="The number of repeated readout (n) performed. The final fidelity of readout is \!\(\*SuperscriptBox[\(FidRead\), \(n\)]\).";
 Meas::usage="Perform measurement on the qubits";
+TwoGateFreq::usage="Resonant frequency of two qubit gates";
 starkshift::usage="Crosstalk error model using stark shift on  applying the Exp[-i\[Theta]XX], namely M\[OSlash]lmer\[Dash]S\[OSlash]rensen gate";
 ShowNodes::usage="Draw all Ions on every nodes within the zones";
 T1::usage="T1 duration(s) in \[Mu]s. Exponential decay time for the state to be complete mixed.";
@@ -107,6 +114,8 @@ EFInit::error="`1`";
 FidCRotXY::error="`1`";
 FidCZ::error="`1`";
 FidSingleXY::error="`1`";
+FidSingle::error="`1`";
+FidTwo::error="`1`";
 FidMeas::error="`1`";
 FidInit::error="`1`";
 FreqCZ::error="`1`";
@@ -122,13 +131,14 @@ T2s::error="`1`";
 FidCRotXY::warning="`1`";
 FidCZ::warning="`1`";
 FidSingleXY::warning="`1`";
+FidSingle::warning="`1`";
+FidTwo::warning="`1`";
 FidMeas::warning="`1`";
 FidInit::warning="`1`";
 EndPackage[];
 
 (*******All definitions of modules****)
 Begin["`Private`"];
-
 Needs["QuEST`"];
 Needs["QuEST`Option`"];
 Needs["QuEST`Gate`"];
@@ -210,6 +220,7 @@ fid2DepolDeph[totfid_, errratio_, nqerr_, errval_, avgfid_:True] := Module[
 ];	
   {pdepol, pdeph}
 ]
+
 grouptwo::usage="grouptwo[list], group a list into two elements";
 grouptwo[list_]:=ReplaceList[Sort@list,{p___,a_,b_,q___}:>{a,b}]
 (*additional error models *)
@@ -225,7 +236,72 @@ bitFlip[fid_,p_,q_]:=With[{e=1-fid},
 		Sqrt[e/3]*{{0,0,1,0},{0,0,0,1},{1,0,0,0},{0,1,0,0}},
 		Sqrt[e/3]*{{0,0,0,1},{0,0,1,0},{0,1,0,0},{1,0,0,0}}
 }]]
+(***** TOY_DEVICE *****)
 
+ToyDevice[OptionsPattern[]]:=With[
+{
+qubitsnum=OptionValue[qubitsNum],
+t1=OptionValue[T1],
+t2=OptionValue[T2],
+stdpassivenoise=OptionValue[StdPassiveNoise],
+fidsingle=OptionValue[FidSingle],
+fidtwo=OptionValue[FidTwo],
+efsingle=OptionValue[EFSingle],
+eftwo=OptionValue[EFTwo],
+rabifreq=OptionValue[RabiFreq],
+twogatefreq=OptionValue[TwoGateFreq]
+},
+
+Module[
+{\[CapitalDelta]T,erone,ertwo},
+erone=fid2DepolDeph[fidsingle,efsingle,1,FidSingle,True];
+ertwo=fid2DepolDeph[fidtwo,eftwo,2,FidTwo,True];
+<|
+(*no hidden qubits/ancilla here *)
+DeviceType->"Toy",
+DeviceDescription -> "Toy device with "<>ToString[qubitsnum]<>"-qubits arranged as a linear array with nearest-neighbor connectivity.",
+NumAccessibleQubits -> qubitsnum,
+NumTotalQubits -> qubitsnum,
+Aliases -> {},	
+Gates ->{	
+(* Singles *)
+	Subscript[Rx,q_][\[Theta]_]:><|
+		NoisyForm->Flatten@{Subscript[Rx, q][\[Theta]],Subscript[Depol, q][erone[[1]]],Subscript[Deph, q][erone[[2]]]},
+		GateDuration->Abs[\[Theta]]/(2\[Pi]*rabifreq)
+	|>,
+	Subscript[Ry,q_][\[Theta]_]:><|
+		NoisyForm->Flatten@{Subscript[Ry, q][\[Theta]],Subscript[Depol, q][erone[[1]]],Subscript[Deph, q][erone[[2]]]},
+		GateDuration->Abs[\[Theta]]/(2\[Pi]*rabifreq)
+	|>,
+		Subscript[Rz,q_][\[Theta]_]:><|
+		NoisyForm->Flatten@{Subscript[Rz, q][\[Theta]],Subscript[Depol, q][erone[[1]]],Subscript[Deph, q][erone[[2]]]},
+		GateDuration->Abs[\[Theta]]/(2\[Pi]*rabifreq)
+	|>,
+(* Twos *)
+		Subscript[C, p_][Subscript[Rx, q_][\[Theta]_]]/; (q-p)===1  :><|
+		NoisyForm->{Subscript[C, p][Subscript[Rx, q][\[Theta]]],Subscript[Depol, p,q][ertwo[[1]]],Subscript[Deph, p,q][ertwo[[2]]]},
+		GateDuration->Abs[\[Theta]]/(2\[Pi]*twogatefreq)
+	|>,
+		Subscript[C, p_][Subscript[Ry, q_][\[Theta]_]]/; (q-p)===1  :><|
+		NoisyForm->{Subscript[C, p][Subscript[Ry, q][\[Theta]]],Subscript[Depol, p,q][ertwo[[1]]],Subscript[Deph, p,q][ertwo[[2]]]},
+		GateDuration->Abs[\[Theta]]/(2\[Pi]*twogatefreq)
+	|>,
+		Subscript[C, p_][Subscript[Rz, q_][\[Theta]_]]/; (q-p)===1  :><|
+		NoisyForm->{Subscript[C, p][Subscript[Rz, q][\[Theta]]],Subscript[Depol, p,q][ertwo[[1]]],Subscript[Deph, p,q][ertwo[[2]]]},
+		GateDuration->Abs[\[Theta]]/(2\[Pi]*twogatefreq)
+	|>		
+},
+(* Declare that \[CapitalDelta]t will refer to the duration of the current gate/channel. *)
+DurationSymbol -> \[CapitalDelta]T, 
+(* Passive noise *)
+Qubits :> {
+		q_Integer :> <|
+		PassiveNoise ->If[stdpassivenoise,{Subscript[Depol, q][0.75(1-E^(-\[CapitalDelta]T/t1))],Subscript[Deph, q][0.5(1-E^(-\[CapitalDelta]T/t2))]},{}]	
+		|>		 
+		}	
+	|>
+]
+]
 (***** SILICON_DELFT *****)
 SiliconDelft[OptionsPattern[]]:=With[
 {
@@ -683,8 +759,6 @@ OptionValue[CheckOnly],
 	InsertCircuitNoise[circ,device,ReplaceAliases->OptionValue[ReplaceAliases]]
 ]
 ]
-
-
 RandomMixState[nqubits_]:=Module[{size=2^nqubits,gm,um,dm,id},
 (* Random states generation: https://iitis.pl/~miszczak/files/papers/miszczak12generating.pdf *)
 (* random ginibre matrix *)
@@ -759,8 +833,6 @@ circ=Delete[circ,{#}&/@Keys@Select[incol,#&]];
 ];
 newcircc
 ]
-
-
 
 (*Partial trace on n-qubit
 1) reshape to the tensor:ConstantArray[2,2*n]
