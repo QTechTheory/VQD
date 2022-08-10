@@ -47,6 +47,7 @@ CZ::usage="Controlled-Z operation";
 Ent::usage="Remote entanglement operation";
 SplitZ::usage="SplitZ[node, zone_destination]. Split a string of ions in a zone of a trapped-ion Oxford device";
 CombS::usage="CombS[node, zone_destination]. Combine a string of ions to a zone of a trapped-ion Oxford device";
+PSW::usage="PSW[\[Theta]], parameterised swaps";
 
 (*Visualisations*)
 DeviceType::usage="The type of device. Normally, the name of the function that generates it.";
@@ -262,7 +263,9 @@ DeviceType->"Toy",
 DeviceDescription -> "Toy device with "<>ToString[qubitsnum]<>"-qubits arranged as a linear array with nearest-neighbor connectivity.",
 NumAccessibleQubits -> qubitsnum,
 NumTotalQubits -> qubitsnum,
-Aliases -> {},	
+Aliases -> {
+Subscript[PSW, p_,q_][\[Theta]_]:>Subscript[U, p,q][{{1,0,0,0},{0,E^((I \[Theta])/2) Cos[\[Theta]/2],-I E^((I \[Theta])/2) Sin[\[Theta]/2],0 },{0,-I E^((I \[Theta])/2) Sin[\[Theta]/2], E^((I \[Theta])/2) Cos[\[Theta]/2],0 },{0,0,0,1}}]  
+},	
 Gates ->{	
 (* Singles *)
 	Subscript[Rx,q_][\[Theta]_]:><|
@@ -278,18 +281,23 @@ Gates ->{
 		GateDuration->Abs[\[Theta]]/(2\[Pi]*rabifreq)
 	|>,
 (* Twos *)
-		Subscript[C, p_][Subscript[Rx, q_][\[Theta]_]]/; (q-p)===1  :><|
+		Subscript[C, p_][Subscript[Rx, q_][\[Theta]_]]/; Abs[q-p]===1  :><|
 		NoisyForm->{Subscript[C, p][Subscript[Rx, q][\[Theta]]],Subscript[Depol, p,q][ertwo[[1]]],Subscript[Deph, p,q][ertwo[[2]]]},
 		GateDuration->Abs[\[Theta]]/(2\[Pi]*twogatefreq)
 	|>,
-		Subscript[C, p_][Subscript[Ry, q_][\[Theta]_]]/; (q-p)===1  :><|
+		Subscript[C, p_][Subscript[Ry, q_][\[Theta]_]]/; Abs[q-p]===1  :><|
 		NoisyForm->{Subscript[C, p][Subscript[Ry, q][\[Theta]]],Subscript[Depol, p,q][ertwo[[1]]],Subscript[Deph, p,q][ertwo[[2]]]},
 		GateDuration->Abs[\[Theta]]/(2\[Pi]*twogatefreq)
 	|>,
-		Subscript[C, p_][Subscript[Rz, q_][\[Theta]_]]/; (q-p)===1  :><|
+		Subscript[C, p_][Subscript[Rz, q_][\[Theta]_]]/; Abs[q-p]===1  :><|
 		NoisyForm->{Subscript[C, p][Subscript[Rz, q][\[Theta]]],Subscript[Depol, p,q][ertwo[[1]]],Subscript[Deph, p,q][ertwo[[2]]]},
 		GateDuration->Abs[\[Theta]]/(2\[Pi]*twogatefreq)
-	|>		
+	|>	
+	,(* parameterised swap*)
+		Subscript[PSW, p_,q_][\[Theta]_]/; Abs[q-p]===1  :><|
+		NoisyForm->{Subscript[PSW, p,q][\[Theta]],Subscript[Depol, p,q][ertwo[[1]]],Subscript[Deph, p,q][ertwo[[2]]]},
+		GateDuration->Abs[\[Theta]]/(2\[Pi]*twogatefreq)
+	|>	
 },
 (* Declare that \[CapitalDelta]t will refer to the duration of the current gate/channel. *)
 DurationSymbol -> \[CapitalDelta]T, 
