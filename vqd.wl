@@ -538,8 +538,6 @@ node=nodes[nodename]},
 Length@Flatten[Table[node[z],{z,Range[Min[zone,zstart]+1,Max[zone,zstart]-1]}]]===0
 ]
 
-
-
 (*Legitimate combine moves *)
 legComb[nodes_,nodename_,q1_,q2_,zonedest_:None]:=Module[{zone,node=nodes[nodename],z1,z2,cond1,cond2,zstart,ps,pz,qs,qz,cond3},
 	(* combine to the one of the zone *)
@@ -603,8 +601,6 @@ Subscript[toZone, q_][inodes_,node_,zone_]:=Module[{szone,nodes},
 	nodes=inodes;
 	szone=getZone[q,nodes[node]];
 ]
-
-
 Subscript[CombS, i_,j_][inodes_,nodename_,zone_]:=Module[{nodes,node,z1,z2,ps,pz,sq,zstart,qs,qz},
 	nodes=inodes;
 	node=nodes[nodename];
