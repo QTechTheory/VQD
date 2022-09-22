@@ -11,6 +11,7 @@ hbar=1.054571817*10^34 ;
 (* Devices *)
 (*silicon devices*)
 SiliconDelft::usage="Returns device specification of a Silicon device based on the device built by the University of Delft.";
+SiliconDelft2::usage="Returns device specification of a Silicon device with twice error severity of SiliconDelft.";
 SiliconHub::usage="Returns devices specification of a Silicon device based on the device built by the QCSHub.";
 
 (*superconducting qubit devices*)
@@ -789,6 +790,193 @@ Qubits :> {}
 	|>
 ]
 ]
+(*******  ENDOF_TRAPPED_IONS_OXFORD   *****)
+
+
+
+
+(********************MACHINE COLLETIONS WITH NOISE TWICE AS BAD************************)
+
+(***** SILICON_DELFT2 *****)
+SiliconDelft2[OptionsPattern[]]:=With[
+{
+(*validate and format parameter specification*)
+(*Numbers*)
+qubitsnum=Catch@validate[OptionValue@qubitsNum,IntegerQ,qubitsNum,"not an integer"],
+(*Fractions*)
+efsinglexy=Catch@validate[OptionValue@EFSingleXY,(Total[#]==1||Total[#]==0)&,EFSingleXY,"not a fraction with total 1 "],
+efcz=Catch@validate[OptionValue@EFCZ,(Total[#]==1||Total[#]==0)&,EFCZ,"not a fraction with total 1 "],
+(*Number as average or association to specify each*)
+t1=Catch@validate[OptionValue@T1,checkAss[#,OptionValue@qubitsNum]&,T1,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
+t2=Catch@validate[OptionValue@T2,checkAss[#,OptionValue@qubitsNum]&,T2,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
+t2s=Catch@validate[OptionValue@T2s,checkAss[#,OptionValue@qubitsNum]&,T2s,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
+rabifreq=Catch@validate[OptionValue@RabiFreq,checkAss[#,OptionValue@qubitsNum]&,RabiFreq,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
+qubitfreq=Catch@validate[OptionValue@QubitFreq,checkAss[#,OptionValue@qubitsNum]&,QubitFreq,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
+freqcz=Catch@validate[OptionValue@FreqCZ,checkAss[#,-1+OptionValue@qubitsNum]&,FreqCZ,numass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
+(*Number as average or association to specify each fidelity*)
+fidcz=Catch@validate[OptionValue@FidCZ,checkAss[#,-1+OptionValue@qubitsNum,0<=#<=1&]&,FidCZ,fidass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
+fidsinglexy=Catch@validate[OptionValue@FidSingleXY,checkAss[#,OptionValue@qubitsNum,0<=#<=1&]&,FidSingleXY,fidass[OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
+(*single things*)
+fidread=Catch@validate[OptionValue@FidRead,0<=#<=1&,FidRead,"invalid fidelity"],
+durread=Catch@validate[OptionValue@DurRead,NumberQ,DurMeas,"invalid duration"],
+repeatread=Catch@validate[OptionValue@RepeatRead,IntegerQ,RepeatRead,"not an integer"],
+(* assoc or boolean *)
+exchangerotoff=Catch@validate[OptionValue@ExchangeRotOff,Or[AssociationQ@#,#===False]&,ExchangeRotOff,"Set to association or False"],
+(* True/False*)
+ddactive=Catch@validate[OptionValue@DDActive,BooleanQ,DDActive,"Set to true or false"],
+offresonantrabi=Catch@validate[OptionValue@OffResonantRabi,BooleanQ,OffResonantRabi,"Set to true or false"],
+stdpassivenoise=Catch@validate[OptionValue@StdPassiveNoise,BooleanQ,StdPassiveNoise,"Set to true or false"],
+(*a matrix or a boolean*)
+exchangeroton=Catch@validate[OptionValue@ExchangeRotOn,Or[SquareMatrixQ[#],BooleanQ[#]]&,ExchangeRotOn,StringForm["set to false or specify with a square matrix with dim ``^2",-1+OptionValue@qubitsNum]],
+(*probability error of depolarising and dephasing noise *)
+er1xy=fid2DepolDeph[#,OptionValue@EFSingleXY,1,FidSingleXY,True]&/@OptionValue[FidSingleXY],
+ercz=fid2DepolDeph[#,OptionValue@EFCZ,2,FidCZ,True]&/@OptionValue[FidCZ],
+(* frequently used stuff *)
+qubits=Range[0,-1+OptionValue@qubitsNum]
+},
+
+Module[
+{\[CapitalDelta]T, miseq,initf,measf, passivenoisecirc, offresrabi, stdpn, exczon,durinit,sroterr,g2=False},
+stdpn[q_,dd_,dur_]:=If[stdpassivenoise,
+If[dd,{Subscript[Deph, q][.5(1-E^(-dur/t2[q]))],Subscript[Depol, q][.75(1-E^(-dur/t1[q]))]},
+{Subscript[Deph, q][.5(1-E^(-dur/t2s[q]))],Subscript[Depol, q][.75(1-E^(-dur/t1[q]))]}],
+{}];
+passivenoisecirc[q_Integer,g2_,dur_]:=Flatten@{
+If[\[Not]g2&&q<qubitsnum-1 && AssociationQ@exchangerotoff,Subscript[C, q][Subscript[Rz, q+1][(2dur/\[Pi])*exchangerotoff[q]]],{}],stdpn[q,ddactive,dur]
+};
+(*single rotation noise *)
+offresrabi[q_,\[Theta]_]:=If[offresonantrabi,
+Table[Subscript[U, j][OffResRabiOsc[rabifreq[q],qubitfreq[j]-qubitfreq[q],Abs[\[Theta]]]],{j,Delete[qubits,q+1]}],{}];
+
+(*Exchange rotation C-Rz[j] interaction when CZ gate on*)
+exczon[targ_]:=If[ListQ@exchangeroton,Subscript[C, #-1][Subscript[Rz, #][exchangeroton[[targ,#]]]]&/@Delete[Range[qubitsnum-1],targ],{}];
+
+(*Errors on single rotations*)
+sroterr[q_,\[Theta]_]:=Flatten@{Subscript[Depol, q][er1xy[q][[1]]],Subscript[Deph, q][er1xy[q][[2]]],offresrabi[q,\[Theta]]};
+(*measurement and initialisation sequence*)
+miseq[q__]:=(Length@{q}>1)&&((Sort[{q}]===Range[0,Max@q])||(Sort[{q}]===Range[Min@q,-1+qubitsnum]));
+(* final init state is 1000...0001: 2 reads+1 cond-X *)
+		
+initf[q__]:=Which[MemberQ[{q},0],(*start*)
+		Flatten@{
+		(*mimics 2 readout *)
+		{Subscript[Damp, 0][1-(1-Sqrt[fidread])^2],Subscript[X, 0],Subscript[Damp, 1][1-(1-Sqrt[fidread])^2]},
+		(* perfect partial swaps + 1 readout *)
+		Table[{Subscript[C, i][Subscript[X, i-1]],sroterr[i-1,\[Pi]],sroterr[i-1,\[Pi]],Subscript[C, i-1][Subscript[X, i]],sroterr[i,\[Pi]],sroterr[i,\[Pi]]},{i,Complement[{q},{0,1}]}]
+		,
+		{Subscript[Damp, 1][1-(1-fidread)]}
+		}
+		,
+		MemberQ[{q},qubitsnum-1],
+		(*end*)
+		Flatten@{
+		{Subscript[Damp, qubitsnum-1][1-(1-Sqrt@fidread)^2],Subscript[X, qubitsnum-1],Subscript[Damp, qubitsnum-2][1-(1-Sqrt@fidread)^2]},
+		(* perfect partial swaps + 1 readout *)
+		Table[{Subscript[C, i][Subscript[X, i+1]],sroterr[i+1,\[Pi]],sroterr[i+1,\[Pi]],Subscript[C, i+1][Subscript[X, i]],sroterr[i,\[Pi]],sroterr[i,\[Pi]]},{i,Complement[{q},{qubitsnum-1,qubitsnum-2}]}]
+		,
+		{Subscript[Damp, qubitsnum-2][1-(1-fidread)]}
+		}
+		,
+		True,
+		Throw[Message[Init::error,"Error in Init operation"]]
+];
+
+		
+(*duration of a single initialisation: 3 readout + 2X + 1 CX *)	
+durinit[q__]:=durread*3+1.5*Total[Flatten@Table[rabifreq[i],{i, Complement[{q},{0,qubitsnum-1}]}]]; 
+						
+(* measurment has bitflip errors at the edge and single qubit errors in the middle *)		
+measf[q__]:=Which[
+	MemberQ[{q},0],(*start*)
+	Flatten@{
+	(*mimics 2 readout  *)
+	{bitFlip[1-(1-fidread)^2,0,1],Subscript[M, 0],Subscript[M, 1],Subscript[Damp, 0][1-(1-fidread)^2],Subscript[X, 0],Subscript[Damp, 1][1-(1-fidread)^2]},
+	(* 2 rotation errors + 1 readout *)
+	Table[{Subscript[Depol, i][er1xy[i][[1]]],Subscript[Deph, i][er1xy[i][[2]]],Subscript[M, i],Subscript[Damp, i][1-(1-fidread)]},{i,Complement[{q},{0,1}]}]
+	}
+	,
+	MemberQ[{q},qubitsnum-1],(*end*)
+	Flatten@{
+	(*mimics 2 readout  *)
+	{bitFlip[1-(1-fidread)^2,qubitsnum-1,qubitsnum-2],Subscript[M, qubitsnum-1],Subscript[M, qubitsnum-2],Subscript[Damp, qubitsnum-1][1-(1-fidread)^2],Subscript[X, qubitsnum-1],Subscript[Damp, qubitsnum-2][1-(1-fidread)^2]},
+	(* 2 rotation errors + 1 readout *)
+	Table[{Subscript[Depol, i][er1xy[i][[1]]],Subscript[Deph, i][er1xy[i][[2]]],Subscript[M, i],Subscript[Damp, i][1-(1-fidread)]},{i,Complement[{q},{qubitsnum-1,qubitsnum-2}]}]
+	}
+	,
+	True,
+	Throw[Message[M::error,"Error in Measurement operation"]]
+];
+
+<|
+(*no hidden qubits/ancilla here *)
+DeviceType->"SiliconDelft",
+DeviceDescription -> "Delft Silicon device with "<>ToString[qubitsnum]<>"-qubits arranged as a linear array with nearest-neighbor connectivity and control qubits are the lower ones.",
+NumAccessibleQubits -> qubitsnum,
+NumTotalQubits -> qubitsnum,
+
+Aliases -> {
+	Subscript[Wait, q__][t_] :> {},
+	Subscript[Init, q__]:> {},
+	Subscript[Meas, q__]:> {}
+	}
+	,	
+Gates ->{
+	Subscript[Wait, q__][t_]:><|
+		NoisyForm->Flatten@Table[passivenoisecirc[i,False,2t],{i,Flatten@{q}}],
+		GateDuration->t,
+		UpdateVariables->Function[g2=False]
+	|>,
+(* Measurements and initialisation *)
+	Subscript[Meas, q__]/; miseq[q] :><|
+		NoisyForm-> measf[q],
+		GateDuration->durread,
+		UpdateVariables->Function[g2=False]
+	|>,
+	Subscript[Init, q__]/; miseq[q] :><|
+		NoisyForm-> initf[q],
+		GateDuration-> durinit[q],
+		UpdateVariables->Function[g2=False]
+	|>,		
+(* Singles *)
+	Subscript[Rx,q_][\[Theta]_]:><|
+		NoisyForm->Flatten@{Subscript[Rx, q][\[Theta]],sroterr[q,\[Theta]],sroterr[q,\[Theta]]},
+		GateDuration->Abs[\[Theta]]/(2\[Pi]*rabifreq[q]),
+		UpdateVariables->Function[g2=False] 
+	|>,
+	Subscript[Ry,q_][\[Theta]_]:><|
+		NoisyForm->Flatten@{Subscript[Ry, q][\[Theta]],sroterr[q,\[Theta]],sroterr[q,\[Theta]]},
+		GateDuration->Abs[\[Theta]]/(2\[Pi]*rabifreq[q]),
+		UpdateVariables->Function[g2=False]
+	|>,
+(* Twos *)
+	Subscript[C, p_][Subscript[Z, q_]]/; (q-p)===1  :><|
+		(*The last bit undo the exchange in the passive noise *)
+		NoisyForm->{Subscript[C, p][Subscript[Z, q]],Subscript[Depol, p,q][ercz[p][[1]]],Subscript[Deph, p,q][ercz[p][[2]]],Sequence@@exczon[q],Subscript[Depol, p,q][ercz[p][[1]]],Subscript[Deph, p,q][ercz[p][[2]]],Sequence@@exczon[q]}, 
+		GateDuration->0.5/freqcz[p],
+		UpdateVariables->Function[g2=True] 
+	|>		
+},
+(* Declare that \[CapitalDelta]t will refer to the duration of the current gate/channel. *)
+DurationSymbol -> \[CapitalDelta]T, 
+(* Passive noise *)
+Qubits :> {
+		q_/;(0<=q<qubitsnum) :> <|
+		PassiveNoise ->passivenoisecirc[q,g2,2\[CapitalDelta]T]
+		|>		 
+		}	
+	|>
+]
+]
+(***** ENDOF SILICON_DELFT2 *****)
+
+
+
+
+
+
+
+
+
 SetAttributes[GetNoisyForm,HoldAll]
 Options[GetNoisyForm]={
 ReplaceAliases->True,
