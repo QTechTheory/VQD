@@ -34,7 +34,6 @@ NVCenterHub::usage="Returns device specification of a Nitrogen-Vacancy diamond c
 ToyDevice::usage="Return a specification with simple standard model.";
 
 ParameterDevices::usage="Show all parameters used to specify all devices. To see parameters related to a device, e.g., NVCenterHub, use Options[NVCenterHub].";
-GetNoisyForm::usage="GetNoisyForm[circuit,dev,ReplaceAlises->False,Parallel->None]. Return the noisy form of circuit with device specification dev. Parameter dev might be altered after this. Set CheckOnly->True to preserves the device states";
 
 (* Other functions *)
 CheckOnly::usage="Set to True or False. True, then the device is copied and device state remains. This is useful for virtual devices with swapping spatial locations.";
@@ -46,8 +45,9 @@ Wait::usage="Wait gate, doing nothing";
 Init::usage="Initialise qubit to state |0>";
 CZ::usage="Controlled-Z operation";
 Ent::usage="Remote entanglement operation";
-SplitZ::usage="SplitZ[node, zone_destination]. Split a string of ions in a zone of a trapped-ion Oxford device";
-CombS::usage="CombS[node, zone_destination]. Combine a string of ions to a zone of a trapped-ion Oxford device";
+Splz::usage="Splz[node, zone_destination]. Split a string of ions in a zone of a trapped-ion Oxford device";
+Shutl::usage="Shutl[node,zone_dest]. Shuttle the qubit(s) to the destination zone";
+Comb::usage="Comb[node, zone_destination]. Combine a string of ions to a zone of a trapped-ion Oxford device";
 PSW::usage="PSW[\[Theta]], parameterised swaps";
 ToZone::usage="ToZone[node,zone_destination]. Shift qubit q to zone_destination.";
 (*Visualisations*)
@@ -62,7 +62,7 @@ DurMeas::usage="Duration of measurement";
 DurInit::usage="Duration of initialisation";
 DurRead::usage="Readout duration in \[Mu]s";
 DurShuffle::usage="Duration to shuffle location of ions";
-DurMove::usage="Duration for physically moving operation in Trapped Ions such as SplitZ and CombS.";
+DurMove::usage="Duration for physically moving operation in Trapped Ions such as Splz and Comb.";
 DDActive::usage="Apply dynamical decoupling: use T2 in the model if set True, otherwise use T2* if set False.";
 entangling::usage="Crosstalk error model pre equation (4) on applying the XX M\[OSlash]lmer\[Dash]S\[OSlash]rensen gate";
 ErrCT::usage="Error coefficient of the crosstalk with entanglement model";
@@ -96,6 +96,7 @@ ParallelGates::usage="Gates that are executed in parallel even with the call Ser
 Parallel::usage="Parallelize the circuit according to the device rule. Set to None(complete serial), Automatic (parallelise automatically), All(parallelise completely), False(do nothing).";
 qubitsNum::usage="The number of physical active qubits for computations.";
 QubitFreq::usage="The Qubit frequency for each qubit with unit MHz.";
+QMap::usage="Show maps from nodes in trapped ions to the actual emulated qubits";
 RabiFreq::usage="The Rabi frequency frequency in average or on each qubit with unit MHz.";
 RepeatRead::usage="The number of repeated readout (n) performed. The final fidelity of readout is \!\(\*SuperscriptBox[\(FidRead\), \(n\)]\).";
 Meas::usage="Perform measurement on the qubits";
@@ -527,29 +528,35 @@ getZone[q_,node_]:=(Association@Flatten@Table[Table[v->k,{v,node[k]}],{k,Keys@no
 (* Legitimate split move *)
 legSplit[nodes_,nodename_,q1_,q2_,zone_]:=With[{z1=getZone[q1,nodes[nodename]],z2=getZone[q2,nodes[nodename]],node=nodes[nodename]},
 If[z1!=z2,Return@False];
+If[(z1===zone)||(z2===zone),Return@False];
 If[Abs[Position[node[z1],q1][[1,1]]- Position[node[z1],q2]][[1,1]]!=1,Return@False];
 If[Length@Flatten[Table[node[z],{z,Range[Min[z1,zone]+1,Max[z1,zone]-1]}]]>0,Return@False];
 True
 ]
 
-(* change the zone of a single qubit *)
-legToZone[nodes_,nodename_,q_,zone_]:=With[
-{zstart=getZone[q,nodes[nodename]],
-node=nodes[nodename]},
-Length@Flatten[Table[node[z],{z,Range[Min[zone,zstart]+1,Max[zone,zstart]-1]}]]===0
+(* Shuttling qubits to zone *)
+legShutl[nodes_,nodename_,zone_,qubits__]:=With[
+{zstart=getZone[#,nodes[nodename]]&/@{qubits},node=nodes[nodename]},
+If[\[Not]Equal@@zstart,Return@False];
+If[nodes[nodename][zstart[[1]]]!={qubits},Return@False];
+Length@Flatten[Table[node[z],{z,Range[Min[zone,zstart[[1]]]+1,Max[zone,zstart[[1]]]-1]}]]===0
 ]
 
 (*Legitimate combine moves *)
 legComb[nodes_,nodename_,q1_,q2_,zonedest_:None]:=Module[{zone,node=nodes[nodename],z1,z2,cond1,cond2,zstart,ps,pz,qs,qz,cond3},
 	(* combine to the one of the zone *)
-	z1=getZone[q1,node];z2=getZone[q2,node];
-	(*unspecified zone destination*)
-	zone=If[zonedest===None,z1,zonedest];
-	cond1=Or[z1===zone,z2===zone];
-	If[\[Not]cond1,Return[False]];
+	z1=getZone[q1,node];
+	z2=getZone[q2,node];
+	
+	(*unspecified zone destination must be done within the same zone*)
+	zone=If[zonedest===None, z1, zonedest];
+	cond1=Or[z1===zone, z2===zone];
+	If[\[Not]cond1, Return[False]];
 	If[z1===zone,
 		zstart=z2;qs=q2;qz=q1,
-		zstart=z1;qs=q1;qz=q2];
+		zstart=z1;qs=q1;qz=q2
+	];
+		
 	(* merge from start zone to zone destination *)
 	ps=Position[node[zstart],qs][[1,1]];
 	pz=Position[node[zone],qz][[1,1]];
@@ -570,7 +577,7 @@ legComb[nodes_,nodename_,q1_,q2_,zonedest_:None]:=Module[{zone,node=nodes[nodena
 	cond3=If[zone===zstart,
 	True,
 	Length@Flatten[Table[node[z],{z,Range[Min[zstart,zone]+1,Max[zstart,zone]-1]}]]===0];
-	If[\[Not]cond3,Return[False]];
+	If[\[Not]cond3, Return[False]];
 	True
 ]
 
@@ -597,12 +604,19 @@ Subscript[splitZ, i_,j_][inodes_,node_,zone_]:=Module[{zq1,zq2,pos,sq,szone,node
 ]
 
 (* move qubit q to a zone*)
-Subscript[toZone, q_][inodes_,node_,zone_]:=Module[{szone,nodes},
-	(** TODO **)
+Subscript[shutl, q__][inodes_,node_,zone_]:=Module[{szone, nodes},
 	nodes=inodes;
-	szone=getZone[q,nodes[node]];
+	szone=getZone[{q}[[1]],nodes[node]];
+	If[zone>szone,
+	nodes[node][zone]=Join[nodes[node][szone],nodes[node][zone]]
+	,
+	nodes[node][zone]=Join[nodes[node][zone],nodes[node][szone]]
+	];
+	nodes[node][szone]={};
+	nodes
 ]
-Subscript[CombS, i_,j_][inodes_,nodename_,zone_]:=Module[{nodes,node,z1,z2,ps,pz,sq,zstart,qs,qz},
+
+Subscript[comb, i_,j_][inodes_,nodename_,zone_]:=Module[{nodes,node,z1,z2,ps,pz,sq,zstart,qs,qz},
 	nodes=inodes;
 	node=nodes[nodename];
 	z1=getZone[i,node];
@@ -659,7 +673,7 @@ Module[
 {\[CapitalDelta]t, nodes, qmap, qnum, passivenoise,checkpsd,checklog,checkrent,gnoise,swaploc,connectivity},
 {nodes,qmap,qnum}=createNodes[initnodes];
 
-(* empty list of connectivitiy of two-qubit gates generated by CombS gate. stored as graphs *)
+(* empty list of connectivitiy of two-qubit gates generated by Comb gate. stored as graphs *)
 connectivity=Association[Table[ n->
 With[{vex=nodes[n][1]},
 Graph[Table[vex[[i]]\[UndirectedEdge]vex[[i+1]],{i,-1+Length@vex}]]],
@@ -699,17 +713,18 @@ DeviceDescription -> StringForm["Trapped ion device Oxford style with ``. nodes"
 NumAccessibleQubits -> qnum,
 NumTotalQubits -> qnum,
 Nodes:>nodes,
+QMap:>qmap,
 ShowNodes:>showIons[nodes,connectivity],
-(* Init, Read, Rx, Ry, C[Z], Ent[node1,node2], SWAP, SplitZ, CombS  *)
+(* Init, Read, Rx, Ry, C[Z], Ent[node1,node2], SWAP, Splz, Comb  *)
 Aliases -> {
 	Subscript[Wait, q__][node_,t_] :> {},
 	Subscript[Init, q_][fid_]:> Subscript[Damp, q][fid],
-	Subscript[SplitZ, i_,j_]:> Sequence@@{},
-	Subscript[CombS, i_,j_]:>Sequence@@{},
+	Subscript[Splz, i_,j_]:> Sequence@@{},
+	Subscript[Comb, i_,j_]:>Sequence@@{},
 	Subscript[Read, q_]:>Subscript[M, q],
-	Subscript[Ent, p_,q_]:>Sequence@@{Subscript[H, p],Subscript[C, p][Subscript[X, q]]},
-	Subscript[SWAP, i_,j_][t_]:>Sequence@@{},
-	Subscript[ToZone, i_,j_]:>Sequence@@{}
+	Subscript[Ent, p_,q_]:>Sequence@@{Subscript[Damp, p][1],Subscript[Damp, q][1],Subscript[X, q],Subscript[H, p],Subscript[C, p][Subscript[X, q]]},
+	Subscript[SWAPLoc, i_,j_][t_]:>Sequence@@{},
+	Subscript[Shutl, q__]:>Sequence@@{}
 	}
 	,	
 Gates ->{
@@ -741,42 +756,43 @@ Gates ->{
 		NoisyForm->passivenoise[node,t],
 		GateDuration->t
 	|>,
-	Subscript[SWAP, i_,j_][node_]/;checklog[i,j,node] :><|
-		NoisyForm->{Subscript[SWAP, qmap[node][i],qmap[node][j]][durmove[node]]},
+	Subscript[SWAPLoc, i_,j_][node_]/;checklog[i,j,node] :><|
+		NoisyForm->{Subscript[SWAPLoc, qmap[node][i],qmap[node][j]][durmove[node]]},
 		GateDuration->durmove[node],
 		UpdateVariables->Function[nodes=swaploc[i,j,node]]
 	|>,
-	ToZone[q_][node_,zonedst_]/;legToZone[nodes,node,q,zone]:><|
-		NoisyForm->{Subscript[ToZone, qmap[node][q]]},
-		GateDuration->0,
+	
+	Subscript[Shutl, q__][node_, zone_]/;legShutl[nodes,node,zone,q]:><|
+		NoisyForm->{Subscript[Shutl, Sequence[qmap[node]/@{q}]]},
+		GateDuration->durmove[node],
 		UpdateVariables->Function[
-			nodes=toZone[]
+		nodes=Subscript[shutl, q][nodes,node,zone]
 		]
 	|>,
 	
-	Subscript[SplitZ, i_,j_][node_,zone_]/;legSplit[nodes,node,i,j,zone] :><|
-		NoisyForm-> Flatten@{Subscript[SplitZ, qmap[node][i],qmap[node][j]]},
+	Subscript[Splz, i_,j_][node_,zone_]/;legSplit[nodes,node,i,j,zone] :><|
+		NoisyForm-> Flatten@{Subscript[Splz, qmap[node][i],qmap[node][j]]},
 		GateDuration->durmove[node],
 		UpdateVariables->Function[
 		nodes=Subscript[splitZ, i,j][nodes,node,zone];
 		If[EdgeQ[connectivity[node],i\[UndirectedEdge]j],connectivity[node]=EdgeDelete[connectivity[node],i\[UndirectedEdge]j]];
 		]
 	|>,
-	Subscript[CombS, i_,j_][node_,zone_]/;legComb[nodes,node,i,j,zone]:><|
-		NoisyForm->Flatten@{Subscript[CombS, qmap[node][i],qmap[node][j]]},
+	Subscript[Comb, i_,j_][node_,zone_]/;legComb[nodes,node,i,j,zone]:><|
+		NoisyForm->Flatten@{Subscript[Comb, qmap[node][i],qmap[node][j]]},
 		GateDuration->durmove[node],
 		UpdateVariables->Function[
-		nodes=Subscript[CombS, i,j][nodes,node,zone];
+		nodes=Subscript[comb, i,j][nodes,node,zone];
 		If[\[Not]EdgeQ[connectivity[node],i\[UndirectedEdge]j],
 		connectivity[node]=EdgeAdd[connectivity[node],i\[UndirectedEdge]j]]
 		]	
 	|>,
 	(* combine within the same zone *)
-		Subscript[CombS, i_,j_][node_]/;legComb[nodes,node,i,j]:><|
-		NoisyForm->Flatten@{Subscript[CombS, qmap[node][i],qmap[node][j]]},
+		Subscript[Comb, i_,j_][node_]/;legComb[nodes,node,i,j]:><|
+		NoisyForm->Flatten@{Subscript[Comb, qmap[node][i],qmap[node][j]]},
 		GateDuration->durmove[node],
 		UpdateVariables->Function[
-		nodes=Subscript[CombS, i,j][nodes,node,getZone[i,nodes[node]]];
+		nodes=Subscript[comb, i,j][nodes,node,getZone[i,nodes[node]]];
 		If[\[Not]EdgeQ[connectivity[node],i\[UndirectedEdge]j],
 		connectivity[node]=EdgeAdd[connectivity[node],i\[UndirectedEdge]j]]
 		] 
@@ -791,10 +807,6 @@ Qubits :> {}
 ]
 ]
 (*******  ENDOF_TRAPPED_IONS_OXFORD   *****)
-
-
-
-
 (********************MACHINE COLLETIONS WITH NOISE TWICE AS BAD************************)
 
 (***** SILICON_DELFT2 *****)
@@ -970,20 +982,13 @@ Qubits :> {
 (***** ENDOF SILICON_DELFT2 *****)
 
 
-
-
-
-
-
-
-
-SetAttributes[GetNoisyForm,HoldAll]
-Options[GetNoisyForm]={
-ReplaceAliases->True,
-Parallel->None,
-CheckOnly->False
+(******* GENERAL FUNCTIONS ***********)
+SetAttributes[TotalCircTrappedion, HoldAll]
+Options[TotalCircTrappedion]={
+MapQubits->False,
+Parallel->False
 };
-GetNoisyForm[circuit_,device_,OptionsPattern[]]:=Module[{
+TotalCircTrappedion[circuit_,device_,OptionsPattern[]]:=Module[{
 parallel=OptionValue[Parallel],
 dev=device[DeviceType],
 check=OptionValue[CheckOnly],
@@ -1010,6 +1015,7 @@ OptionValue[CheckOnly],
 	InsertCircuitNoise[circ,device,ReplaceAliases->OptionValue[ReplaceAliases]]
 ]
 ]
+
 RandomMixState[nqubits_]:=Module[{size=2^nqubits,gm,um,dm,id},
 (* Random states generation: https://iitis.pl/~miszczak/files/papers/miszczak12generating.pdf *)
 (* random ginibre matrix *)
@@ -1054,45 +1060,14 @@ ParallelGates=<|
 "NVCenterHub"->{}
 |>;
 
-SetAttributes[SerializeCircuit,HoldAll]
-parallelizeCircuit[circuit_,devicetype_]:=Module[{circ=circuit,newcircc,circols,idxcol,incol,g1,g2,idx1,idx2},
-newcircc={};
-While[Length@circ>0 ,
-circols=GetCircuitColumns[circ];
-(* update equivalent ordering of the circuit *)
-circ=Flatten@circols;
-(* get indices partitioned wrt circols *)
-idxcol=TakeList[Range[Length@circ],Length@#&/@circols][[1]];
-
-(* eliminate non-legitimate gates of the first column *)
-AppendTo[newcircc,{}];
-incol=<| #->True & /@idxcol |>;
-
-Table[
-If[incol[i1],
-	(* add gate i1 and eliminate the rest *)
-	AppendTo[newcircc[[-1]],circ[[i1]]];
-	Table[
-	If[incol[[i2]],
-		{g1,idx1}=gateIndex[circ[[i1]]];
-		{g2,idx2}=gateIndex[circ[[i2]]];
-		incol[[i2]]=MemberQ[ParallelGates[devicetype],(g1|g2)]
-	],{i2,Complement[idxcol,{i1}]}];
-],{i1,idxcol}];
-(* update circuit *)
-circ=Delete[circ,{#}&/@Keys@Select[incol,#&]];
-];
-newcircc
-]
 
 (*Partial trace on n-qubit
 1) reshape to the tensor:ConstantArray[2,2*n]
 2) contract
 3) reshape to matrix with dim2^mx2^mwhere m=(n-#contract)
 *)
-PartialTrace[\[Rho]_List,qubits__]:=ptrace[\[Rho],qubits]
-PartialTrace[\[Rho]_Integer,qubits__]:=ptrace[GetQuregMatrix[\[Rho]],qubits]
-
+PartialTrace[\[Rho]_List, qubits__]:=ptrace[\[Rho],qubits]
+PartialTrace[\[Rho]_Integer, qubits__]:=ptrace[GetQuregMatrix[\[Rho]],qubits]
 ptrace[\[Rho]mat_List,qubits__]:=Module[{tmat,nq,pmat,nfin,pairs},
 nq=Log2@Length@\[Rho]mat;
 (*tensorize*)
