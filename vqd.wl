@@ -41,6 +41,7 @@ RandomMixState::usage="RandomMixState[nqubits, nsamples:None]. Return a random m
 
 (* Custom gates *)
 SWAPLoc::usage="Swap the spatial locations of two qubits";
+ShiftLoc::usage="ShiftLoc[v] the physical coordinate of a qubit by some vector v.";
 Wait::usage="Wait gate, doing nothing";
 Init::usage="Initialise qubit to state |0>";
 CZ::usage="Controlled-Z operation";
@@ -49,11 +50,22 @@ Splz::usage="Splz[node, zone_destination]. Split a string of ions in a zone of a
 Shutl::usage="Shutl[node,zone_dest]. Shuttle the qubit(s) to the destination zone";
 Comb::usage="Comb[node, zone_destination]. Combine a string of ions to a zone of a trapped-ion Oxford device";
 PSW::usage="PSW[\[Theta]], parameterised swaps";
+UG::usage="Single unitary gate rotation obtained by the evolution of driven qubit, e.g., by laser: UG[\[Phi],\[CapitalDelta],t,\[CapitalOmega]], where \[Phi] is laser phase, \[CapitalDelta] is detuning, t is laser duration, and \[CapitalOmega] is the Rabi frequency.";
+SRot::usage="Single qubit gate in a driven Rydberg qubit via two-photon Raman transition: SRot[\[Phi],\[CapitalDelta],t] where \[Phi] is laser phase, \[CapitalDelta] is detuning, t is laser duration.";
 
 (*Visualisations*)
 DeviceType::usage="The type of device. Normally, the name of the function that generates it.";
 DrawIons::usage="Draw the current string of ions";
 
+(** PlotAtoms options for Rydberg device **)
+PlotAtoms::usage="PlotAtoms[device]. Plot the atoms of a Rydberg device. Set ShowBlockade->{qubits} to show the blockade radius. Set ShowLossAtoms->True, to show the atoms that are loss as well.";
+PlotAtoms::error="`1`";
+Options[PlotAtoms]={
+ShowBlockade->{},
+ShowLossAtoms->False
+};
+ShowBlockade::usage="List the qubits to draw the blockade radius.";
+ShowLossAtoms::usage="Set true to show the atoms lost into the evironment. This shows the last coordinate before being lost.";
 (* Options for functions *)
 Parallel::usage="Parallel options in arrangement of gates: False, Default, All. 
 False: serial, default: parallel according to the device specification, and All: full quantum parallel";
@@ -71,8 +83,10 @@ CircSiliconDelft::error="`1`";
 
 BeginPackage["`ParameterDevices`"];
 (* Parameters *)
+AtomLocations::usage="Three-dimensional physical locations of each atom/qubit.";
 BFProb::usage="Probability of bit-flip error";
 BField::usage="The electromagnetic field strength in the z-direction from the lab reference with unit Tesla.";
+BlockadeRadius::usage="Short-range dipole-dipole interaction of Rydberg atoms in \[Mu]s. This allows multi-qubit gates.";
 DurTwoGate::usage="Duration of two qubit gates with rotation of \[Pi]";
 DurMeas::usage="Duration of measurement";
 DurInit::usage="Duration of initialisation";
@@ -104,6 +118,8 @@ FreqSingleXY::usage="Rabi frequency(ies) for the single X- and Y- rotations with
 FreqCZ::usage="Rabi frequency(ies) for the CZ gate with unit MHz.";
 FreqEnt::usage="Frequency of remote entanglement.";
 FidRead::usage="Readout fidelity";
+LossAtoms::usage="Device key in the RydbergHub device that identifies atoms lost to the environment.";
+LossAtomsProbability::usage="Device key in the RydbergHub that identifies probability of atoms lost to the environment due to repeated measurement.";
 MSCrossTalk::usage="(entangling OR starkshift) The crosstalk model in applying M\[OSlash]lmer\[Dash]S\[OSlash]rensen gate";
 Nodes::usage="Entire nodes of a trapped ions system <|node1 -> number_of_qubits_1, ... |>";
 NIons::usage="The total number of ions in a trapped ion device.";
@@ -111,16 +127,21 @@ OffResonantRabi::usage="Put the noise due to off-resonant Rabi oscillation when 
 qubitsNum::usage="The number of physical active qubits for computations.";
 QubitFreq::usage="The Qubit frequency for each qubit with unit MHz.";
 QMap::usage="Show maps from nodes in trapped ions to the actual emulated qubits";
+Meas::usage="Perform measurement on the qubits";
+ProbLeakInit::usage="Leakage probability in the Rydberg initialisation. The noise is decribed with non-trace-preserving map.";
+ProbLeakCZ::usage="Leakage probability in executi multi-controlled-Z.";
+ProbLossMeas::usage="Probability of phyiscal atom loss due to measurement.";
 RabiFreq::usage="The Rabi frequency frequency in average or on each qubit with unit MHz.";
 RepeatRead::usage="The number of repeated readout (n) performed. The final fidelity of readout is \!\(\*SuperscriptBox[\(FidRead\), \(n\)]\).";
-Meas::usage="Perform measurement on the qubits";
-TwoGateFreq::usage="Resonant frequency of two qubit gates";
 starkshift::usage="Crosstalk error model using stark shift on modeled with MS gate Exp[-i\[Theta]XX], M\[OSlash]lmer\[Dash]S\[OSlash]rensen gate";
 ScatProb::usage="Scattering probability";
 ShowNodes::usage="Draw all Ions on every nodes within the zones";
 T1::usage="T1 duration(s) in \[Mu]s. Exponential decay time for the state to be complete mixed.";
 T2::usage="T2 duration(s) in \[Mu]s. Exponential decay time for the state to be classical with echo applied.";
 T2s::usage="T2* duration(s) in \[Mu]s. Exponential decay time for the state to be classical.";
+TwoGateFreq::usage="Resonant frequency of two qubit gates";
+UnitLattice::usage="The unit lattice AtomLocations in \[Mu]s. This gives access to internal device parameter in RydbergHub device.";
+VacLifeTime::usage="The lifetime of the qubit array is limited by its vacuum lifetime, where T1=VacTime/Nqubits.";
 StdPassiveNoise::usage="Set to True/False. Use the standard passive noise that involves T1, T2 or T2s inputs.";
 BField::error="`1`";
 DurInit::error="`1`";
@@ -141,6 +162,9 @@ QubitFreq::error="`1`";
 Nodes::error="`1`";
 qubitsNum::error="`1`";
 OffResonantRabi::error="`1`";
+ProbLeakInit::error="`1`";
+ProbLeakCZ::error="`1`";
+ProbLossMeas::error="`1`";
 RabiFreq::error="`1`";
 StdPassiveNoise::error="`1`";
 T1::error="`1`";
@@ -153,6 +177,7 @@ FidSingle::warning="`1`";
 FidTwo::warning="`1`";
 FidMeas::warning="`1`";
 FidInit::warning="`1`";
+
 EndPackage[];
 
 (*******All definitions of modules****)
@@ -178,6 +203,14 @@ OffResRabiOsc::usage="OffResRabiOsc[rabi_freq, qubit_freq_diff, duration] Off re
 OffResRabiOsc[\[CapitalOmega]_,\[CapitalDelta]_,t_]:=With[{\[CapitalOmega]R=Sqrt[\[CapitalOmega]^2+\[CapitalDelta]^2]},
 E^(I \[CapitalDelta] t/2) {{Cos[\[CapitalOmega]R*t/2]-I*Sin[\[CapitalOmega]R*t/2]*\[CapitalDelta]/\[CapitalOmega]R,  -I*Sin[\[CapitalOmega]R*t/2]*\[CapitalOmega]/\[CapitalOmega]R            },
 			  {-I*Sin[\[CapitalOmega]R*t/2]*\[CapitalOmega]/\[CapitalOmega]R,             Cos[\[CapitalOmega]R*t/2]+I Sin[\[CapitalOmega]R*t/2]*\[CapitalDelta]/\[CapitalOmega]R}}				 					  			  
+]
+
+Subscript[UG, q_][\[Phi]_,\[CapitalDelta]_,t_,\[CapitalOmega]_]:=Module[{v\[CapitalDelta],vt,\[Omega]},
+	Subscript[U, q][FullSimplify[
+	{{Cos[\[Omega] vt/2]-I v\[CapitalDelta]/\[Omega] Sin[\[Omega] vt/2],-I \[CapitalOmega]/\[Omega] Sin[\[Omega]  vt/2] E^(I \[Phi])},
+	 {-I \[CapitalOmega]/\[Omega] Sin[\[Omega] vt/2]E^(I \[Phi]),     Cos[\[Omega] vt/2]+I \[CapitalDelta]/\[Omega] Sin[\[Omega] vt/2]}
+	}//.{v\[CapitalDelta]->\[CapitalDelta],\[Omega]->Sqrt[\[CapitalOmega]^2+v\[CapitalDelta]^2],vt->t},{\[CapitalOmega]>=0,v\[CapitalDelta]>=0}]
+	]
 ]
 
 fid2DepolDeph::usage = "fid2DepolDeph[totFid, {ratio.Depol,ratio.Deph}, nqerr, err, avgfid:True]. 
@@ -266,8 +299,8 @@ genAmp[\[Gamma]_,p_,q_]:=Subscript[Kraus, q][{
 	Sequence@@If[p<1, 
 	{Sqrt[1-p]*{{Sqrt[1-\[Gamma]],0},{0,1}},
 	Sqrt[1-p]*{{0,0},{Sqrt[\[Gamma]],0}}},{}]}]
+		
 (***** TOY_DEVICE *****)
-
 ToyDevice[OptionsPattern[]]:=With[
 {
 qubitsnum=OptionValue[qubitsNum],
@@ -339,6 +372,231 @@ Qubits :> {
 	|>
 ]
 ]
+
+(**************************** RYDBERG_HUB *****************************)
+RydbergHub[OptionsPattern[]]:=With[
+{
+	qubitsnum=OptionValue@qubitsNum,
+	atomlocations=OptionValue@AtomLocations,
+	t2=OptionValue@T2,
+	vaclifetime=OptionValue@VacLifeTime,
+	rabifreq=OptionValue@RabiFreq,
+	unitlattice=OptionValue@UnitLattice,
+	blockaderad=OptionValue@BlockadeRadius,
+	probleakinit=OptionValue@ProbLeakInit,
+	durinit=OptionValue@DurInit,
+	fidmeas=OptionValue@FidMeas,
+	durmeas=OptionValue@DurMeas,
+	problossmeas=OptionValue@ProbLossMeas,
+	probleakcz=OptionValue@ProbLeakCZ,
+	qubits=Keys@OptionValue@AtomLocations
+},
+	(**** assertions ****)
+	Catch@If[Length@atomlocations!=qubitsnum, Throw@Message[qubitsNum::error,"Missing or extra qubits in AtomLocations"]];
+	Catch@If[\[Not](0<=probleakinit<=1), Throw@Message[ProbLeakInit::error,"Needs value within [0,1]"]];
+	Catch@If[\[Not](0<=problossmeas<=1), Throw@Message[ProbLossMeas::error,"Needs value within [0,1]"]];
+	Catch@If[\[Not](0<=probleakcz<=1), Throw@Message[ProbLeakCZ::error,"Needs value within [0,1]"]];
+
+Module[{\[CapitalDelta]t, lossatoms, lossatomsprob, globaltime, stdpn, t1, legShift,atomlocs,distloc,blockadecheck},
+atomlocs=atomlocations;
+
+(* the atoms that are lost to the environment *)
+lossatoms=<|Table[k->False,{k,Keys@atomlocations}]|>;
+lossatoms[0]=True;
+lossatomsprob=<|Table[k->0,{k,Keys@atomlocations}]|>;
+t1=vaclifetime/qubitsnum;
+
+(** standard passive noise **) 
+stdpn[q_,dur_]:={Subscript[Depol, q][0.75(1-E^(-dur/t1))],Subscript[Deph, q][0.5(1-E^(-dur/t2))]};
+
+(**legitimate shift move **) 
+legShift[q_,v_]:=With[{qlocs=atomlocs},qlocs[#]+=v&/@Flatten[{q}];
+				Length@qlocs === Length@DeleteDuplicates@Values@qlocs];
+				
+(** coordiante distance measure *)
+distloc[q1_,q2_]:=Norm[atomlocs[q1]-atomlocs[q2],2]*unitlattice;
+
+(** legitimate multi-qubit gates**) 
+blockadecheck[q_List]:=And@@((distloc@@#<= blockaderad)&/@Subsets[Flatten[q],{2}]);
+
+<|
+	DeviceDescription -> ToString[qubitsnum]<>" Rydberg qubits in a 3D lattice.",
+	NumAccessibleQubits -> qubitsnum,
+	NumTotalQubits ->qubitsnum,
+
+	(** custom keys to access internal variables **)
+	LossAtomsProbability->lossatomsprob,
+	LossAtoms->lossatoms,
+	AtomLocations->atomlocs,
+	BlockadeRadius-> blockaderad,
+	UnitLattice-> unitlattice	
+,
+
+	(* Aliases are useful for declaring custom operators. At this stage the specification is noise-free (but see later) *)
+	Aliases -> {
+		Subscript[Init, q_Integer]:> {}
+		,
+		Subscript[SRot, q_Integer][\[Phi]_,\[CapitalDelta]_,tg_]:>Circuit[Subscript[UG, q][\[Phi],\[CapitalDelta],tg,rabifreq]]
+		,
+		Subscript[CZ, p_Integer,q_Integer][\[Phi]_]:>Circuit[Subscript[U, p,q][{{1,0,0,0},{0,E^(I \[Phi]),0,0},{0,0,E^(I \[Phi]),0},{0,0,0,E^(I(2 \[Phi]-\[Pi]))}}]]
+		,
+		Subscript[SWAPLoc, q1_Integer,q2_Integer]:>{}
+		,
+		Subscript[Wait, q__][t_] :>{}
+		,
+		Subscript[ShiftLoc, q__][v_]:>{}
+		,
+		(* multi-control-singleZ *)
+		Subscript[C, c_Integer][Subscript[Z, t__Integer][\[Theta]_]]:>Table[Subscript[C, c][Subscript[Z, targ]],{targ,{t}}]
+		,
+		Subscript[C, c_Integer][Subscript[Z, t__Integer]]:>Table[Subscript[C, c][Subscript[Z, targ]],{targ,{t}}]
+		,
+		(* single-control multi-Z*)
+		Subscript[C, c__Integer][Subscript[Z, t_Integer][\[Theta]_]]:>{Subscript[C, c][Subscript[Z, t]]}
+	},
+	
+	(* Global time: not yet used here *)
+	TimeSymbol-> globaltime,
+	
+	(* gates rules *)
+	Gates -> {
+	Subscript[Init, q_Integer] :> <|
+	 (* Put the electron back to the atom and reset leak probability *)
+		UpdateVariables-> Function[
+						lossatoms[q]=False;
+						lossatomsprob[q]=0],
+		NoisyForm -> {Subscript[Damp, q][1],Subscript[KrausNonTP,q][{{{Sqrt[1-probleakinit],0},{0,1}}}]}, 
+		GateDuration -> durinit
+	|>
+	,
+	Subscript[Wait, q__][dur_]/;(Complement[Flatten@{q},qubits]==={}):> <|
+	NoisyForm->Table[stdpn[j,dur],{j,Flatten@{q}}],
+	GateDuration->dur
+	|>
+	,
+	Subscript[M, q_Integer]:> <|
+	UpdateVariables-> Function[
+			lossatomsprob[q]=1-(1-lossatomsprob[q])*(1-problossmeas)],
+	NoisyForm -> {Subscript[Depol, q][fidmeas],Subscript[M, q]}, 
+	GateDuration -> durmeas
+	|>
+	(** Single-qubit gates **)
+	,
+	Subscript[SRot, q_Integer][\[Phi]_,\[CapitalDelta]_,tg_]:><|
+	NoisyForm->{Subscript[SRot, q][\[Phi],\[CapitalDelta],tg],Subscript[Deph, q][0.5(1-E^(-tg*0.5/t2))]},
+	GateDuration-> tg
+	|>
+	,
+	Subscript[H, q_Integer]:> <|
+	NoisyForm->{Subscript[H, q],Subscript[Deph, q][0.5(1-E^(-0.5/(rabifreq*t2)))]},
+	GateDuration-> \[Pi]/rabifreq
+	|>
+	,
+	Subscript[Rx, q_Integer][\[Theta]_]:><|
+	NoisyForm->{Subscript[Rx, q][\[Theta]],Subscript[Deph, q][0.5(1-E^(-0.5*Abs[\[Theta]/\[Pi]]/(rabifreq*t2)))]},
+	GateDuration-> Abs[\[Theta]]/rabifreq
+	|>
+	,
+	Subscript[Ry, q_Integer][\[Theta]_]:><|
+	NoisyForm->{Subscript[Ry, q][\[Theta]],Subscript[Deph, q][0.5(1-E^(-0.5*Abs[\[Theta]/\[Pi]]/(rabifreq*t2)))]}
+	,
+	GateDuration-> Abs[\[Theta]]/rabifreq
+	|>
+	,
+	Subscript[Rz, q_Integer][\[Theta]_]:><|
+	NoisyForm->{Subscript[Rz, q][\[Theta]],Subscript[Deph, q][0.5(1-E^(-0.5*Abs[\[Theta]/\[Pi]]/(rabifreq*t2)))]},
+	GateDuration-> Abs[\[Theta]]/rabifreq
+	|>
+	, 
+	(** two-qubit gates **)
+	Subscript[SWAPLoc, q1_Integer,q2_Integer]:> <|
+	UpdateVariables-> Function[{atomlocs[q1],atomlocs[q2]}={atomlocs[q2],atomlocs[q1]}],
+	NoisyForm-> Flatten@{stdpn[q1,4\[Pi]/rabifreq],stdpn[q2,4\[Pi]/rabifreq]},
+	GateDuration->4\[Pi]/rabifreq
+	|>
+	,
+	Subscript[ShiftLoc, q__][v_]/;legShift[Flatten@{q},v]:> <|
+	UpdateVariables-> Function[atomlocs[#]+= v &/@Flatten[{q}]],
+	NoisyForm-> stdpn[#,4\[Pi]/rabifreq]&/@Flatten[{q}],
+	GateDuration->4\[Pi]/rabifreq
+	|>
+	,
+	Subscript[CZ, p_Integer,q_Integer][\[Phi]_]/;blockadecheck[{p,q}]:><|
+	NoisyForm->{Subscript[CZ, p,q][\[Phi]],Subscript[KrausNonTP, p,q][{{{1,0,0,0},{0,Sqrt[1-probleakcz[01]],0,0},{0,0,Sqrt[1-probleakcz[01]],0},{0,0,0,Sqrt[1-probleakcz[11]]}}}]},
+	GateDuration-> Abs[\[Phi]]/rabifreq
+	|>
+	,
+	(* If argument is presented, it acts as gate duration per \[CapitalOmega]  *)
+	Subscript[C, c_][Subscript[Z, t__]]/;blockadecheck[{c,t}]:><|
+	NoisyForm->Join[Table[Subscript[C, c][Subscript[Z, targ]],{targ,{t}}], Subscript[KrausNonTP, #][{{{1,0},{0,Sqrt[1-probleakcz[11]]}}}]&/@Flatten@{c,t}],
+	GateDuration->4\[Pi]/rabifreq
+	|>
+	,
+	Subscript[C, c_][Subscript[Z, t__][\[Theta]_]]/;blockadecheck[{c,t}]:><|
+	NoisyForm ->Join[Table[Subscript[C, c][Subscript[Z, targ]],{targ,{t}}], Subscript[KrausNonTP, #][{{{1,0},{0,Sqrt[1-probleakcz[11]]}}}]&/@Flatten@{c,t}],
+	GateDuration-> Abs[\[Theta]]/rabifreq
+	|>
+	,
+	Subscript[C, c__][Subscript[Z, t_]]/;blockadecheck[{c,t}]:> <|
+	NoisyForm->Join[{Subscript[C, c][Subscript[Z, t]]},Subscript[KrausNonTP, #][{{{1,0},{0,Sqrt[1-probleakcz[11]]}}}]&/@Flatten@{c,t}],
+	GateDuration->4\[Pi]/rabifreq
+	|>
+	,
+	Subscript[C, c__][Subscript[Z, t_][\[Theta]_]]:> <|
+	NoisyForm->Join[{Subscript[C, c][Subscript[Z, t]]},Subscript[KrausNonTP, #][{{{1,0},{0,Sqrt[1-probleakcz[11]]}}}]&/@Flatten@{c,t}],
+	GateDuration->Abs[\[Theta]]/rabifreq
+	|>
+}
+,
+	DurationSymbol -> \[CapitalDelta]t,
+	(* PASSIVE NOISE *)
+		Qubits -> { q_ :> <|PassiveNoise -> stdpn[q,\[CapitalDelta]t]|>	
+	}
+|>
+	]
+]
+
+SetAttributes[PlotAtoms,HoldFirst]
+PlotAtoms[rydbergdev_,opt:OptionsPattern[{PlotAtoms,Graphics}]]:=With[
+{
+	qulocs=rydbergdev[AtomLocations],
+	blrad=rydbergdev[BlockadeRadius],
+	unit=rydbergdev[UnitLattice],
+	blockade=OptionValue[ShowBlockade],
+	showloss=OptionValue[ShowLossAtoms],
+	availqubits=KeyTake[rydbergdev[AtomLocations],Keys@Select[rydbergdev[LossAtoms],#===False&]],
+	lossqubits=KeyTake[rydbergdev[AtomLocations],Keys@Select[rydbergdev[LossAtoms],#===True&]],
+	style={ImageSize->Medium,Frame->True,Axes->True},
+	fontsize=If[OptionValue[ImageSize]===Automatic,Medium,OptionValue[ImageSize]]
+},
+Which[
+	2===Length@First@Values@qulocs,
+	Show[
+		Sequence@@Table[Graphics[{Cyan,Opacity[0.1],EdgeForm[Directive[Dashed,Pink]],Disk[unit*qulocs[b],blrad]}],{b,blockade}],
+		Sequence@@Table[Graphics[{Red,Disk[unit*v,0.15]}],{v,Values@availqubits}],
+		Sequence@@Table[Graphics[Text[Style[k,fontsize],({0.1,0.1}+qulocs[k])*unit]],{k,Keys@availqubits}],
+		If[showloss,Sequence@@Table[Graphics[{Gray,Disk[unit*v,0.15]}],{v,Values@lossqubits}],Sequence@@{}],
+		If[showloss,Sequence@@Table[Graphics[Text[Style[k,fontsize],unit*({0.1,0.1}+qulocs[k])]],{k,Keys@lossqubits}],Sequence@@{}],
+			Evaluate@FilterRules[{opt}, Options[Graphics]],Sequence@@style,AxesLabel->{"x","y"}
+	]
+	,
+	3===Length@First@Values@qulocs,
+	Show[
+		Sequence@@Table[Graphics3D[{Red,Sphere[v*unit,0.1]}],{v,Values@availqubits}],
+		Sequence@@Table[Graphics3D[{Text[Style[k,fontsize],unit*({0.15,0.15,0.15}+qulocs[k])]}],{k,Keys@availqubits}],
+		Sequence@@Table[Graphics3D[{Cyan,Opacity[0.1],Sphere[unit*qulocs[b],blrad]}],{b,blockade}],
+		If[showloss,Sequence@@Table[Graphics3D[{Gray,Sphere[unit*v,0.1]}],{v,Values@lossqubits}],{}],
+		If[showloss,Sequence@@Table[Graphics3D[Text[Style[k,fontsize],{0.15,0.15,0.15}+unit*qulocs[k]]],{k,Keys@lossqubits}],Sequence@@{}],
+		Evaluate@FilterRules[{opt}, Options[Graphics]],Sequence@@style,AxesLabel->{"x","y","z"}
+	]
+	,
+	True
+	,
+	Throw[Message[PlotAtoms::error,"Only accepts 2D- or 3D-coordinates."]]
+	]
+]
+(****************** ENDOF RYDBERG_HUB*********************)
+
 (***** SILICON_DELFT *****)
 SiliconDelft[OptionsPattern[]]:=With[
 {
@@ -392,8 +650,8 @@ Module[
 
 stdpn[q_,dd_,dur_]:=If[stdpassivenoise,
 If[dd,
-{Subscript[Deph, q][.5(1-Exp[-N[dur/t2[q],$MachinePrecision]])],genAmp[1-E^(-dur/t1[q]),1.,q]},
-{Subscript[Deph, q][.5(1-Exp[-N[dur/t2s[q],$MachinePrecision]])],genAmp[1-E^(-dur/t1[q]),1.,q]}],
+	{Subscript[Deph, q][.5(1-Exp[-N[dur/t2[q],$MachinePrecision]])],Subscript[Depol, q][0.75(1-E^(-dur/t1[q]))]},
+	{Subscript[Deph, q][.5(1-Exp[-N[dur/t2s[q],$MachinePrecision]])],Subscript[Depol, q][0.75(1-E^(-dur/t1[q]))]}],
 {}];
 passivenoisecirc[q_Integer,g2_,dur_]:=Flatten@{If[\[Not]g2&&q<qubitsnum-1 && AssociationQ@exchangerotoff,Subscript[C, q][Subscript[Rz, q+1][(dur/\[Pi])*exchangerotoff[q]]],{}],stdpn[q,ddactive,dur]};
 
@@ -459,65 +717,65 @@ measf[q__]:=Which[
 	Throw[Message[M::error,"Error in Measurement operation"]]
 ];
 
-<|
-(*no hidden qubits/ancilla here *)
-DeviceType->"SiliconDelft",
-DeviceDescription -> "Delft Silicon device with "<>ToString[qubitsnum]<>"-qubits arranged as a linear array with nearest-neighbor connectivity and control qubits are the lower ones.",
-NumAccessibleQubits -> qubitsnum,
-NumTotalQubits -> qubitsnum,
-
-Aliases -> {
-	Subscript[Wait, q__][t_] :> {},
-	Subscript[Init, q__]:> {},
-	Subscript[Meas, q__]:> {}
-	}
-	,	
-Gates ->{
-	Subscript[Wait, q__][t_]:><|
-		NoisyForm->Flatten@Table[passivenoisecirc[i,False,t],{i,Flatten@{q}}],
-		GateDuration->t,
-		UpdateVariables->Function[g2=False]
-	|>,
-(* Measurements and initialisation *)
-	Subscript[Meas, q__]/; miseq[q] :><|
-		NoisyForm-> measf[q],
-		GateDuration->durread,
-		UpdateVariables->Function[g2=False]
-	|>,
-	Subscript[Init, q__]/; miseq[q] :><|
-		NoisyForm-> initf[q],
-		GateDuration-> durinit[q],
-		UpdateVariables->Function[g2=False]
-	|>,		
-(* Singles *)
-	Subscript[Rx,q_][\[Theta]_]:><|
-		NoisyForm->Flatten@{Subscript[Rx, q][\[Theta]],sroterr[q,\[Theta]]},
-		GateDuration->Abs[\[Theta]]/(2\[Pi]*rabifreq[q]),
-		UpdateVariables->Function[g2=False] 
-	|>,
-	Subscript[Ry,q_][\[Theta]_]:><|
-		NoisyForm->Flatten@{Subscript[Ry, q][\[Theta]],sroterr[q,\[Theta]]},
-		GateDuration->Abs[\[Theta]]/(2\[Pi]*rabifreq[q]),
-		UpdateVariables->Function[g2=False]
-	|>,
-(* Twos *)
-	Subscript[C, p_][Subscript[Z, q_]]/; (q-p)===1  :><|
-		(*The last bit undo the exchange in the passive noise *)
-		NoisyForm->{Subscript[C, p][Subscript[Z, q]],Subscript[Depol, p,q][ercz[p][[1]]],Subscript[Deph, p,q][ercz[p][[2]]],Sequence@@exczon[q]}, 
-		GateDuration->0.5/freqcz[p],
-		UpdateVariables->Function[g2=True]
-	|>		
-},
-(* Declare that \[CapitalDelta]t will refer to the duration of the current gate/channel. *)
-DurationSymbol -> \[CapitalDelta]T, 
-(* Passive noise *)
-Qubits :> {
-		q_/;(0<=q<qubitsnum) :> <|
-		PassiveNoise ->passivenoisecirc[q,g2,\[CapitalDelta]T]
-		|>		 
-		}	
-	|>
-]
+	<|
+	(*no hidden qubits/ancilla here *)
+	DeviceType->"SiliconDelft",
+	DeviceDescription -> "Delft Silicon device with "<>ToString[qubitsnum]<>"-qubits arranged as a linear array with nearest-neighbor connectivity and control qubits are the lower ones.",
+	NumAccessibleQubits -> qubitsnum,
+	NumTotalQubits -> qubitsnum,
+	
+	Aliases -> {
+		Subscript[Wait, q__][t_] :> {},
+		Subscript[Init, q__]:> {},
+		Subscript[Meas, q__]:> {}
+		}
+		,	
+	Gates ->{
+		Subscript[Wait, q__][t_]:><|
+			NoisyForm->Flatten@Table[passivenoisecirc[i,False,t],{i,Flatten@{q}}],
+			GateDuration->t,
+			UpdateVariables->Function[g2=False]
+		|>,
+	(* Measurements and initialisation *)
+		Subscript[Meas, q__]/; miseq[q] :><|
+			NoisyForm-> measf[q],
+			GateDuration->durread,
+			UpdateVariables->Function[g2=False]
+		|>,
+		Subscript[Init, q__]/; miseq[q] :><|
+			NoisyForm-> initf[q],
+			GateDuration-> durinit[q],
+			UpdateVariables->Function[g2=False]
+		|>,		
+	(* Singles *)
+		Subscript[Rx,q_][\[Theta]_]:><|
+			NoisyForm->Flatten@{Subscript[Rx, q][\[Theta]],sroterr[q,\[Theta]]},
+			GateDuration->Abs[\[Theta]]/(2\[Pi]*rabifreq[q]),
+			UpdateVariables->Function[g2=False] 
+		|>,
+		Subscript[Ry,q_][\[Theta]_]:><|
+			NoisyForm->Flatten@{Subscript[Ry, q][\[Theta]],sroterr[q,\[Theta]]},
+			GateDuration->Abs[\[Theta]]/(2\[Pi]*rabifreq[q]),
+			UpdateVariables->Function[g2=False]
+		|>,
+	(* Twos *)
+		Subscript[C, p_][Subscript[Z, q_]]/; (q-p)===1  :><|
+			(*The last bit undo the exchange in the passive noise *)
+			NoisyForm->{Subscript[C, p][Subscript[Z, q]],Subscript[Depol, p,q][ercz[p][[1]]],Subscript[Deph, p,q][ercz[p][[2]]],Sequence@@exczon[q]}, 
+			GateDuration->0.5/freqcz[p],
+			UpdateVariables->Function[g2=True]
+		|>		
+	},
+	(* Declare that \[CapitalDelta]t will refer to the duration of the current gate/channel. *)
+	DurationSymbol -> \[CapitalDelta]T, 
+	(* Passive noise *)
+	Qubits :> {
+			q_/;(0<=q<qubitsnum) :> <|
+			PassiveNoise ->passivenoisecirc[q,g2,\[CapitalDelta]T]
+			|>		 
+			}	
+		|>
+	]
 ]
 (***** ENDOF SILICON_DELFT *****)
 
@@ -670,8 +928,6 @@ Subscript[comb, i_,j_][inodes_,nodename_,zone_]:=Module[{nodes,node,z1,z2,ps,pz,
 	];
 	nodes
 ]
-
-
 (*
 Zone1 :prepare, store, detect
 Zone2 :prepare, store, detect, logic
@@ -1018,7 +1274,7 @@ Qubits :> {
 ]
 (***** ENDOF SILICON_DELFT2 *****)
 
-(******* GENERAL FUNCTIONS ***********)
+(******* CIRCUIT CONSTRUCTION ***********)
 SetAttributes[CircTrappedIons,HoldAll]
 CircTrappedIons[circuit_,device_,OptionsPattern[]]:=Module[
 	{circ2=circuit,ccirc={},qmap,quota,col,i,del,parties,gate,entp,
@@ -1081,21 +1337,6 @@ Which[
 	]
 ]
 
-(*** copy dev is not working
-NoisyCircuit[circ_, dev_, opt:OptionsPattern[{NoisyCircuit,InsertCircuitNoise}]]:=Module[
-{parallel=OptionValue@Parallel, device=dev, noisycirc},
-Which[
-	device[DeviceType]==="TrappedIonOxford",
-	InsertCircuitNoise[CircTrappedIons[circ,device,Parallel->parallel,MapQubits->False],device, Evaluate@FilterRules[{opt}, Options[InsertCircuitNoise]]]
-	,
-	device[DeviceType]==="SiliconDelft",
-	InsertCircuitNoise[CircSiliconDelft[circ,device,Parallel->parallel], device, Evaluate@FilterRules[{opt}, Options[InsertCircuitNoise]]]
-	,True,
-	Throw[Message[NoisyCircuit::err,"Unknown device type"]]
-	]
-]
-****)
-	
 	
 RandomMixState[nqubits_]:=Module[{size=2^nqubits,gm,um,dm,id},
 	(* Random states generation: https://iitis.pl/~miszczak/files/papers/miszczak12generating.pdf *)
@@ -1131,15 +1372,15 @@ gateIndex[gate_]:=With[{
 (* list of gates that are always parallel *)
 parallelGates=<|
 	"SiliconDelft"->{Wait},
-	"SiliconHub"->{},
-	"SuperconductingFZJ"->{},
-	"SuperconductingHub"->{},
-	"TrappedIonOxford"->{},
-	"TrappedIonInnsbruck"->{},
-	"RydbergHub"->{},
-	"RydbergWisconsin"->{},
-	"NVCenterDelft"->{},
-	"NVCenterHub"->{}
+	"SiliconHub"->{Wait},
+	"SuperconductingFZJ"->{Wait},
+	"SuperconductingHub"->{Wait},
+	"TrappedIonOxford"->{Wait},
+	"TrappedIonInnsbruck"->{Wait},
+	"RydbergHub"->{Wait,SWAPLoc,ShiftLoc,Wait},
+	"RydbergWisconsin"->{Wait},
+	"NVCenterDelft"->{Wait},
+	"NVCenterHub"->{Wait}
 |>;
 
 (*
@@ -1164,6 +1405,4 @@ ptrace[\[Rho]mat_List,qubits__]:=Module[{tmat,nq,pmat,nfin,pairs},
 End[];
 EndPackage[];
 Needs["VQD`ParameterDevices`"]
-
-
 
