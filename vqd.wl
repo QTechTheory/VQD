@@ -74,12 +74,15 @@ MapQubits::usage="Options in the CircTrappedIons[] that maps the local qubits in
 (*Circuits arrangement according to devices*)
 Options[CircTrappedIons]={MapQubits->True, Parallel->False};
 Options[CircSiliconDelft]={Parallel->False};
+Options[CircRydbergHub]={Parallel->False};
 
 CircTrappedIons::usage="CircTrappedIons[circuit, device, MapQubits->True, Parallel->False]. Circuit arrangement according to the device. Note that Parallle->True is not available yet.";
 CircSiliconDelft::usage="CircSiliconDelft[circuit, device, MapQubits->True, Parallel->False]. Circuit arrangement according to the device. Note that Parallle->True is not available yet.";
+CircRydbergHub::usage="CircRydbergHub[circuit, device, Parallel->(False, True)]";
 
 CircTrappedIons::error="`1`";
 CircSiliconDelft::error="`1`";
+CircRydbergHub::error="`1`";
 
 BeginPackage["`ParameterDevices`"];
 (* Parameters *)
@@ -302,78 +305,84 @@ genAmp[\[Gamma]_,p_,q_]:=Subscript[Kraus, q][{
 		
 (***** TOY_DEVICE *****)
 ToyDevice[OptionsPattern[]]:=With[
-{
-qubitsnum=OptionValue[qubitsNum],
-t1=OptionValue[T1],
-t2=OptionValue[T2],
-stdpassivenoise=OptionValue[StdPassiveNoise],
-fidsingle=OptionValue[FidSingle],
-fidtwo=OptionValue[FidTwo],
-efsingle=OptionValue[EFSingle],
-eftwo=OptionValue[EFTwo],
-rabifreq=OptionValue[RabiFreq],
-twogatefreq=OptionValue[TwoGateFreq]
-},
-
-Module[
-{\[CapitalDelta]T,erone,ertwo},
-erone=fid2DepolDeph[fidsingle,efsingle,1,FidSingle,True];
-ertwo=fid2DepolDeph[fidtwo,eftwo,2,FidTwo,True];
-<|
-(*no hidden qubits/ancilla here *)
-DeviceType->"Toy",
-DeviceDescription -> "Toy device with "<>ToString[qubitsnum]<>"-qubits arranged as a linear array with nearest-neighbor connectivity.",
-NumAccessibleQubits -> qubitsnum,
-NumTotalQubits -> qubitsnum,
-Aliases -> {
-Subscript[PSW, p_,q_][\[Theta]_]:>Subscript[U, p,q][{{1,0,0,0},{0,E^((I \[Theta])/2) Cos[\[Theta]/2],-I E^((I \[Theta])/2) Sin[\[Theta]/2],0 },{0,-I E^((I \[Theta])/2) Sin[\[Theta]/2], E^((I \[Theta])/2) Cos[\[Theta]/2],0 },{0,0,0,1}}]  
-},	
-Gates ->{	
-(* Singles *)
-	Subscript[Rx,q_][\[Theta]_]:><|
-		NoisyForm->Flatten@{Subscript[Rx, q][\[Theta]],Subscript[Depol, q][erone[[1]]],Subscript[Deph, q][erone[[2]]]},
-		GateDuration->Abs[\[Theta]]/(2\[Pi]*rabifreq)
-	|>,
-	Subscript[Ry,q_][\[Theta]_]:><|
-		NoisyForm->Flatten@{Subscript[Ry, q][\[Theta]],Subscript[Depol, q][erone[[1]]],Subscript[Deph, q][erone[[2]]]},
-		GateDuration->Abs[\[Theta]]/(2\[Pi]*rabifreq)
-	|>,
-		Subscript[Rz,q_][\[Theta]_]:><|
-		NoisyForm->Flatten@{Subscript[Rz, q][\[Theta]],Subscript[Depol, q][erone[[1]]],Subscript[Deph, q][erone[[2]]]},
-		GateDuration->Abs[\[Theta]]/(2\[Pi]*rabifreq)
-	|>,
-(* Twos *)
-		Subscript[C, p_][Subscript[Rx, q_][\[Theta]_]]/; Abs[q-p]===1  :><|
-		NoisyForm->{Subscript[C, p][Subscript[Rx, q][\[Theta]]],Subscript[Depol, p,q][ertwo[[1]]],Subscript[Deph, p,q][ertwo[[2]]]},
-		GateDuration->Abs[\[Theta]]/(2\[Pi]*twogatefreq)
-	|>,
-		Subscript[C, p_][Subscript[Ry, q_][\[Theta]_]]/; Abs[q-p]===1  :><|
-		NoisyForm->{Subscript[C, p][Subscript[Ry, q][\[Theta]]],Subscript[Depol, p,q][ertwo[[1]]],Subscript[Deph, p,q][ertwo[[2]]]},
-		GateDuration->Abs[\[Theta]]/(2\[Pi]*twogatefreq)
-	|>,
-		Subscript[C, p_][Subscript[Rz, q_][\[Theta]_]]/; Abs[q-p]===1  :><|
-		NoisyForm->{Subscript[C, p][Subscript[Rz, q][\[Theta]]],Subscript[Depol, p,q][ertwo[[1]]],Subscript[Deph, p,q][ertwo[[2]]]},
-		GateDuration->Abs[\[Theta]]/(2\[Pi]*twogatefreq)
-	|>	
-	,(* parameterised swap*)
-		Subscript[PSW, p_,q_][\[Theta]_]/; Abs[q-p]===1  :><|
-		NoisyForm->{Subscript[PSW, p,q][\[Theta]],Subscript[Depol, p,q][ertwo[[1]]],Subscript[Deph, p,q][ertwo[[2]]]},
-		GateDuration->Abs[\[Theta]]/(2\[Pi]*twogatefreq)
-	|>	
-},
-(* Declare that \[CapitalDelta]t will refer to the duration of the current gate/channel. *)
-DurationSymbol -> \[CapitalDelta]T, 
-(* Passive noise *)
-Qubits :> {
-		q_Integer :> <|
-		PassiveNoise ->If[stdpassivenoise,{Subscript[Depol, q][0.75(1-E^(-\[CapitalDelta]T/t1))],Subscript[Deph, q][0.5(1-E^(-\[CapitalDelta]T/t2))]},{}]	
-		|>		 
-		}	
-	|>
-]
+	{
+	qubitsnum=OptionValue[qubitsNum],
+	t1=OptionValue[T1],
+	t2=OptionValue[T2],
+	stdpassivenoise=OptionValue[StdPassiveNoise],
+	fidsingle=OptionValue[FidSingle],
+	fidtwo=OptionValue[FidTwo],
+	efsingle=OptionValue[EFSingle],
+	eftwo=OptionValue[EFTwo],
+	rabifreq=OptionValue[RabiFreq],
+	twogatefreq=OptionValue[TwoGateFreq]
+	},
+	
+	Module[
+	{\[CapitalDelta]T,erone,ertwo},
+	erone=fid2DepolDeph[fidsingle,efsingle,1,FidSingle,True];
+	ertwo=fid2DepolDeph[fidtwo,eftwo,2,FidTwo,True];
+	<|
+	(*no hidden qubits/ancilla here *)
+	DeviceType->"Toy",
+	DeviceDescription -> "Toy device with "<>ToString[qubitsnum]<>"-qubits arranged as a linear array with nearest-neighbor connectivity.",
+	NumAccessibleQubits -> qubitsnum,
+	NumTotalQubits -> qubitsnum,
+	Aliases -> {
+	Subscript[PSW, p_,q_][\[Theta]_]:>Subscript[U, p,q][{{1,0,0,0},{0,E^((I \[Theta])/2) Cos[\[Theta]/2],-I E^((I \[Theta])/2) Sin[\[Theta]/2],0 },{0,-I E^((I \[Theta])/2) Sin[\[Theta]/2], E^((I \[Theta])/2) Cos[\[Theta]/2],0 },{0,0,0,1}}]  
+	},	
+	Gates ->{	
+	(* Singles *)
+		Subscript[Rx,q_][\[Theta]_]:><|
+			NoisyForm->Flatten@{Subscript[Rx, q][\[Theta]],Subscript[Depol, q][erone[[1]]],Subscript[Deph, q][erone[[2]]]},
+			GateDuration->Abs[\[Theta]]/(2\[Pi]*rabifreq)
+		|>,
+		Subscript[Ry,q_][\[Theta]_]:><|
+			NoisyForm->Flatten@{Subscript[Ry, q][\[Theta]],Subscript[Depol, q][erone[[1]]],Subscript[Deph, q][erone[[2]]]},
+			GateDuration->Abs[\[Theta]]/(2\[Pi]*rabifreq)
+		|>,
+			Subscript[Rz,q_][\[Theta]_]:><|
+			NoisyForm->Flatten@{Subscript[Rz, q][\[Theta]],Subscript[Depol, q][erone[[1]]],Subscript[Deph, q][erone[[2]]]},
+			GateDuration->Abs[\[Theta]]/(2\[Pi]*rabifreq)
+		|>,
+	(* Twos *)
+			Subscript[C, p_][Subscript[Rx, q_][\[Theta]_]]/; Abs[q-p]===1  :><|
+			NoisyForm->{Subscript[C, p][Subscript[Rx, q][\[Theta]]],Subscript[Depol, p,q][ertwo[[1]]],Subscript[Deph, p,q][ertwo[[2]]]},
+			GateDuration->Abs[\[Theta]]/(2\[Pi]*twogatefreq)
+		|>,
+			Subscript[C, p_][Subscript[Ry, q_][\[Theta]_]]/; Abs[q-p]===1  :><|
+			NoisyForm->{Subscript[C, p][Subscript[Ry, q][\[Theta]]],Subscript[Depol, p,q][ertwo[[1]]],Subscript[Deph, p,q][ertwo[[2]]]},
+			GateDuration->Abs[\[Theta]]/(2\[Pi]*twogatefreq)
+		|>,
+			Subscript[C, p_][Subscript[Rz, q_][\[Theta]_]]/; Abs[q-p]===1  :><|
+			NoisyForm->{Subscript[C, p][Subscript[Rz, q][\[Theta]]],Subscript[Depol, p,q][ertwo[[1]]],Subscript[Deph, p,q][ertwo[[2]]]},
+			GateDuration->Abs[\[Theta]]/(2\[Pi]*twogatefreq)
+		|>	
+		,(* parameterised swap*)
+			Subscript[PSW, p_,q_][\[Theta]_]/; Abs[q-p]===1  :><|
+			NoisyForm->{Subscript[PSW, p,q][\[Theta]],Subscript[Depol, p,q][ertwo[[1]]],Subscript[Deph, p,q][ertwo[[2]]]},
+			GateDuration->Abs[\[Theta]]/(2\[Pi]*twogatefreq)
+		|>	
+	},
+	(* Declare that \[CapitalDelta]t will refer to the duration of the current gate/channel. *)
+	DurationSymbol -> \[CapitalDelta]T, 
+	(* Passive noise *)
+	Qubits :> {
+			q_Integer :> <|
+			PassiveNoise ->If[stdpassivenoise,{Subscript[Depol, q][0.75(1-E^(-\[CapitalDelta]T/t1))],Subscript[Deph, q][0.5(1-E^(-\[CapitalDelta]T/t2))]},{}]	
+			|>		 
+			}	
+		|>
+	]
 ]
 
 (**************************** RYDBERG_HUB *****************************)
+(**legitimate shift move **) 
+legShift[q_,v_,atomlocs_]:=Module[{qlocs=atomlocs},
+	qlocs[#]+=v&/@Flatten[{q}];
+	Length@qlocs === Length@DeleteDuplicates@Values@qlocs
+];
+				
 RydbergHub[OptionsPattern[]]:=With[
 {
 	qubitsnum=OptionValue@qubitsNum,
@@ -397,27 +406,20 @@ RydbergHub[OptionsPattern[]]:=With[
 	Catch@If[\[Not](0<=problossmeas<=1), Throw@Message[ProbLossMeas::error,"Needs value within [0,1]"]];
 	Catch@If[\[Not](0<=probleakcz<=1), Throw@Message[ProbLeakCZ::error,"Needs value within [0,1]"]];
 
-Module[{\[CapitalDelta]t, lossatoms, lossatomsprob, globaltime, stdpn, t1, legShift,atomlocs,distloc,blockadecheck},
-atomlocs=atomlocations;
-
-(* the atoms that are lost to the environment *)
-lossatoms=<|Table[k->False,{k,Keys@atomlocations}]|>;
-lossatoms[0]=True;
-lossatomsprob=<|Table[k->0,{k,Keys@atomlocations}]|>;
-t1=vaclifetime/qubitsnum;
-
-(** standard passive noise **) 
-stdpn[q_,dur_]:={Subscript[Depol, q][0.75(1-E^(-dur/t1))],Subscript[Deph, q][0.5(1-E^(-dur/t2))]};
-
-(**legitimate shift move **) 
-legShift[q_,v_]:=With[{qlocs=atomlocs},qlocs[#]+=v&/@Flatten[{q}];
-				Length@qlocs === Length@DeleteDuplicates@Values@qlocs];
-				
-(** coordiante distance measure *)
-distloc[q1_,q2_]:=Norm[atomlocs[q1]-atomlocs[q2],2]*unitlattice;
-
-(** legitimate multi-qubit gates**) 
-blockadecheck[q_List]:=And@@((distloc@@#<= blockaderad)&/@Subsets[Flatten[q],{2}]);
+Module[{\[CapitalDelta]t, lossatoms, lossatomsprob, globaltime, stdpn, t1, atomlocs, distloc,blockadecheck},
+	atomlocs=atomlocations;
+	(* the atoms that are lost to the environment *)
+	lossatoms=<|Table[k->False,{k,Keys@atomlocations}]|>;
+	lossatomsprob=<|Table[k->0,{k,Keys@atomlocations}]|>;
+	t1=vaclifetime/qubitsnum;
+	
+	(** standard passive noise **) 
+	stdpn[q_,dur_]:={Subscript[Depol, q][0.75(1-E^(-dur/t1))],Subscript[Deph, q][0.5(1-E^(-dur/t2))]};					
+	(** coordinate distance measure *)
+	distloc[q1_,q2_]:=Norm[atomlocs[q1]-atomlocs[q2],2]*unitlattice;
+	
+	(** legitimate multi-qubit gates**) 
+	blockadecheck[q_List]:=And@@((distloc@@#<= blockaderad)&/@Subsets[Flatten[q],{2}]);
 
 <|
 	DeviceDescription -> ToString[qubitsnum]<>" Rydberg qubits in a 3D lattice.",
@@ -425,12 +427,18 @@ blockadecheck[q_List]:=And@@((distloc@@#<= blockaderad)&/@Subsets[Flatten[q],{2}
 	NumTotalQubits ->qubitsnum,
 
 	(** custom keys to access internal variables **)
-	LossAtomsProbability->lossatomsprob,
-	LossAtoms->lossatoms,
-	AtomLocations->atomlocs,
-	BlockadeRadius-> blockaderad,
-	UnitLattice-> unitlattice	
-,
+	LossAtomsProbability:>lossatomsprob,
+	LossAtoms:>lossatoms,
+	AtomLocations:>atomlocs,
+	BlockadeRadius->blockaderad,
+	UnitLattice->unitlattice,
+	
+	(* re-initialized when invoking InsertCircuitNoise *)
+	InitVariables->Function[
+		atomlocs=atomlocations;
+		lossatoms=<|Table[k->False,{k,Keys@atomlocations}]|>;
+		lossatomsprob=<|Table[k->0,{k,Keys@atomlocations}]|>;
+	],
 
 	(* Aliases are useful for declaring custom operators. At this stage the specification is noise-free (but see later) *)
 	Aliases -> {
@@ -498,8 +506,7 @@ blockadecheck[q_List]:=And@@((distloc@@#<= blockaderad)&/@Subsets[Flatten[q],{2}
 	|>
 	,
 	Subscript[Ry, q_Integer][\[Theta]_]:><|
-	NoisyForm->{Subscript[Ry, q][\[Theta]],Subscript[Deph, q][0.5(1-E^(-0.5*Abs[\[Theta]/\[Pi]]/(rabifreq*t2)))]}
-	,
+	NoisyForm->{Subscript[Ry, q][\[Theta]],Subscript[Deph, q][0.5(1-E^(-0.5*Abs[\[Theta]/\[Pi]]/(rabifreq*t2)))]},
 	GateDuration-> Abs[\[Theta]]/rabifreq
 	|>
 	,
@@ -510,13 +517,13 @@ blockadecheck[q_List]:=And@@((distloc@@#<= blockaderad)&/@Subsets[Flatten[q],{2}
 	, 
 	(** two-qubit gates **)
 	Subscript[SWAPLoc, q1_Integer,q2_Integer]:> <|
-	UpdateVariables-> Function[{atomlocs[q1],atomlocs[q2]}={atomlocs[q2],atomlocs[q1]}],
+	UpdateVariables-> Function[{atomlocs[q1],atomlocs[q2]}={atomlocs[q2],atomlocs[q1]};],
 	NoisyForm-> Flatten@{stdpn[q1,4\[Pi]/rabifreq],stdpn[q2,4\[Pi]/rabifreq]},
 	GateDuration->4\[Pi]/rabifreq
 	|>
 	,
-	Subscript[ShiftLoc, q__][v_]/;legShift[Flatten@{q},v]:> <|
-	UpdateVariables-> Function[atomlocs[#]+= v &/@Flatten[{q}]],
+	Subscript[ShiftLoc, q__][v_]/;legShift[Flatten@{q},v,atomlocs]:> <|
+	UpdateVariables-> Function[atomlocs[#]+=v &/@Flatten[{q}];],
 	NoisyForm-> stdpn[#,4\[Pi]/rabifreq]&/@Flatten[{q}],
 	GateDuration->4\[Pi]/rabifreq
 	|>
@@ -546,12 +553,11 @@ blockadecheck[q_List]:=And@@((distloc@@#<= blockaderad)&/@Subsets[Flatten[q],{2}
 	NoisyForm->Join[{Subscript[C, c][Subscript[Z, t]]},Subscript[KrausNonTP, #][{{{1,0},{0,Sqrt[1-probleakcz[11]]}}}]&/@Flatten@{c,t}],
 	GateDuration->Abs[\[Theta]]/rabifreq
 	|>
-}
-,
+	}
+	,
 	DurationSymbol -> \[CapitalDelta]t,
 	(* PASSIVE NOISE *)
-		Qubits -> { q_ :> <|PassiveNoise -> stdpn[q,\[CapitalDelta]t]|>	
-	}
+		Qubits -> { q_ :> <|PassiveNoise -> stdpn[q,\[CapitalDelta]t]|>}
 |>
 	]
 ]
@@ -572,7 +578,7 @@ PlotAtoms[rydbergdev_,opt:OptionsPattern[{PlotAtoms,Graphics}]]:=With[
 Which[
 	2===Length@First@Values@qulocs,
 	Show[
-		Sequence@@Table[Graphics[{Cyan,Opacity[0.1],EdgeForm[Directive[Dashed,Pink]],Disk[unit*qulocs[b],blrad]}],{b,blockade}],
+		Sequence@@Table[Graphics[{Cyan,Opacity[0.1],EdgeForm[Directive[Dashed,Orange]],Disk[unit*qulocs[b],blrad]}],{b,blockade}],
 		Sequence@@Table[Graphics[{Red,Disk[unit*v,0.15]}],{v,Values@availqubits}],
 		Sequence@@Table[Graphics[Text[Style[k,fontsize],({0.1,0.1}+qulocs[k])*unit]],{k,Keys@availqubits}],
 		If[showloss,Sequence@@Table[Graphics[{Gray,Disk[unit*v,0.15]}],{v,Values@lossqubits}],Sequence@@{}],
@@ -782,9 +788,9 @@ measf[q__]:=Which[
 (***** TRAPPED_IONS_OXFORD *****)
 createNodes::usage="createNodes[ <| zone1 -> nq1, zone2 -> nq2,...|>]. Return nodes with 4 zones, its map to qubits register, and the total number of qubits. Initially, all qubits are in zone 1";
 createNodes[args__Association]:=Module[{q,qglob=0,nodes,qmap},
-nodes=Map[<|1->Range[#],2->{},3->{},4->{}|>&,args];
-qmap=Map[<|#[1]/.{q_Integer:>(q->qglob++)}|>&,nodes];
-{nodes, qmap,qglob}
+	nodes=Map[<|1->Range[#],2->{},3->{},4->{}|>&,args];
+	qmap=Map[<|#[1]/.{q_Integer:>(q->qglob++)}|>&,nodes];
+	{nodes, qmap,qglob}
 ]
 
 (** drawing-related trapped ions **)
@@ -813,11 +819,11 @@ getZone[q_,node_]:=(Association@Flatten@Table[Table[v->k,{v,node[k]}],{k,Keys@no
 
 (* Legitimate split move *)
 legSplit[nodes_,nodename_,q1_,q2_,zone_]:=With[{z1=getZone[q1,nodes[nodename]],z2=getZone[q2,nodes[nodename]],node=nodes[nodename]},
-If[z1!=z2,Return@False];
-If[(z1===zone)||(z2===zone),Return@False];
-If[Abs[Position[node[z1],q1][[1,1]]- Position[node[z1],q2]][[1,1]]!=1,Return@False];
-If[Length@Flatten[Table[node[z],{z,Range[Min[z1,zone]+1,Max[z1,zone]-1]}]]>0,Return@False];
-True
+	If[z1!=z2,Return@False];
+	If[(z1===zone)||(z2===zone),Return@False];
+	If[Abs[Position[node[z1],q1][[1,1]]- Position[node[z1],q2]][[1,1]]!=1,Return@False];
+	If[Length@Flatten[Table[node[z],{z,Range[Min[z1,zone]+1,Max[z1,zone]-1]}]]>0,Return@False];
+	True
 ]
 
 (* Shuttling qubits to zone *)
@@ -935,89 +941,96 @@ Zone3 :prepare, store, detect, logic
 Zone4 :remote entangle
 *)
 TrappedIonOxford[OptionsPattern[]]:=With[
-{
-initnodes=OptionValue@Nodes,
-bfprob=OptionValue@BFProb,
-durinit=OptionValue@DurInit,
-durmove=OptionValue@DurMove,
-durread=OptionValue@DurRead,
-efent=OptionValue@EFEnt,
-fidinit=OptionValue@FidInit,
-freqcz=OptionValue@FreqCZ,
-freqent=OptionValue@FreqEnt,
-fident=OptionValue@FidEnt,
-rabifreq=OptionValue@RabiFreq,
-scatprob=OptionValue@ScatProb,
-t1=OptionValue@T1,
-t2=OptionValue@T2,
+	{
+	initnodes=OptionValue@Nodes,
+	bfprob=OptionValue@BFProb,
+	durinit=OptionValue@DurInit,
+	durmove=OptionValue@DurMove,
+	durread=OptionValue@DurRead,
+	efent=OptionValue@EFEnt,
+	fidinit=OptionValue@FidInit,
+	freqcz=OptionValue@FreqCZ,
+	freqent=OptionValue@FreqEnt,
+	fident=OptionValue@FidEnt,
+	rabifreq=OptionValue@RabiFreq,
+	scatprob=OptionValue@ScatProb,
+	t1=OptionValue@T1,
+	t2=OptionValue@T2,
+	
+	(*probability error of depolarising and dephasing noise *)
+	er1xy=Association[#->fid2DepolDeph[OptionValue[FidSingleXY][#],OptionValue[EFSingleXY][#],1,FidSingleXY,True]&/@Keys[OptionValue@Nodes]], 
+	ercz=Association[#->fid2DepolDeph[OptionValue[FidCZ][#],OptionValue[EFCZ][#],2,FidCZ,True]&/@Keys[OptionValue@Nodes]],
+	erent=fid2DepolDeph[OptionValue@FidEnt,OptionValue@EFEnt,2,FidEnt,True]
+	},
 
-(*probability error of depolarising and dephasing noise *)
-er1xy=Association[#->fid2DepolDeph[OptionValue[FidSingleXY][#],OptionValue[EFSingleXY][#],1,FidSingleXY,True]&/@Keys[OptionValue@Nodes]], 
-ercz=Association[#->fid2DepolDeph[OptionValue[FidCZ][#],OptionValue[EFCZ][#],2,FidCZ,True]&/@Keys[OptionValue@Nodes]],
-erent=fid2DepolDeph[OptionValue@FidEnt,OptionValue@EFEnt,2,FidEnt,True]
-},
+	Module[
+	{\[CapitalDelta]t, nodes, qmap, qnum,checkpsd,checklog,checkrent,gnoise,swaploc,connectivity,passivenoise,scatnoise,conninit,nodesinit},
+	
+	{nodesinit,qmap,qnum}=createNodes[initnodes];
+	(* empty list of connectivitiy of two-qubit gates generated by Comb gate. stored as graphs *)
+	conninit := Association[Table[ n->With[{vex=nodes[n][1]},Graph[Table[vex[[i]]\[UndirectedEdge]vex[[i+1]],{i,-1+Length@vex}]]],{n,Keys@nodes}]];
 
-Module[
-{\[CapitalDelta]t, nodes, qmap, qnum,checkpsd,checklog,checkrent,gnoise,swaploc,connectivity,passivenoise,scatnoise},
-{nodes,qmap,qnum}=createNodes[initnodes];
-
-(* empty list of connectivitiy of two-qubit gates generated by Comb gate. stored as graphs *)
-connectivity=Association[Table[ n->
-With[{vex=nodes[n][1]},
-Graph[Table[vex[[i]]\[UndirectedEdge]vex[[i+1]],{i,-1+Length@vex}]]],
-{n,Keys@nodes}]];
-
-(*TODO:get standard passive noise when certain qubits are acted on*)
-passivenoise[node_,t_,q__]:=Flatten@Table[{Subscript[Depol, qmap[node][i]][.75(1-E^(-t/t1[node]))],Subscript[Deph, qmap[node][i]][.5(1-E^(-t/t2[node]))]},{i,Complement[Flatten@Values[nodes[node]],{q}]}];
-passivenoise[node_,t_]:=Flatten@Table[{Subscript[Depol, qmap[node][i]][.75(1-E^(-t/t1[node]))],Subscript[Deph, qmap[node][i]][.5(1-E^(-t/t2[node]))]},{i,Flatten@Values[nodes[node]]}];
-
-(**scattering on the neighborhood **) 
-scatnoise[qubit_, node_]:=With[{g=Graph@ReplaceList[getZone[qubit,nodes[node]],{p___,a_,b_,q___}:>a\[UndirectedEdge]b]}, 
-	Sequence@@Table[Subscript[Damp, n][scatprob[node]],{n,AdjacencyList[g,qubit]}]]; 
-(** check zones **)
-(* prepare, store, detect *)
-checkpsd[q_,node_]:=MemberQ[{1,2,3},getZone[q,nodes[node]]];
-checkpsd[p_,q_,node_]:=MemberQ[{1,2,3},getZone[q,nodes[node]]]&&MemberQ[{1,2,3},getZone[p,nodes[node]]];
-(*logic*)
-checklog[q_,node_]:=MemberQ[{2,3},getZone[q,nodes[node]]];
-checklog[p_,q_,node_]:=And[MemberQ[{2,3},getZone[q,nodes[node]]],getZone[q,nodes@node]===getZone[p,nodes@node],EdgeQ[connectivity[node],p\[UndirectedEdge]q]];
-(*remote entangle*)
-checkrent[q1_,node1_,q2_,node2_]:=And[4===getZone[q1,nodes[node1]]&&4===getZone[q2,nodes[node2]]];
-
-(**gate noise **)
-gnoise[q_,node_,\[Theta]_]:=Sequence@@{Subscript[Depol, qmap[node][q]][er1xy[node][[1]]],Subscript[Deph, qmap[node][q]][er1xy[node][[2]]]};
-gnoise[p_,q_,node_,\[Theta]_]:=Sequence@@{Subscript[Depol, qmap[node][p],qmap[node][q]][ercz[node][[1]]],Subscript[Deph, qmap[node][p],qmap[node][q]][ercz[node][[2]]]};
-gnoise[q1_,q2_,node1_,node2_,t_]:=Sequence@@{Subscript[Depol, qmap[node1][q1],qmap[node2][q2]][erent[[1]]],Subscript[Deph, qmap[node1][q1],qmap[node2][q2]][erent[[2]]]};
-
-(** extra operations **)
-swaploc[p_,q_,node_]:=Module[{z=getZone[q,nodes[node]],pos,lst},
-	lst=nodes[node][z];
-	pos=Flatten@{Position[lst,p],Position[lst,q]};
-	lst[[pos]]=lst[[Reverse@pos]];
-	nodes[node][z]=lst;
-	nodes
-];
+	nodes=nodesinit;
+	connectivity=conninit;
+	
+	(*TODO:get standard passive noise when certain qubits are acted on*)
+	passivenoise[node_,t_,q__]:=Flatten@Table[{Subscript[Depol, qmap[node][i]][.75(1-E^(-t/t1[node]))],Subscript[Deph, qmap[node][i]][.5(1-E^(-t/t2[node]))]},{i,Complement[Flatten@Values[nodes[node]],{q}]}];
+	passivenoise[node_,t_]:=Flatten@Table[{Subscript[Depol, qmap[node][i]][.75(1-E^(-t/t1[node]))],Subscript[Deph, qmap[node][i]][.5(1-E^(-t/t2[node]))]},{i,Flatten@Values[nodes[node]]}];
+	
+	(**scattering on the neighborhood **) 
+	scatnoise[qubit_, node_]:=With[{g=Graph@ReplaceList[getZone[qubit,nodes[node]],{p___,a_,b_,q___}:>a\[UndirectedEdge]b]}, 
+		Sequence@@Table[Subscript[Damp, n][scatprob[node]],{n,AdjacencyList[g,qubit]}]]; 
+	(** check zones **)
+	(* prepare, store, detect *)
+	checkpsd[q_,node_]:=MemberQ[{1,2,3},getZone[q,nodes[node]]];
+	checkpsd[p_,q_,node_]:=MemberQ[{1,2,3},getZone[q,nodes[node]]]&&MemberQ[{1,2,3},getZone[p,nodes[node]]];
+	(*logic*)
+	checklog[q_,node_]:=MemberQ[{2,3},getZone[q,nodes[node]]];
+	checklog[p_,q_,node_]:=And[MemberQ[{2,3},getZone[q,nodes[node]]],getZone[q,nodes@node]===getZone[p,nodes@node],EdgeQ[connectivity[node],p\[UndirectedEdge]q]];
+	(*remote entangle*)
+	checkrent[q1_,node1_,q2_,node2_]:=And[4===getZone[q1,nodes[node1]]&&4===getZone[q2,nodes[node2]]];
+	
+	(**gate noise **)
+	gnoise[q_,node_,\[Theta]_]:=Sequence@@{Subscript[Depol, qmap[node][q]][er1xy[node][[1]]],Subscript[Deph, qmap[node][q]][er1xy[node][[2]]]};
+	gnoise[p_,q_,node_,\[Theta]_]:=Sequence@@{Subscript[Depol, qmap[node][p],qmap[node][q]][ercz[node][[1]]],Subscript[Deph, qmap[node][p],qmap[node][q]][ercz[node][[2]]]};
+	gnoise[q1_,q2_,node1_,node2_,t_]:=Sequence@@{Subscript[Depol, qmap[node1][q1],qmap[node2][q2]][erent[[1]]],Subscript[Deph, qmap[node1][q1],qmap[node2][q2]][erent[[2]]]};
+	
+	(** extra operations **)
+	swaploc[p_,q_,node_]:=Module[{z=getZone[q,nodes[node]],pos,lst},
+		lst=nodes[node][z];
+		pos=Flatten@{Position[lst,p],Position[lst,q]};
+		lst[[pos]]=lst[[Reverse@pos]];
+		nodes[node][z]=lst;
+		nodes
+	];
 
 <|
-(*no hidden qubits/ancilla here *)
-DeviceType->"TrappedIonOxford",
-DeviceDescription -> StringForm["Trapped ion device Oxford style with ``. nodes",Length@nodes],
-NumAccessibleQubits -> qnum,
-NumTotalQubits -> qnum,
-Nodes:>nodes,
-QMap:>qmap,
-ShowNodes:>showIons[nodes,connectivity],
-(* Init, Read, Rx, Ry, C[Z], Ent[node1,node2], SWAP, Splz, Comb  *)
-Aliases -> {
-	Subscript[Wait, q__][node_,t_] :> {},
-	Subscript[Init, q_][fid_]:> Subscript[Damp, q][fid],
-	Subscript[Splz, i_,j_]:> Sequence@@{},
-	Subscript[Comb, i_,j_]:>Sequence@@{},
-	Subscript[Read, q_]:>Subscript[M, q],
-	Subscript[Ent, p_,q_]:>Sequence@@{Subscript[Damp, p][1],Subscript[Damp, q][1],Subscript[X, q],Subscript[H, p],Subscript[C, p][Subscript[X, q]]},
-	Subscript[SWAPLoc, i_,j_][t_]:>Sequence@@{},
-	Subscript[Shutl, q__]:>Sequence@@{}
-	}
+	(*no hidden qubits/ancilla here *)
+	DeviceType->"TrappedIonOxford",
+	DeviceDescription -> StringForm["Trapped ion device Oxford style with ``. nodes",Length@nodes],
+	NumAccessibleQubits -> qnum,
+	NumTotalQubits -> qnum,
+	Nodes:>nodes,
+	QMap:>qmap,
+	ShowNodes:>showIons[nodes,connectivity],
+	
+	(* re-initialized when invoking InsertCircuitNoise *)
+	InitVariables->Function[
+		nodes=nodesinit;
+		connectivity=conninit;	
+	],
+	
+	(* Init, Read, Rx, Ry, C[Z], Ent[node1,node2], SWAP, Splz, Comb  *)
+	Aliases -> {
+		Subscript[Wait, q__][node_,t_] :> {},
+		Subscript[Init, q_][fid_]:> Subscript[Damp, q][fid],
+		Subscript[Splz, i_,j_]:> Sequence@@{},
+		Subscript[Comb, i_,j_]:>Sequence@@{},
+		Subscript[Read, q_]:>Subscript[M, q],
+		Subscript[Ent, p_,q_]:>Sequence@@{Subscript[Damp, p][1],Subscript[Damp, q][1],Subscript[X, q],Subscript[H, p],Subscript[C, p][Subscript[X, q]]},
+		Subscript[SWAPLoc, i_,j_][t_]:>Sequence@@{},
+		Subscript[Shutl, q__]:>Sequence@@{}
+		}
 	,	
 Gates ->{
 	Subscript[Rx, q_][node_,\[Theta]_]/;checklog[q,node]:><|
@@ -1090,14 +1103,14 @@ Gates ->{
 		connectivity[node]=EdgeAdd[connectivity[node],i\[UndirectedEdge]j]]
 		] 
 	|>	
-}
-,
-(* Declare that \[CapitalDelta]t will refer to the duration of the current gate/channel. *)
-DurationSymbol -> \[CapitalDelta]t, 
-(* Passive noise *)
-Qubits :> {}	
+	}
+	,
+	(* Declare that \[CapitalDelta]t will refer to the duration of the current gate/channel. *)
+	DurationSymbol -> \[CapitalDelta]t, 
+	(* Passive noise *)
+	Qubits :> {}	
 	|>
-]
+	]
 ]
 (*******  ENDOF_TRAPPED_IONS_OXFORD   *****)
 
@@ -1105,62 +1118,62 @@ Qubits :> {}
 
 (***** SILICON_DELFT2 *****)
 SiliconDelft2[OptionsPattern[]]:=With[
-{
-(*validate and format parameter specification*)
-(*Numbers*)
-qubitsnum=Catch@validate[OptionValue@qubitsNum,IntegerQ,qubitsNum,"not an integer"],
-(*Fractions*)
-efsinglexy=Catch@validate[OptionValue@EFSingleXY,(Total[#]==1||Total[#]==0)&,EFSingleXY,"not a fraction with total 1 "],
-efcz=Catch@validate[OptionValue@EFCZ,(Total[#]==1||Total[#]==0)&,EFCZ,"not a fraction with total 1 "],
-(*Number as average or association to specify each*)
-t1=Catch@validate[OptionValue@T1,checkAss[#,OptionValue@qubitsNum]&,T1,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
-t2=Catch@validate[OptionValue@T2,checkAss[#,OptionValue@qubitsNum]&,T2,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
-t2s=Catch@validate[OptionValue@T2s,checkAss[#,OptionValue@qubitsNum]&,T2s,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
-rabifreq=Catch@validate[OptionValue@RabiFreq,checkAss[#,OptionValue@qubitsNum]&,RabiFreq,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
-qubitfreq=Catch@validate[OptionValue@QubitFreq,checkAss[#,OptionValue@qubitsNum]&,QubitFreq,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
-freqcz=Catch@validate[OptionValue@FreqCZ,checkAss[#,-1+OptionValue@qubitsNum]&,FreqCZ,numass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
-(*Number as average or association to specify each fidelity*)
-fidcz=Catch@validate[OptionValue@FidCZ,checkAss[#,-1+OptionValue@qubitsNum,0<=#<=1&]&,FidCZ,fidass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
-fidsinglexy=Catch@validate[OptionValue@FidSingleXY,checkAss[#,OptionValue@qubitsNum,0<=#<=1&]&,FidSingleXY,fidass[OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
-(*single things*)
-fidread=Catch@validate[OptionValue@FidRead,0<=#<=1&,FidRead,"invalid fidelity"],
-durread=Catch@validate[OptionValue@DurRead,NumberQ,DurMeas,"invalid duration"],
-repeatread=Catch@validate[OptionValue@RepeatRead,IntegerQ,RepeatRead,"not an integer"],
-(* assoc or boolean *)
-exchangerotoff=Catch@validate[OptionValue@ExchangeRotOff,Or[AssociationQ@#,#===False]&,ExchangeRotOff,"Set to association or False"],
-(* True/False*)
-ddactive=Catch@validate[OptionValue@DDActive,BooleanQ,DDActive,"Set to true or false"],
-offresonantrabi=Catch@validate[OptionValue@OffResonantRabi,BooleanQ,OffResonantRabi,"Set to true or false"],
-stdpassivenoise=Catch@validate[OptionValue@StdPassiveNoise,BooleanQ,StdPassiveNoise,"Set to true or false"],
-(*a matrix or a boolean*)
-exchangeroton=Catch@validate[OptionValue@ExchangeRotOn,Or[SquareMatrixQ[#],BooleanQ[#]]&,ExchangeRotOn,StringForm["set to false or specify with a square matrix with dim ``^2",-1+OptionValue@qubitsNum]],
-(*probability error of depolarising and dephasing noise *)
-er1xy=fid2DepolDeph[#,OptionValue@EFSingleXY,1,FidSingleXY,True]&/@OptionValue[FidSingleXY],
-ercz=fid2DepolDeph[#,OptionValue@EFCZ,2,FidCZ,True]&/@OptionValue[FidCZ],
-(* frequently used stuff *)
-qubits=Range[0,-1+OptionValue@qubitsNum]
-},
+	{
+	(*validate and format parameter specification*)
+	(*Numbers*)
+	qubitsnum=Catch@validate[OptionValue@qubitsNum,IntegerQ,qubitsNum,"not an integer"],
+	(*Fractions*)
+	efsinglexy=Catch@validate[OptionValue@EFSingleXY,(Total[#]==1||Total[#]==0)&,EFSingleXY,"not a fraction with total 1 "],
+	efcz=Catch@validate[OptionValue@EFCZ,(Total[#]==1||Total[#]==0)&,EFCZ,"not a fraction with total 1 "],
+	(*Number as average or association to specify each*)
+	t1=Catch@validate[OptionValue@T1,checkAss[#,OptionValue@qubitsNum]&,T1,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
+	t2=Catch@validate[OptionValue@T2,checkAss[#,OptionValue@qubitsNum]&,T2,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
+	t2s=Catch@validate[OptionValue@T2s,checkAss[#,OptionValue@qubitsNum]&,T2s,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
+	rabifreq=Catch@validate[OptionValue@RabiFreq,checkAss[#,OptionValue@qubitsNum]&,RabiFreq,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
+	qubitfreq=Catch@validate[OptionValue@QubitFreq,checkAss[#,OptionValue@qubitsNum]&,QubitFreq,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
+	freqcz=Catch@validate[OptionValue@FreqCZ,checkAss[#,-1+OptionValue@qubitsNum]&,FreqCZ,numass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
+	(*Number as average or association to specify each fidelity*)
+	fidcz=Catch@validate[OptionValue@FidCZ,checkAss[#,-1+OptionValue@qubitsNum,0<=#<=1&]&,FidCZ,fidass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
+	fidsinglexy=Catch@validate[OptionValue@FidSingleXY,checkAss[#,OptionValue@qubitsNum,0<=#<=1&]&,FidSingleXY,fidass[OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
+	(*single things*)
+	fidread=Catch@validate[OptionValue@FidRead,0<=#<=1&,FidRead,"invalid fidelity"],
+	durread=Catch@validate[OptionValue@DurRead,NumberQ,DurMeas,"invalid duration"],
+	repeatread=Catch@validate[OptionValue@RepeatRead,IntegerQ,RepeatRead,"not an integer"],
+	(* assoc or boolean *)
+	exchangerotoff=Catch@validate[OptionValue@ExchangeRotOff,Or[AssociationQ@#,#===False]&,ExchangeRotOff,"Set to association or False"],
+	(* True/False*)
+	ddactive=Catch@validate[OptionValue@DDActive,BooleanQ,DDActive,"Set to true or false"],
+	offresonantrabi=Catch@validate[OptionValue@OffResonantRabi,BooleanQ,OffResonantRabi,"Set to true or false"],
+	stdpassivenoise=Catch@validate[OptionValue@StdPassiveNoise,BooleanQ,StdPassiveNoise,"Set to true or false"],
+	(*a matrix or a boolean*)
+	exchangeroton=Catch@validate[OptionValue@ExchangeRotOn,Or[SquareMatrixQ[#],BooleanQ[#]]&,ExchangeRotOn,StringForm["set to false or specify with a square matrix with dim ``^2",-1+OptionValue@qubitsNum]],
+	(*probability error of depolarising and dephasing noise *)
+	er1xy=fid2DepolDeph[#,OptionValue@EFSingleXY,1,FidSingleXY,True]&/@OptionValue[FidSingleXY],
+	ercz=fid2DepolDeph[#,OptionValue@EFCZ,2,FidCZ,True]&/@OptionValue[FidCZ],
+	(* frequently used stuff *)
+	qubits=Range[0,-1+OptionValue@qubitsNum]
+	},
 
-Module[
-{\[CapitalDelta]T, miseq,initf,measf, passivenoisecirc, offresrabi, stdpn, exczon,durinit,sroterr,g2=False},
-stdpn[q_,dd_,dur_]:=If[stdpassivenoise,
-If[dd,{Subscript[Deph, q][.5(1-E^(-dur/t2[q]))],Subscript[Depol, q][.75(1-E^(-dur/t1[q]))]},
-{Subscript[Deph, q][.5(1-E^(-dur/t2s[q]))],Subscript[Depol, q][.75(1-E^(-dur/t1[q]))]}],{}];
-passivenoisecirc[q_Integer,g2_,dur_]:=Flatten@{
-If[\[Not]g2&&q<qubitsnum-1 && AssociationQ@exchangerotoff,Subscript[C, q][Subscript[Rz, q+1][(2dur/\[Pi])*exchangerotoff[q]]],{}],stdpn[q,ddactive,dur]
-};
-(*single rotation noise *)
-offresrabi[q_,\[Theta]_]:=If[offresonantrabi,
-Table[Subscript[U, j][OffResRabiOsc[rabifreq[q],qubitfreq[j]-qubitfreq[q],Abs[\[Theta]]]],{j,Delete[qubits,q+1]}],{}];
-
-(*Exchange rotation C-Rz[j] interaction when CZ gate on*)
-exczon[targ_]:=If[ListQ@exchangeroton,Subscript[C, #-1][Subscript[Rz, #][exchangeroton[[targ,#]]]]&/@Delete[Range[qubitsnum-1],targ],{}];
-
-(*Errors on single rotations*)
-sroterr[q_,\[Theta]_]:=Flatten@{Subscript[Depol, q][er1xy[q][[1]]],Subscript[Deph, q][er1xy[q][[2]]],offresrabi[q,\[Theta]]};
-(*measurement and initialisation sequence*)
-miseq[q__]:=(Length@{q}>1)&&((Sort[{q}]===Range[0,Max@q])||(Sort[{q}]===Range[Min@q,-1+qubitsnum]));
-(* final init state is 1000...0001: 2 reads+1 cond-X *)
+	Module[
+	{\[CapitalDelta]T, miseq,initf,measf, passivenoisecirc, offresrabi, stdpn, exczon,durinit,sroterr,g2=False},
+	stdpn[q_,dd_,dur_]:=If[stdpassivenoise,
+	If[dd,{Subscript[Deph, q][.5(1-E^(-dur/t2[q]))],Subscript[Depol, q][.75(1-E^(-dur/t1[q]))]},
+	{Subscript[Deph, q][.5(1-E^(-dur/t2s[q]))],Subscript[Depol, q][.75(1-E^(-dur/t1[q]))]}],{}];
+	passivenoisecirc[q_Integer,g2_,dur_]:=Flatten@{
+	If[\[Not]g2&&q<qubitsnum-1 && AssociationQ@exchangerotoff,Subscript[C, q][Subscript[Rz, q+1][(2dur/\[Pi])*exchangerotoff[q]]],{}],stdpn[q,ddactive,dur]
+	};
+	(*single rotation noise *)
+	offresrabi[q_,\[Theta]_]:=If[offresonantrabi,
+	Table[Subscript[U, j][OffResRabiOsc[rabifreq[q],qubitfreq[j]-qubitfreq[q],Abs[\[Theta]]]],{j,Delete[qubits,q+1]}],{}];
+	
+	(*Exchange rotation C-Rz[j] interaction when CZ gate on*)
+	exczon[targ_]:=If[ListQ@exchangeroton,Subscript[C, #-1][Subscript[Rz, #][exchangeroton[[targ,#]]]]&/@Delete[Range[qubitsnum-1],targ],{}];
+	
+	(*Errors on single rotations*)
+	sroterr[q_,\[Theta]_]:=Flatten@{Subscript[Depol, q][er1xy[q][[1]]],Subscript[Deph, q][er1xy[q][[2]]],offresrabi[q,\[Theta]]};
+	(*measurement and initialisation sequence*)
+	miseq[q__]:=(Length@{q}>1)&&((Sort[{q}]===Range[0,Max@q])||(Sort[{q}]===Range[Min@q,-1+qubitsnum]));
+	(* final init state is 1000...0001: 2 reads+1 cond-X *)
 		
 initf[q__]:=Which[MemberQ[{q},0],(*start*)
 		Flatten@{
@@ -1213,23 +1226,23 @@ measf[q__]:=Which[
 ];
 
 <|
-(*no hidden qubits/ancilla here *)
-DeviceType->"SiliconDelft",
-DeviceDescription -> "Delft Silicon device with "<>ToString[qubitsnum]<>"-qubits arranged as a linear array with nearest-neighbor connectivity and control qubits are the lower ones.",
-NumAccessibleQubits -> qubitsnum,
-NumTotalQubits -> qubitsnum,
-
-Aliases -> {
-	Subscript[Wait, q__][t_] :> {},
-	Subscript[Init, q__]:> {},
-	Subscript[Meas, q__]:> {}
-	}
-	,	
-Gates ->{
-	Subscript[Wait, q__][t_]:><|
-		NoisyForm->Flatten@Table[passivenoisecirc[i,False,2t],{i,Flatten@{q}}],
-		GateDuration->t,
-		UpdateVariables->Function[g2=False]
+	(*no hidden qubits/ancilla here *)
+	DeviceType->"SiliconDelft",
+	DeviceDescription -> "Delft Silicon device with "<>ToString[qubitsnum]<>"-qubits arranged as a linear array with nearest-neighbor connectivity and control qubits are the lower ones.",
+	NumAccessibleQubits -> qubitsnum,
+	NumTotalQubits -> qubitsnum,
+	
+	Aliases -> {
+		Subscript[Wait, q__][t_] :> {},
+		Subscript[Init, q__]:> {},
+		Subscript[Meas, q__]:> {}
+		}
+		,	
+	Gates ->{
+		Subscript[Wait, q__][t_]:><|
+			NoisyForm->Flatten@Table[passivenoisecirc[i,False,2t],{i,Flatten@{q}}],
+			GateDuration->t,
+			UpdateVariables->Function[g2=False]
 	|>,
 (* Measurements and initialisation *)
 	Subscript[Meas, q__]/; miseq[q] :><|
@@ -1274,7 +1287,93 @@ Qubits :> {
 ]
 (***** ENDOF SILICON_DELFT2 *****)
 
-(******* CIRCUIT CONSTRUCTION ***********)
+(******* CIRCUIT_CONSTRUCTION ***********)
+SetAttributes[CircRydbergHub, HoldAll]
+blockadeParallel::usage="BlockadeParallel[g1,g2,device]. Check if gates g1 and g2 can be done concurrently. Some gates, such as Wait and Init has no parallel restriction.";
+SetAttributes[blockadeParallel,HoldAll]
+blockadeParallel[gate1_,gate2_,nadevice_]:=Module[{g1,g2,idx1,idx2,parallelgates,serialgates,distloc,atomlocs,unitlattice},
+	atomlocs=nadevice[AtomLocations];
+	unitlattice=nadevice[UnitLattice];
+	distloc[q1_,q2_]:=Norm[atomlocs[q1]-atomlocs[q2],2]*unitlattice;
+	serialgates={SWAPLoc,ShiftLoc,Wait};
+	parallelgates={Init,SRot,H,Rx,Ry,Rz};
+	{g1,idx1}=gateIndex[gate1];
+	{g2,idx2}=gateIndex[gate2];
+	Which[MemberQ[parallelgates,(g1|g2)],
+	True,
+	MemberQ[serialgates,(g1|g2)],
+	False,
+	True,
+	And@@(distloc[Sequence@@#,nadevice]> nadevice[BlockadeRadius]&/@Tuples[{idx1,idx2}])]
+]
+CircRydbergHub[circuit_, device_, OptionsPattern[]]:=Module[
+	{
+	parallel=OptionValue[Parallel],
+	circ=circuit,
+	newcirc={},
+	circols,idxcol,incol,idx1,idx2,g1,g2
+	},
+	
+	If[
+	(** parallel mode **)
+	parallel,
+		While[Length@circ>0 ,
+			circols=GetCircuitColumns[circ];
+			(* update equivalent ordering of the circuit *)
+			circ=Flatten@circols;
+			(* get indices partitioned wrt circols *)
+			idxcol=TakeList[Range[Length@circ],Length@#&/@circols][[1]];
+			
+			(* eliminate non-legitimate gates of the first column *)
+			AppendTo[newcirc,{}];
+			incol=<| #->True & /@idxcol |>;
+			
+			Table[
+			If[incol[i1],
+				(* add gate i1 and eliminate the rest *)
+				AppendTo[newcirc[[-1]],circ[[i1]]];
+				Table[
+				If[incol[[i2]],
+				incol[[i2]]=blockadeParallel[circ[[i1]],circ[[i2]],device];
+				]
+				,{i2,Complement[idxcol,{i1}]}];
+			]
+			,{i1,idxcol}];
+			(* update circuit *)
+			circ=Delete[circ,{#}&/@Keys@Select[incol,#&]];
+		]
+	,
+	(** serial mode **)
+	While[Length@circ>0 ,
+		circols=GetCircuitColumns[circ];
+		(* update equivalent ordering of the circuit *)
+		circ=Flatten@circols;
+		(* get indices partitioned wrt circols *)
+		idxcol=TakeList[Range[Length@circ],Length@#&/@circols][[1]];
+		
+		(* eliminate non-legitimate gates of the first column *)
+		AppendTo[newcirc,{}];
+		incol=<| #->True & /@idxcol |>;
+		
+		Table[
+		If[incol[i1],
+		(* add gate i1 and eliminate the rest *)
+		AppendTo[newcirc[[-1]],circ[[i1]]];
+		Table[
+		If[incol[[i2]],
+			{g1,idx1}=gateIndex[circ[[i1]]];
+			{g2,idx2}=gateIndex[circ[[i2]]];
+		incol[[i2]]=MemberQ[{Init,Wait},(g1|g2)]
+		];
+		,{i2,Complement[idxcol,{i1}]}];
+		]
+		,{i1,idxcol}];
+		(* update circuit *)
+		circ=Delete[circ,{#}&/@Keys@Select[incol,#&]];
+	];	
+	];
+	newcirc
+]
 SetAttributes[CircTrappedIons,HoldAll]
 CircTrappedIons[circuit_,device_,OptionsPattern[]]:=Module[
 	{circ2=circuit,ccirc={},qmap,quota,col,i,del,parties,gate,entp,
