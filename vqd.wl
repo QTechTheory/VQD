@@ -77,7 +77,7 @@ Options[CircSiliconDelft]={Parallel->False};
 Options[CircRydbergHub]={Parallel->False};
 
 CircTrappedIons::usage="CircTrappedIons[circuit, device, MapQubits->True, Parallel->False]. Circuit arrangement according to the device. Note that Parallle->True is not available yet.";
-CircSiliconDelft::usage="CircSiliconDelft[circuit, device, MapQubits->True, Parallel->False]. Circuit arrangement according to the device. Note that Parallle->True is not available yet.";
+CircSiliconDelft::usage="CircSiliconDelft[circuit, device, Parallel->False]. Circuit arrangement according to the device. Note that Parallle->True is not available yet.";
 CircRydbergHub::usage="CircRydbergHub[circuit, device, Parallel->(False, True)]";
 
 CircTrappedIons::error="`1`";
@@ -375,6 +375,128 @@ ToyDevice[OptionsPattern[]]:=With[
 		|>
 	]
 ]
+
+(**************************** NVCENTER_DELFT *****************************)
+NVCenterDelft[OptionsPattern[]]:=With[
+{
+qubitsnum=OptionValue@qubitsNum,
+t1=OptionValue@T1,
+t2=OptionValue@T2
+},
+
+
+Module[{\[CapitalDelta]t},
+<|
+	(* A helpful description of the device *)
+	DeviceDescription ->"One node of an NV center, where qubit 0 is the electronic spin.",
+	(* The number of accessible qubits. This informs the qubits that a user's circuit can target *)
+	NumAccessibleQubits -> qubitsnum,	
+	(* The total number of qubits which would be needed to simulate a circuit prescribed by this device.
+	 * This is > NumAccessibleQubits only when the spec uses hidden qubits for advanced noise modelling *)
+	NumTotalQubits -> qubitsnum,
+
+	(* Aliases are useful for declaring custom events. At this stage the specification is noise-free (but see later) *)
+Aliases -> {
+	Subscript[Init, q_]:> Circuit[Subscript[Damp, q][1]]
+	,
+	Subscript[Wait, q__][t_]:>Circuit[G[0]]
+	,
+	Subscript[CRx, e_,n_][\[Theta]_]:>{Subscript[U, e,n][{{Cos[\[Theta]/2],0,-I Sin[\[Theta]/2],0},{0,Cos[\[Theta]/2],0,I Sin[\[Theta]/2]},{-I Sin[\[Theta]/2],0,Cos[\[Theta]/2],0},{0,I Sin[\[Theta]/2],0,Cos[\[Theta]/2]}}]}
+	,
+	Subscript[CRy, e_,n_][\[Theta]_]:>{Subscript[U, e,n][{{Cos[\[Theta]/2],0,-Sin[\[Theta]/2],0},{0,Cos[\[Theta]/2],0,Sin[\[Theta]/2]},{Sin[\[Theta]/2],0,Cos[\[Theta]/2],0},{0,-Sin[\[Theta]/2],0,Cos[\[Theta]/2]}}]}
+	}
+	,
+
+	
+Gates ->{
+(** exclusively on ELECTRON SPIN, q===0 **)
+		Subscript[Init, q_]/;q===0 :> <|
+			NoisyForm -> Circuit[ Subscript[Init, 0]Subscript[Depol, 0][dpinit[[1]]]], 
+			GateDuration -> config[durInit]
+		|>,
+
+		Subscript[M, q_]/;q===0 :> <|
+			NoisyForm -> {Subscript[X, 0],Subscript[Damp, 0][percent2infidel[config[fidMeas]]],Subscript[X, 0],Subscript[M, 0],Subscript[Damp, 0][1]},
+			GateDuration -> config[durMeas]
+		|>,
+
+		(* Electron and nuclear spins *)
+		(* A simple 'wait' instruction, useful for padding a circuit. The content inside the table should be the same as the passive noise section below (copy / paste it) *)
+		Subscript[Wait, qubits__][dur_]:> <|
+			NoisyForm->Table[NVPassiveNoise[config,q,dur],{q,{qubits}}],
+			GateDuration->dur
+		|>,
+		
+		Subscript[Rz, q_][\[Theta]_] :> <|
+			NoisyForm -> Circuit[Subscript[Rz, q][\[Theta]]Subscript[Depol, q][dprz[q][[1]]*Abs[\[Theta]]/\[Pi]]Subscript[Deph, q][dprz[q][[2]]*Abs[\[Theta]]/\[Pi]]],
+			GateDuration -> (10^6*Abs[\[Theta]])/(\[Pi]*config[gateRateRz][q])
+		|>, 
+		
+		Subscript[Rx, q_][\[Theta]_]/;q===0 :> <|
+			NoisyForm -> Circuit[Subscript[Rx, q][\[Theta]]Subscript[Depol, q][dprxy[q][[1]]*Abs[\[Theta]]/\[Pi]]Subscript[Deph, q][dprxy[q][[2]]*Abs[\[Theta]]/\[Pi]]],
+			GateDuration -> (10^6*Abs[\[Theta]])/(\[Pi]*config[gateRateRxRy][q])
+		|>
+		,
+		
+		Subscript[Ry, q_][\[Theta]_]/;q===0 :> <|
+			NoisyForm -> Circuit[Subscript[Ry, q][\[Theta]]Subscript[Depol, q][dprxy[q][[1]]*Abs[\[Theta]]/\[Pi]]Subscript[Deph, q][dprxy[q][[2]]*Abs[\[Theta]]/\[Pi]]],
+			GateDuration -> (10^6*Abs[\[Theta]])/(\[Pi]*config[gateRateRxRy][q])
+		|>
+		,
+		(* temporary solution: electron needs to set at ms=-1*)
+		Subscript[Rx, q_][\[Theta]_]/;q>0 :> <|
+			NoisyForm -> Circuit[Subscript[CRx, 0,q][-\[Theta]]Subscript[Depol, q][dprxy[q][[1]]*Abs[\[Theta]]/\[Pi]]Subscript[Deph, q][dprxy[q][[2]]*Abs[\[Theta]]/\[Pi]]],
+			GateDuration -> (10^6*Abs[\[Theta]])/(\[Pi]*config[gateRateRxRy][q])
+		|>
+		,
+		
+		Subscript[Ry, q_][\[Theta]_]/;q>0 :> <|
+			NoisyForm -> Circuit[Subscript[CRy, 0,q][\[Theta]]Subscript[Depol, q][dprxy[q][[1]]*Abs[\[Theta]]/\[Pi]]Subscript[Deph, q][dprxy[q][[2]]*Abs[\[Theta]]/\[Pi]]],
+			GateDuration -> (10^6*Abs[\[Theta]])/(\[Pi]*config[gateRateRxRy][q])
+		|>		
+		,
+		(* Conditional rotations *)
+		Subscript[CRx, e_,n_][\[Theta]_] /; (e==0 && n>0):> <|
+			(* Its noisy form depolarises the control and target qubits *)
+			NoisyForm -> Circuit[Subscript[CRx, e,n][\[Theta]]Subscript[Depol,e,n][dpcrot[n][[1]]*Abs[\[Theta]]/\[Pi]]Subscript[Deph,e,n][dpcrot[n][[2]]*Abs[\[Theta]]/\[Pi]]],
+			GateDuration -> (10^6*Abs[\[Theta]])/(\[Pi]*config[gateRateCRot][n])
+		|>
+		,
+		Subscript[CRy, e_,n_][\[Theta]_] /; (e==0 && n>0):> <|
+			(* Its noisy form depolarises the control and target qubits *)
+			NoisyForm -> Circuit[Subscript[CRy, e,n][\[Theta]]Subscript[Depol,e,n][dpcrot[n][[1]]*Abs[\[Theta]]/\[Pi]]Subscript[Deph,e,n][dpcrot[n][[2]]*Abs[\[Theta]]/\[Pi]]],
+			GateDuration -> (10^6*Abs[\[Theta]])/(\[Pi]*config[gateRateCRot][n])
+		|>		
+	}	
+	,
+
+	(* Declare that \[CapitalDelta]t will refer to the duration of the current gate/channel. *)
+	DurationSymbol -> \[CapitalDelta]t, 
+
+(****)
+(* PASSIVE NOISE *)
+(****)
+	(* The passive noise on qubits when NOT being operated upon.  *)
+(* Note 'globalField' is the unwanted [positive or negative] field offset for the present circuit; *)
+(* this should be set on a per-run basis as in examples below. Could be augmented with e.g. a drifting function of t *)
+		Qubits -> {
+	(* to consider: cross-talk ZZ-coupling in order of Hz on passive noise, Phase entanglement among nuclear spins 
+	Subscript[C, n1][Subscript[Rz, n2][\[CapitalDelta]t]], weak rotation for all combinations of n1,n2, few Hz
+	*)
+		q_ :> <|
+		PassiveNoise ->NVPassiveNoise[config,q,\[CapitalDelta]t]
+		|>
+
+		
+	}
+|>
+
+]
+]
+
+
+
+
 
 (**************************** RYDBERG_HUB *****************************)
 (**legitimate shift move **) 
@@ -771,6 +893,13 @@ measf[q__]:=Which[
 			(*The last bit undo the exchange in the passive noise *)
 			NoisyForm->{Subscript[C, p][Subscript[Ph, q][\[Theta]]],Subscript[Depol, p,q][ercz[p][[1]]],Subscript[Deph, p,q][ercz[p][[2]]],Sequence@@exczon[q]}, 
 			GateDuration->Abs[\[Theta]/2\[Pi]]/freqcz[p],
+			UpdateVariables->Function[g2=True]
+		|>
+		,
+		(**additional operation for compilation: assumed to have the same performance as CPh **)
+		Subscript[SWAP, p_,q_]/; (q-p)===1  :><|
+			NoisyForm->{Subscript[SWAP, p,q],Subscript[Depol, p,q][ercz[p][[1]]],Subscript[Deph, p,q][ercz[p][[2]]]}, 
+			GateDuration->1.5/freqcz[p],
 			UpdateVariables->Function[g2=True]
 		|>		
 	},
@@ -1426,7 +1555,7 @@ CircTrappedIons[circuit_,device_,OptionsPattern[]]:=Module[
 	]	
 ]
 
-CircSiliconDelft[circ_, OptionsPattern[]]:=Module[
+CircSiliconDelft[circ_, device_,OptionsPattern[]]:=Module[
 {parallel=OptionValue[Parallel]},
 Which[
 	parallel===False,
