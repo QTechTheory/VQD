@@ -60,7 +60,8 @@ DeviceType::usage="The type of device. Normally, the name of the function that g
 DrawIons::usage="Draw the current string of ions";
 
 (** PlotAtoms options for Rydberg device **)
-PlotAtoms::usage="PlotAtoms[device]. Plot the atoms of a Rydberg device. Set ShowBlockade->{qubits} to show the blockade radius. Set ShowLossAtoms->True, to show the atoms that are loss as well.";
+PlotAtoms::usage="PlotAtoms[rydberg_device]. Plot the atoms of a Rydberg device. Set ShowBlockade->{qubits} to show the blockade radius of a set of qubits. Set ShowLossAtoms->True, to show the atoms that are loss as well. It will be indicated with grey color.
+Plot atoms also receive the options of Graphic function.";
 PlotAtoms::error="`1`";
 Options[PlotAtoms]={
 ShowBlockade->{},
@@ -564,12 +565,12 @@ Module[{\[CapitalDelta]t, lossatoms, lossatomsprob, globaltime, stdpn, t1, atoml
 	BlockadeRadius->blockaderad,
 	UnitLattice->unitlattice,
 	
-	(* re-initialized when invoking InsertCircuitNoise *)
+	(*(* re-initialized when invoking InsertCircuitNoise *)
 	InitVariables->Function[
 		atomlocs=atomlocations;
 		lossatoms=<|Table[k->False,{k,Keys@atomlocations}]|>;
 		lossatomsprob=<|Table[k->0,{k,Keys@atomlocations}]|>;
-	],
+	],*)
 
 	(* Aliases are useful for declaring custom operators. At this stage the specification is noise-free (but see later) *)
 	Aliases -> {
@@ -704,7 +705,7 @@ PlotAtoms[rydbergdev_,opt:OptionsPattern[{PlotAtoms,Graphics}]]:=With[
 	availqubits=KeyTake[rydbergdev[AtomLocations],Keys@Select[rydbergdev[LossAtoms],#===False&]],
 	lossqubits=KeyTake[rydbergdev[AtomLocations],Keys@Select[rydbergdev[LossAtoms],#===True&]],
 	style={ImageSize->Medium,Frame->True,Axes->True},
-	fontsize=If[OptionValue[ImageSize]===Automatic,Medium,OptionValue[ImageSize]]
+	fontsize=If[(OptionValue[ImageSize]===Automatic)||NumberQ[OptionValue[ImageSize]],Medium,OptionValue[ImageSize]]
 },
 Which[
 	2===Length@First@Values@qulocs,
@@ -782,8 +783,7 @@ qubits=Range[0,-1+OptionValue@qubitsNum]
 Module[
 {\[CapitalDelta]T, miseq,initf,measf, passivenoisecirc, offresrabi, stdpn, exczon,durinit,sroterr,g2=False},
 
-stdpn[q_,dur_]:=If[stdpassivenoise,
-	{Subscript[Deph, q][.5(1-Exp[-N[dur/t2[q],$MachinePrecision]])],Subscript[Depol, q][0.75(1-E^(-dur/t1[q]))]},{}];
+stdpn[q_,dur_]:=If[stdpassivenoise,{Subscript[Deph, q][.5(1-Exp[-N[dur/t2[q],$MachinePrecision]])],Subscript[Depol, q][0.75(1-E^(-dur/t1[q]))]},{}];
 passivenoisecirc[q_Integer,g2_,dur_]:=Flatten@{If[\[Not]g2&&q<qubitsnum-1 && AssociationQ@exchangerotoff,Subscript[C, q][Subscript[Rz, q+1][(dur/\[Pi])*exchangerotoff[q]]],{}],stdpn[q,dur]};
 
 (*single rotation noise *)
@@ -890,22 +890,16 @@ measf[q__]:=Which[
 			UpdateVariables->Function[g2=False]
 		|>,
 	(* Twos *)
-		Subscript[C, p_][Subscript[Z, q_]]/; Abs[q-p]===1  :><|
+		Subscript[C, p_][Subscript[Z, q_]]/; q-p===1  :><|
 			(*The last bit undo the exchange in the passive noise *)
-			NoisyForm->{Subscript[C, p][Subscript[Z, q]],Subscript[Depol, p,q][ercz[Min[p,q]][[1]]],Subscript[Deph, p,q][ercz[Min[p,q]][[2]]],Sequence@@exczon[q]}, 
+			NoisyForm->{Subscript[C, p][Subscript[Z, q]],Subscript[Depol, p,q][ercz[p][[1]]],Subscript[Deph, p,q][ercz[p][[2]]],Sequence@@exczon[q]}, 
 			GateDuration->0.5/freqcz[p],
 			UpdateVariables->Function[g2=True]
 		|>,
-		Subscript[C, p_][Subscript[Ph, q_][\[Theta]_]]/; Abs[q-p]===1  :><|
+		Subscript[C, p_][Subscript[Ph, q_][\[Theta]_]]/; q-p===1  :><|
 			(*The last bit undo the exchange in the passive noise *)
-			NoisyForm->{Subscript[C, p][Subscript[Ph, q][\[Theta]]],Subscript[Depol, p,q][ercz[Min[p,q]][[1]]],Subscript[Deph, p,q][ercz[Min[p,q]][[2]]],Sequence@@exczon[q]}, 
+			NoisyForm->{Subscript[C, p][Subscript[Ph, q][\[Theta]]],Subscript[Depol, p,q][ercz[p][[1]]],Subscript[Deph, p,q][ercz[p][[2]]],Sequence@@exczon[q]}, 
 			GateDuration->Abs[\[Theta]/2\[Pi]]/freqcz[p],
-			UpdateVariables->Function[g2=True]
-		|>,
-		(**additional operation for compilation: assumed to have the same performance as CPh **)
-		Subscript[SWAP, p_,q_]/; Abs[q-p]===1  :><|
-			NoisyForm->{Subscript[SWAP, p,q],Subscript[Depol, p,q][ercz[Min[p,q]][[1]]],Subscript[Deph, p,q][ercz[Min[p,q]][[2]]]}, 
-			GateDuration->1.5/freqcz[p],
 			UpdateVariables->Function[g2=True]
 		|>		
 	},
