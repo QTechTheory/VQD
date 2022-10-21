@@ -793,7 +793,7 @@ offresrabi[q_,\[Theta]_]:=If[offresonantrabi,Table[Subscript[U, j][OffResRabiOsc
 exczon[targ_]:=If[ListQ@exchangeroton,Subscript[C, #-1][Subscript[Rz, #][exchangeroton[[targ,#]]]]&/@Delete[Range[qubitsnum-1],targ],{}];
 
 (*Errors on single rotations*)
-sroterr[q_,\[Theta]_]:=Flatten@{Subscript[Depol, q][er1xy[q][[1]]],Subscript[Deph, q][er1xy[q][[2]]],offresrabi[q,\[Theta]]};
+sroterr[q_,\[Theta]_]:=Flatten@{Subscript[Depol, q][er1xy[q][[1]]*Abs[\[Theta]/\[Pi]]],Subscript[Deph, q][er1xy[q][[2]]*Abs[\[Theta]/\[Pi]]],offresrabi[q,\[Theta]]};
 (*measurement and initialisation sequence*)
 miseq[q__]:=(Length@{q}>1)&&((Sort[{q}]===Range[0,Max@q])||(Sort[{q}]===Range[Min@q,-1+qubitsnum]));
 (* final init state is 1000...0001: 2 reads+1 cond-X *)
@@ -898,7 +898,7 @@ measf[q__]:=Which[
 		|>,
 		Subscript[C, p_][Subscript[Ph, q_][\[Theta]_]]/; q-p===1  :><|
 			(*The last bit undo the exchange in the passive noise *)
-			NoisyForm->{Subscript[C, p][Subscript[Ph, q][\[Theta]]],Subscript[Depol, p,q][ercz[p][[1]]],Subscript[Deph, p,q][ercz[p][[2]]],Sequence@@exczon[q]}, 
+			NoisyForm->{Subscript[C, p][Subscript[Ph, q][\[Theta]]],Subscript[Depol, p,q][ercz[p][[1]]],Subscript[Deph, p,q][ercz[p][[2]]*Abs[\[Theta]/\[Pi]]],Sequence@@exczon[q]}, 
 			GateDuration->Abs[\[Theta]/2\[Pi]]/freqcz[p],
 			UpdateVariables->Function[g2=True]
 		|>		
