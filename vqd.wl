@@ -356,15 +356,15 @@ ToyDevice[OptionsPattern[]]:=With[
 		|>,
 	(* Twos *)
 			Subscript[C, p_][Subscript[Rx, q_][\[Theta]_]]/; Abs[q-p]===1  :><|
-			NoisyForm->{Subscript[C, p][Subscript[Rx, q][\[Theta]]],Subscript[Depol, p,q][ertwo[[1]]],Subscript[Deph, p,q][ertwo[[2]]]},
+			NoisyForm->{Subscript[C, p][Subscript[Rx, q][\[Theta]]],Subscript[Depol, p,q][Min[ertwo[[1]]*Abs[\[Theta]/\[Pi]],15/16]],Subscript[Deph, p,q][Min[ertwo[[2]]*Abs[\[Theta]/\[Pi]],3/4]]},
 			GateDuration->Abs[\[Theta]]/(2\[Pi]*twogatefreq)
 		|>,
 			Subscript[C, p_][Subscript[Ry, q_][\[Theta]_]]/; Abs[q-p]===1  :><|
-			NoisyForm->{Subscript[C, p][Subscript[Ry, q][\[Theta]]],Subscript[Depol, p,q][ertwo[[1]]],Subscript[Deph, p,q][ertwo[[2]]]},
+			NoisyForm->{Subscript[C, p][Subscript[Ry, q][\[Theta]]],Subscript[Depol, p,q][Min[ertwo[[1]]*Abs[\[Theta]/\[Pi]],15/16]],Subscript[Deph, p,q][Min[ertwo[[2]]*Abs[\[Theta]/\[Pi]],3/4]]},
 			GateDuration->Abs[\[Theta]]/(2\[Pi]*twogatefreq)
 		|>,
 			Subscript[C, p_][Subscript[Rz, q_][\[Theta]_]]/; Abs[q-p]===1  :><|
-			NoisyForm->{Subscript[C, p][Subscript[Rz, q][\[Theta]]],Subscript[Depol, p,q][ertwo[[1]]],Subscript[Deph, p,q][ertwo[[2]]]},
+			NoisyForm->{Subscript[C, p][Subscript[Rz, q][\[Theta]]],Subscript[Depol, p,q][Min[ertwo[[1]]*Abs[\[Theta]/\[Pi]],15/16]],Subscript[Deph, p,q][Min[ertwo[[2]]*Abs[\[Theta]/\[Pi]],3/4]]},
 			GateDuration->Abs[\[Theta]]/(2\[Pi]*twogatefreq)
 		|>	
 		,(* parameterised swap*)
@@ -450,42 +450,41 @@ Gates ->{
 			GateDuration->dur
 		|>,
 		Subscript[Rz, q_][\[Theta]_] :> <|
-			NoisyForm -> Circuit[Subscript[Rz, q][\[Theta]]Subscript[Deph, q][ersinglez[q][[2]]*Min[Abs[\[Theta]]/\[Pi],1]]],
+			NoisyForm -> Circuit[Subscript[Rz, q][\[Theta]]Subscript[Deph, q][Min[ersinglez[q][[2]]*Abs[\[Theta]]/\[Pi],0.5]]],
 			GateDuration -> Abs[\[Theta]]/(\[Pi]*freqsinglez[q])
 		|>, 
 		
 		Subscript[Rx, q_][\[Theta]_]/;q===0 :> <|
-			NoisyForm -> Circuit[Subscript[Rx, q][\[Theta]]Subscript[Depol, q][ersinglexy[q][[1]]*Min[Abs[\[Theta]]/\[Pi],1]]Subscript[Deph,q][ersinglexy[q][[2]]*Min[Abs[\[Theta]]/\[Pi],1]]],
+			NoisyForm -> Circuit[Subscript[Rx, q][\[Theta]]Subscript[Depol, q][Min[ersinglexy[q][[1]]*Abs[\[Theta]]/\[Pi],0.75]]Subscript[Deph,q][Min[ersinglexy[q][[2]]Abs[\[Theta]]/\[Pi],0.5]]],
 			GateDuration -> Abs[\[Theta]]/(\[Pi]*freqsinglexy[q])
 		|>,
 		
 		Subscript[Ry, q_][\[Theta]_]/;q===0 :> <|
-			NoisyForm -> Circuit[Subscript[Ry, q][\[Theta]]Subscript[Depol, q][ersinglexy[q][[1]]*Min[Abs[\[Theta]]/\[Pi],1]]Subscript[Deph, q][ersinglexy[q][[2]]*Min[Abs[\[Theta]]/\[Pi],1]]],
+			NoisyForm -> Circuit[Subscript[Ry, q][\[Theta]]Subscript[Depol, q][Min[ersinglexy[q][[1]]Abs[\[Theta]]/\[Pi],0.75]]Subscript[Deph, q][Min[ersinglexy[q][[2]]Abs[\[Theta]]/\[Pi],0.5]]],
 			GateDuration -> Abs[\[Theta]]/(\[Pi]*freqsinglexy[q])
 		|>,
 		(* ROTATIONS CONDITIONED ON ELETRON SPIN. electron needs to set at ms=-1*)
 		Subscript[Rx, q_][\[Theta]_]/;q>0 :> <|
-			NoisyForm -> Circuit[Subscript[CRx, 0,q][-\[Theta]]Subscript[Depol, q][ersinglexy[q][[1]]*Min[Abs[\[Theta]]/\[Pi],1]]Subscript[Deph, q][ersinglexy[q][[2]]*Min[Abs[\[Theta]]/\[Pi],1]]],
+			NoisyForm -> Circuit[Subscript[CRx, 0,q][-\[Theta]]Subscript[Depol, q][Min[ersinglexy[q][[1]]Abs[\[Theta]]/\[Pi],0.75]]Subscript[Deph, q][Min[ersinglexy[q][[2]]*Abs[\[Theta]]/\[Pi],0.5]]],
 			GateDuration -> Abs[\[Theta]]/(\[Pi]*freqsinglexy[q])
 		|>,
 		Subscript[Ry, q_][\[Theta]_]/;q>0 :> <|
-			NoisyForm -> Circuit[Subscript[CRy, 0,q][\[Theta]]Subscript[Depol, q][ersinglexy[q][[1]]*Min[Abs[\[Theta]]/\[Pi],1]]Subscript[Deph, q][ersinglexy[q][[2]]*Min[Abs[\[Theta]]/\[Pi],1]]],
+			NoisyForm -> Circuit[Subscript[CRy, 0,q][\[Theta]]Subscript[Depol, q][Min[ersinglexy[q][[1]]Abs[\[Theta]]/\[Pi],0.75]]Subscript[Deph, q][Min[ersinglexy[q][[2]]*Abs[\[Theta]]/\[Pi],0.5]]],
 			GateDuration -> Abs[\[Theta]]/(\[Pi]*freqsinglexy[q])
 		|>,
 		(* Conditional rotations *)
 		Subscript[CRx, e_,n_][\[Theta]_] /; (e==0 && n>0):> <|
 			(* Its noisy form depolarises the control and target qubits *)
-			NoisyForm -> Circuit[Subscript[CRx, e,n][\[Theta]]Subscript[Depol,e,n][ercrot[n][[1]]*Min[Abs[\[Theta]]/\[Pi],1]]Subscript[Deph,e,n][ercrot[n][[2]]*Min[Abs[\[Theta]]/\[Pi],1]]],
+			NoisyForm -> Circuit[Subscript[CRx, e,n][\[Theta]]Subscript[Depol,e,n][Min[ercrot[n][[1]]Abs[\[Theta]]/\[Pi],15/16]]Subscript[Deph,e,n][Min[ercrot[n][[2]]Abs[\[Theta]]/\[Pi],3/4]]],
 			GateDuration -> Abs[\[Theta]]/(\[Pi]*freqcrot[n]) 
 		|>,
 		Subscript[CRy, e_,n_][\[Theta]_] /; (e==0 && n>0):> <|
 			(* Its noisy form depolarises the control and target qubits *)
-			NoisyForm -> Circuit[Subscript[CRy, e,n][\[Theta]]Subscript[Depol,e,n][ercrot[n][[1]]*Min[Abs[\[Theta]]/\[Pi],1]]Subscript[Deph,e,n][ercrot[n][[2]]*Min[Abs[\[Theta]]/\[Pi],1]]],
+			NoisyForm -> Circuit[Subscript[CRy, e,n][\[Theta]]Subscript[Depol,e,n][Min[ercrot[n][[1]]Abs[\[Theta]]/\[Pi],15/16]]Subscript[Deph,e,n][Min[ercrot[n][[2]]Abs[\[Theta]]/\[Pi],3/4]]],
 			GateDuration -> Abs[\[Theta]]/(\[Pi]*freqcrot[n])    
 		|>		
 	}	
 	,
-
 	(* Declare that \[CapitalDelta]t will refer to the duration of the current gate/channel. *)
 	DurationSymbol -> \[CapitalDelta]t, 
 
@@ -738,9 +737,7 @@ Which[
 (***** SILICON_DELFT *****)
 SiliconDelft[OptionsPattern[]]:=With[
 {
-
 (*validate and format parameter specification*)
-(*Numbers*)
 qubitsnum=Catch@validate[OptionValue@qubitsNum,IntegerQ,qubitsNum,"not an integer"],
 (*Fractions*)
 efsinglexy=Catch@validate[OptionValue@EFSingleXY,(Total[#]==1||Total[#]==0)&,EFSingleXY,"not a fraction with total 1 "],
@@ -767,11 +764,8 @@ exchangerotoff=Catch@validate[OptionValue@ExchangeRotOff,Or[AssociationQ@#,#===F
 (* True/False*)
 offresonantrabi=Catch@validate[OptionValue@OffResonantRabi,BooleanQ,OffResonantRabi,"Set to true or false"],
 stdpassivenoise=Catch@validate[OptionValue@StdPassiveNoise,BooleanQ,StdPassiveNoise,"Set to true or false"],
-
-
 (*a matrix or a boolean*)
 exchangeroton=Catch@validate[OptionValue@ExchangeRotOn,Or[SquareMatrixQ[#],BooleanQ[#]]&,ExchangeRotOn,StringForm["set to false or specify with a square matrix with dim ``^2",-1+OptionValue@qubitsNum]],
-
 (*probability error of depolarising and dephasing noise *)
 er1xy=fid2DepolDeph[#,OptionValue@EFSingleXY,1,FidSingleXY,True]&/@OptionValue[FidSingleXY],
 ercz=fid2DepolDeph[#,OptionValue@EFCZ,2,FidCZ,True]&/@OptionValue[FidCZ],
@@ -781,9 +775,12 @@ qubits=Range[0,-1+OptionValue@qubitsNum]
 },
 
 Module[
-{\[CapitalDelta]T, miseq,initf,measf, passivenoisecirc, offresrabi, stdpn, exczon,durinit,sroterr,g2=False},
+{\[CapitalDelta]T, miseq,initf,measf, passivenoisecirc, offresrabi, stdpn, exczon,durinit,sroterr,g2=False,ndeph,ndepol},
+(* Normalise the numbers to be within the correct range of error parameters*)		
+ndeph[num_]:=Min[num,0.5];
+ndepol[num_]:=Min[num,0.75];	
 
-stdpn[q_,dur_]:=If[stdpassivenoise,{Subscript[Deph, q][.5(1-Exp[-N[dur/t2[q],$MachinePrecision]])],Subscript[Depol, q][0.75(1-E^(-dur/t1[q]))]},{}];
+stdpn[q_,dur_]:=If[stdpassivenoise,{Subscript[Deph, q][.5(1-Exp[-N[dur/t2[q],$MachinePrecision]])],Subscript[Depol, q][0.75(1-Exp[-dur/t1[q]])]},{}];
 passivenoisecirc[q_Integer,g2_,dur_]:=Flatten@{If[\[Not]g2&&q<qubitsnum-1 && AssociationQ@exchangerotoff,Subscript[C, q][Subscript[Rz, q+1][(dur/\[Pi])*exchangerotoff[q]]],{}],stdpn[q,dur]};
 
 (*single rotation noise *)
@@ -793,10 +790,11 @@ offresrabi[q_,\[Theta]_]:=If[offresonantrabi,Table[Subscript[U, j][OffResRabiOsc
 exczon[targ_]:=If[ListQ@exchangeroton,Subscript[C, #-1][Subscript[Rz, #][exchangeroton[[targ,#]]]]&/@Delete[Range[qubitsnum-1],targ],{}];
 
 (*Errors on single rotations*)
-sroterr[q_,\[Theta]_]:=Flatten@{Subscript[Depol, q][er1xy[q][[1]]*Abs[\[Theta]/\[Pi]]],Subscript[Deph, q][er1xy[q][[2]]*Abs[\[Theta]/\[Pi]]],offresrabi[q,\[Theta]]};
+sroterr[q_,\[Theta]_]:=Flatten@{Subscript[Depol, q][ndepol[er1xy[q][[1]]*Abs[\[Theta]/\[Pi]]]],Subscript[Deph, q][ndeph[er1xy[q][[2]]*Abs[\[Theta]/\[Pi]]]],offresrabi[q,\[Theta]]};
 (*measurement and initialisation sequence*)
 miseq[q__]:=(Length@{q}>1)&&((Sort[{q}]===Range[0,Max@q])||(Sort[{q}]===Range[Min@q,-1+qubitsnum]));
-(* final init state is 1000...0001: 2 reads+1 cond-X *)
+(* final init state is 1000...0001: 2 reads+1 cond-X *)	
+	
 		
 initf[q__]:=Which[MemberQ[{q},0],(*start*)
 		Flatten@{
@@ -898,13 +896,14 @@ measf[q__]:=Which[
 		|>,
 		Subscript[C, p_][Subscript[Ph, q_][\[Theta]_]]/; q-p===1  :><|
 			(*The last bit undo the exchange in the passive noise *)
-			NoisyForm->{Subscript[C, p][Subscript[Ph, q][\[Theta]]],Subscript[Depol, p,q][ercz[p][[1]]],Subscript[Deph, p,q][ercz[p][[2]]*Abs[\[Theta]/\[Pi]]],Sequence@@exczon[q]}, 
+			NoisyForm->{Subscript[C, p][Subscript[Ph, q][\[Theta]]],Subscript[Depol, p,q][Min[ercz[p][[1]]Abs[\[Theta]/\[Pi]],15/16]],Subscript[Deph, p,q][Min[ercz[p][[2]]*Abs[\[Theta]/\[Pi]],3/4]],Sequence@@exczon[q]}, 
 			GateDuration->Abs[\[Theta]/2\[Pi]]/freqcz[p],
 			UpdateVariables->Function[g2=True]
 		|>		
 	},
 	(* Declare that \[CapitalDelta]t will refer to the duration of the current gate/channel. *)
-	DurationSymbol -> \[CapitalDelta]T, 
+	DurationSymbol -> \[CapitalDelta]T,
+	 
 	(* Passive noise *)
 	Qubits :> {
 			q_/;(0<=q<qubitsnum) :> <|
@@ -1086,7 +1085,7 @@ TrappedIonOxford[OptionsPattern[]]:=With[
 	rabifreq=OptionValue@RabiFreq,
 	scatprob=OptionValue@ScatProb,
 	t1=OptionValue@T1,
-	t2=OptionValue@T2,
+	t2s=OptionValue@T2s,
 	
 	(*probability error of depolarising and dephasing noise *)
 	er1xy=Association[#->fid2DepolDeph[OptionValue[FidSingleXY][#],OptionValue[EFSingleXY][#],1,FidSingleXY,True]&/@Keys[OptionValue@Nodes]], 
@@ -1104,10 +1103,6 @@ TrappedIonOxford[OptionsPattern[]]:=With[
 	nodes=nodesinit;
 	connectivity=conninit;
 	
-	(*TODO:get standard passive noise when certain qubits are acted on*)
-	passivenoise[node_,t_,q__]:=Flatten@Table[{Subscript[Depol, qmap[node][i]][.75(1-E^(-t/t1[node]))],Subscript[Deph, qmap[node][i]][.5(1-E^(-t/t2[node]))]},{i,Complement[Flatten@Values[nodes[node]],{q}]}];
-	passivenoise[node_,t_]:=Flatten@Table[{Subscript[Depol, qmap[node][i]][.75(1-E^(-t/t1[node]))],Subscript[Deph, qmap[node][i]][.5(1-E^(-t/t2[node]))]},{i,Flatten@Values[nodes[node]]}];
-	
 	(**scattering on the neighborhood **) 
 	scatnoise[qubit_, node_]:=With[{g=Graph@ReplaceList[getZone[qubit,nodes[node]],{p___,a_,b_,q___}:>a\[UndirectedEdge]b]}, 
 		Sequence@@Table[Subscript[Damp, n][scatprob[node]],{n,AdjacencyList[g,qubit]}]]; 
@@ -1122,9 +1117,9 @@ TrappedIonOxford[OptionsPattern[]]:=With[
 	checkrent[q1_,node1_,q2_,node2_]:=And[4===getZone[q1,nodes[node1]]&&4===getZone[q2,nodes[node2]]];
 	
 	(**gate noise **)
-	gnoise[q_,node_,\[Theta]_]:=Sequence@@{Subscript[Depol, qmap[node][q]][er1xy[node][[1]]],Subscript[Deph, qmap[node][q]][er1xy[node][[2]]]};
-	gnoise[p_,q_,node_,\[Theta]_]:=Sequence@@{Subscript[Depol, qmap[node][p],qmap[node][q]][ercz[node][[1]]],Subscript[Deph, qmap[node][p],qmap[node][q]][ercz[node][[2]]]};
-	gnoise[q1_,q2_,node1_,node2_,t_]:=Sequence@@{Subscript[Depol, qmap[node1][q1],qmap[node2][q2]][erent[[1]]],Subscript[Deph, qmap[node1][q1],qmap[node2][q2]][erent[[2]]]};
+	gnoise[q_,node_,\[Theta]_]:=Sequence@@{Subscript[Depol, qmap[node][q]][Min[er1xy[node][[1]]*Abs[\[Theta]/\[Pi]],0.75]],Subscript[Deph, qmap[node][q]][Min[er1xy[node][[2]]*Abs[\[Theta]/\[Pi]],0.5]]};
+	gnoise[p_,q_,node_,\[Theta]_]:=Sequence@@{Subscript[Depol, qmap[node][p],qmap[node][q]][Min[ercz[node][[1]]*Abs[\[Theta]/\[Pi]],15/16]],Subscript[Deph, qmap[node][p],qmap[node][q]][Min[ercz[node][[2]]*Abs[\[Theta]/\[Pi]],3/4]]};
+	gnoise[q1_,q2_,node1_,node2_,t_]:=Sequence@@{Subscript[Depol, qmap[node1][q1],qmap[node2][q2]][erent[[1]]],Subscript[Deph, qmap[node1][q1],qmap[node2][q2]][erent[[2]]]}; 
 	
 	(** extra operations **)
 	swaploc[p_,q_,node_]:=Module[{z=getZone[q,nodes[node]],pos,lst},
@@ -1134,6 +1129,11 @@ TrappedIonOxford[OptionsPattern[]]:=With[
 		nodes[node][z]=lst;
 		nodes
 	];
+	
+	(** get a list of idling qubits **)
+	(* passive noise: T1 exp decay and T2* with gaussian decay *)
+	passivenoise[node_,t_,q__]:=Sequence@@Flatten@Table[{Subscript[Damp, qmap[node][i]][.75(1-E^(-t/t1[node]))],Subscript[Deph, qmap[node][i]][.5(1-Exp[-(t/t2s[node])^2])]},{i,Complement[Flatten@Values[nodes[node]],{q}]}];
+	passivenoise[node_,t_]:=Sequence@@{Table[passivenoise[node,t,#]&/@Values[nodes[n]],{n,Keys@nodes}]};
 
 <|
 	(*no hidden qubits/ancilla here *)
@@ -1164,28 +1164,35 @@ TrappedIonOxford[OptionsPattern[]]:=With[
 		}
 	,	
 Gates ->{
-	Subscript[Rx, q_][node_,\[Theta]_]/;checklog[q,node]:><|
-		NoisyForm->{Subscript[Rx, qmap[node][q]][\[Theta]],gnoise[q,node,\[Theta]]},
-		GateDuration->rabifreq[node]*Abs[\[Theta]]/(2\[Pi])
-	|>,
-	Subscript[Ry, q_][node_,\[Theta]_]/;checklog[q,node]:><|
-		NoisyForm->{Subscript[Ry, qmap[node][q]][\[Theta]],gnoise[q,node,\[Theta]]},
-		GateDuration->rabifreq[node]*Abs[\[Theta]]/(2\[Pi])
-	|>,
-	Subscript[CZ, i_,j_][node_]/;checklog[i,j,node]:><|
-		NoisyForm->{Subscript[C, qmap[node][i]][Subscript[Z, qmap[node][j]]],gnoise[i,j,node,\[Pi]]},
-		GateDuration->freqcz[node]*0.5
-	|>,
-	Subscript[Ent, q1_,q2_][node1_,node2_]/;checkrent[q1,node1,q2,node2]:><|
-		NoisyForm-> {Subscript[Ent, qmap[node1][q1],qmap[node2][q2]],gnoise[q1,q2,node1,node2,1/freqent]},
-		GateDuration->1/freqent
-	|>,
+	Subscript[Rx, q_][node_,\[Theta]_]/;checklog[q,node] :> With[{dur=rabifreq[node]*Abs[\[Theta]]/(2\[Pi])}, 
+	<|
+		NoisyForm->{Subscript[Rx, qmap[node][q]][\[Theta]],gnoise[q,node,\[Theta]],passivenoise[node,dur,q]},  
+		GateDuration->dur
+	|>
+	],
+	Subscript[Ry, q_][node_,\[Theta]_]/;checklog[q,node]:>With[{dur=rabifreq[node]*Abs[\[Theta]]/(2\[Pi])},
+	<|
+		NoisyForm->{Subscript[Ry, qmap[node][q]][\[Theta]],gnoise[q,node,\[Theta]],passivenoise[node,dur,q]},
+		GateDuration->dur
+	|>
+	],
+	Subscript[CZ, i_,j_][node_]/;checklog[i,j,node]:>With[{dur=freqcz[node]*0.5},
+	<|
+		NoisyForm->{Subscript[C, qmap[node][i]][Subscript[Z, qmap[node][j]]],gnoise[i,j,node,\[Pi]],passivenoise[node,dur,i,j]},
+		GateDuration->dur
+	|>
+	],
+	Subscript[Ent, q1_,q2_][node1_,node2_]/;checkrent[q1,node1,q2,node2]:>With[{dur=1/freqent},
+	<|
+		NoisyForm-> {Subscript[Ent, qmap[node1][q1],qmap[node2][q2]],gnoise[q1,q2,node1,node2,dur],passivenoise[node1,dur,q1],passivenoise[node2,dur,q2]},
+		GateDuration->dur
+	|>],
 	Subscript[Read, q_][node_]/; checkpsd[q,node] :><|
-		NoisyForm->{bitFlip[bfprob@node,qmap[node][q]],Subscript[Read, qmap[node][q]],scatnoise[q,node]},
+		NoisyForm->{bitFlip[bfprob@node,qmap[node][q]],Subscript[Read, qmap[node][q]],scatnoise[q,node],passivenoise[node,durread[node],q]}, 
 		GateDuration->durread[node]
 	|>,
 	Subscript[Init, q_][node_]/; checkpsd[q,node] :><|
-		NoisyForm->{Subscript[Init, qmap[node][q]][fidinit[node]]}, 
+		NoisyForm->{Subscript[Init, qmap[node][q]][fidinit[node]],passivenoise[node,durinit[node],q]}, 
 		GateDuration->durinit[node]
 	|>,
 	Subscript[Wait, q__][node_,t_]:><|
@@ -1194,7 +1201,7 @@ Gates ->{
 	|>,
 	(** physically moving operations **)
 	Subscript[SWAPLoc, i_,j_][node_]/;checkpsd[i,j,node] :><|
-		NoisyForm->{Subscript[SWAPLoc, qmap[node][i],qmap[node][j]][durmove[node]]},
+		NoisyForm->{Subscript[SWAPLoc, qmap[node][i],qmap[node][j]][durmove[node]],passivenoise[node,durmove[node][SWAPLoc]]}, 
 		GateDuration->durmove[node][SWAPLoc],
 		UpdateVariables->Function[nodes=swaploc[i,j,node]]
 	|>,
@@ -1208,7 +1215,7 @@ Gates ->{
 	|>,
 	
 	Subscript[Splz, i_,j_][node_,zone_]/;legSplit[nodes,node,i,j,zone] :><|
-		NoisyForm-> Flatten@{Subscript[Splz, qmap[node][i],qmap[node][j]]},
+		NoisyForm-> Flatten@{Subscript[Splz, qmap[node][i],qmap[node][j]],passivenoise[node,durmove[node][Splz]]},
 		GateDuration->durmove[node][Splz],
 		UpdateVariables->Function[
 		nodes=Subscript[splitZ, i,j][nodes,node,zone];
@@ -1216,7 +1223,7 @@ Gates ->{
 		]
 	|>,
 	Subscript[Comb, i_,j_][node_,zone_]/;legComb[nodes,node,i,j,zone,connectivity]:><|
-		NoisyForm->Flatten@{Subscript[Comb, qmap[node][i],qmap[node][j]]},
+		NoisyForm->Flatten@{Subscript[Comb, qmap[node][i],qmap[node][j]],passivenoise[node,durmove[node][Comb]]},
 		GateDuration->durmove[node][Comb],
 		UpdateVariables->Function[
 		nodes=Subscript[comb, i,j][nodes,node,zone];
@@ -1226,7 +1233,7 @@ Gates ->{
 	|>,
 	(* combine within the same zone *)
 		Subscript[Comb, i_,j_][node_]/;legComb[nodes,node,i,j]:><|
-		NoisyForm->Flatten@{Subscript[Comb, qmap[node][i],qmap[node][j]]},
+		NoisyForm->Flatten@{Subscript[Comb, qmap[node][i],qmap[node][j]],passivenoise[node,durmove[node][Comb]]},
 		GateDuration->durmove[node][Comb],
 		UpdateVariables->Function[
 		nodes=Subscript[comb, i,j][nodes,node,getZone[i,nodes[node]]];
