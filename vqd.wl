@@ -634,7 +634,7 @@ Module[{\[CapitalDelta]t, lossatoms, lossatomsprob, globaltime, stdpn, t1, atoml
 	Subscript[M, q_Integer]:> <|
 	UpdateVariables-> Function[
 			lossatomsprob[q]=1-(1-lossatomsprob[q])*(1-problossmeas)],
-	NoisyForm -> {Subscript[Depol, q][fidmeas],Subscript[M, q]}, 
+	NoisyForm -> {Subscript[Depol, q][Min[1-fidmeas,3/4]],Subscript[M, q]},  
 	GateDuration -> durmeas
 	|>
 	(** Single-qubit gates **)
@@ -727,7 +727,7 @@ PlotAtoms[rydbergdev_,opt:OptionsPattern[{PlotAtoms,Graphics}]]:=With[
 Which[
 	2===Length@First@Values@qulocs,
 	Show[
-		Sequence@@Table[Graphics[{Cyan,Opacity[0.1],EdgeForm[Directive[Dashed,Orange]],Disk[unit*qulocs[b],blrad]}],{b,blockade}],
+		Sequence@@Table[Graphics[{Cyan,Opacity[0.15],EdgeForm[Directive[Dashed,Orange]],Disk[unit*qulocs[b],blrad]}],{b,blockade}],
 		Sequence@@Table[Graphics[{Red,Disk[unit*v,0.15]}],{v,Values@availqubits}],
 		Sequence@@Table[Graphics[Text[k,({0.15,0.15}+qulocs[k])*unit]],{k,Keys@availqubits}],
 		If[showloss,Sequence@@Table[Graphics[{Gray,Disk[unit*v,0.15]}],{v,Values@lossqubits}],Sequence@@{}],
