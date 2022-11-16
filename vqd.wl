@@ -24,6 +24,7 @@ TrappedIonInnsbruck::usage="Returns device specification of a string of Trapped 
 
 (*rydberg quantum devices/neutral atoms.*)
 RydbergHub::usage="Returns device specification of a Rydberg/Neutral Atom device based on the device built by the QCSHub.";
+(*RydbergHarvard::usage="Returns device specification of a Rydberg/Neutral Atom device based on the device built in Harvard.";*)
 RydbergWisconsin::usage="Returns device specification of a Rydberg/Neutral Atom device based on the device built by the University of Wisconsin.";
 
 (*nuclear-vacancy center devices.*)
@@ -133,6 +134,7 @@ GlobalFieldDetuning::usage="TODO:? forgot";
 LossAtoms::usage="Device key in the RydbergHub device that identifies atoms lost to the environment.";
 LossAtomsProbability::usage="Device key in the RydbergHub that identifies probability of atoms lost to the environment due to repeated measurement.";
 MSCrossTalk::usage="(entangling OR starkshift) The crosstalk model in applying M\[OSlash]lmer\[Dash]S\[OSlash]rensen gate";
+MoveSpeed::usage="The speed of moving atom \[Mu]m/\[Mu]s in Neutral Atom systems.";
 Nodes::usage="Entire nodes of a trapped ions system <|node1 -> number_of_qubits_1, ... |>";
 NIons::usage="The total number of ions in a trapped ion device.";
 OffResonantRabi::usage="Put the noise due to off-resonant Rabi oscillation when applying single qubit rotations.";
@@ -143,6 +145,8 @@ Meas::usage="Perform measurement on the qubits";
 ProbLeakInit::usage="Leakage probability in the Rydberg initialisation. The noise is decribed with non-trace-preserving map.";
 ProbLeakCZ::usage="Leakage probability in executi multi-controlled-Z.";
 ProbLossMeas::usage="Probability of phyiscal atom loss due to measurement.";
+ProbBFRot::usage="Assymetric Bit-flip probability on single rotation operation. {01->p1, 10->p2}";
+RydbergRabiFreq::usage="Rydberg Rabi frequency";
 RabiFreq::usage="The Rabi frequency frequency in average or on each qubit with unit MHz.";
 RepeatRead::usage="The number of repeated readout (n) performed. The final fidelity of readout is \!\(\*SuperscriptBox[\(FidRead\), \(n\)]\).";
 starkshift::usage="Crosstalk error model using stark shift on modeled with MS gate Exp[-i\[Theta]XX], M\[OSlash]lmer\[Dash]S\[OSlash]rensen gate";
@@ -305,18 +309,15 @@ entfid2DepolDeph[entfid_,errratio_,errval_:FidEnt]:=Module[{pdepol,pdeph,sol,rat
 grouptwo::usage="grouptwo[list], group a list into two elements";
 grouptwo[list_]:=ReplaceList[Sort@list,{p___,a_,b_,q___}:>{a,b}]
 (**** EXTRA_QUANTUM_CHANNELS ****)
-bitFlip::usage="Return kraus operator with 1- or 2- qubit bitflip error";
-bitFlip[fid_,q_]:=With[{e=1-fid},
-	Subscript[Kraus, q][{Sqrt[1-e]*{{1,0},{0,1}},Sqrt[e]*{{1,0},{0,1}}}]
+bitFlip1::usage="bitFlip1[] Return the list of kraus operators with 1- or 2- qubit bitflip error";
+bitFlip1[fid_]:=With[{e=1-fid},
+	{Sqrt[1-e]*{{1,0},{0,1}},Sqrt[e]*{{0,1},{1,0}}}
 	]
-
-bitFlip[fid_,p_,q_]:=With[{e=1-fid},
-	Subscript[Kraus, p,q][{
+bitFlip2[fid_]:=With[{e=1-fid},{
 		Sqrt[1-e]*IdentityMatrix[4],
 		Sqrt[e/3]*{{0,1,0,0},{1,0,0,0},{0,0,0,1},{0,0,1,0}},
 		Sqrt[e/3]*{{0,0,1,0},{0,0,0,1},{1,0,0,0},{0,1,0,0}},
-		Sqrt[e/3]*{{0,0,0,1},{0,0,1,0},{0,1,0,0},{1,0,0,0}}
-}]]
+		Sqrt[e/3]*{{0,0,0,1},{0,0,1,0},{0,1,0,0},{1,0,0,0}}}]
 (* 
 Generalised amplitude damping (Nielsen&Chuang, P.382).
 Common description of T1 decay, by setting \[Gamma](t)=1-\[ExponentialE]^(-t/T1),
@@ -525,13 +526,22 @@ Gates ->{
 ]
 ]
 
-(**************************** RYDBERG_HUB *****************************)
+(**************************** RYDBERG_HUB_HARVARD *****************************)
 (**legitimate shift move **) 
 legShift[q_,v_,atomlocs_]:=Module[{qlocs=atomlocs},
 	qlocs[#]+=v&/@Flatten[{q}];
 	Length@qlocs === Length@DeleteDuplicates@Values@qlocs
 ];
-				
+
+asymBitFlip::usage="Asymmetric bit-flip error. Realised with amplitude damping and symmetric bitflip";
+Subscript[asymBitFlip, q_][p01_,p10_]:=Module[{pbf=Min[p01,p10], pmax=Max[p01,p10],edamp,x},
+(*Here, we assume damping and bitflip are independent events. 
+P(damp or bf)=P(damp)+P(bf)-P(damp)P(bf)*)
+edamp=First[x/.Solve[x+pbf-x*pbf==pmax,{x}]];
+Sequence@@{Subscript[X, q],Subscript[Damp, q][edamp],Subscript[X, q],Subscript[Kraus, q][bitFlip1[1-pbf]]}
+]	
+			
+							
 RydbergHub[OptionsPattern[]]:=With[
 {
 	qubitsnum=OptionValue@qubitsNum,
@@ -542,6 +552,8 @@ RydbergHub[OptionsPattern[]]:=With[
 	unitlattice=OptionValue@UnitLattice,
 	blockaderad=OptionValue@BlockadeRadius,
 	probleakinit=OptionValue@ProbLeakInit,
+	probbfrot01=OptionValue[ProbBFRot][01],
+	probbfrot10=OptionValue[ProbBFRot][10],
 	durinit=OptionValue@DurInit,
 	fidmeas=OptionValue@FidMeas,
 	durmeas=OptionValue@DurMeas,
@@ -549,6 +561,7 @@ RydbergHub[OptionsPattern[]]:=With[
 	probleakcz=OptionValue@ProbLeakCZ,
 	qubits=Keys@OptionValue@AtomLocations
 },
+
 	(**** assertions ****)
 	Catch@If[Length@atomlocations!=qubitsnum, Throw@Message[qubitsNum::error,"Missing or extra qubits in AtomLocations"]];
 	Catch@If[\[Not](0<=probleakinit<=1), Throw@Message[ProbLeakInit::error,"Needs value within [0,1]"]];
@@ -650,17 +663,17 @@ Module[{\[CapitalDelta]t, lossatoms, lossatomsprob, globaltime, stdpn, t1, atoml
 	|>
 	,
 	Subscript[Rx, q_Integer][\[Theta]_]:><|
-	NoisyForm->{Subscript[Rx, q][\[Theta]],Subscript[Deph, q][0.5(1-E^(-0.5*Abs[\[Theta]/\[Pi]]/(rabifreq*t2)))]},
+	NoisyForm->{Subscript[Rx, q][\[Theta]],Subscript[asymBitFlip, q][probbfrot01,probbfrot10],Subscript[Deph, q][0.5(1-E^(-0.5*Abs[\[Theta]/\[Pi]]/(rabifreq*t2)))]},
 	GateDuration-> Abs[\[Theta]]/rabifreq
 	|>
 	,
 	Subscript[Ry, q_Integer][\[Theta]_]:><|
-	NoisyForm->{Subscript[Ry, q][\[Theta]],Subscript[Deph, q][0.5(1-E^(-0.5*Abs[\[Theta]/\[Pi]]/(rabifreq*t2)))]},
+	NoisyForm->{Subscript[Ry, q][\[Theta]],Subscript[asymBitFlip, q][probbfrot01,probbfrot10],Subscript[Deph, q][0.5(1-E^(-0.5*Abs[\[Theta]/\[Pi]]/(rabifreq*t2)))]},
 	GateDuration-> Abs[\[Theta]]/rabifreq
 	|>
 	,
 	Subscript[Rz, q_Integer][\[Theta]_]:><|
-	NoisyForm->{Subscript[Rz, q][\[Theta]],Subscript[Deph, q][0.5(1-E^(-0.5*Abs[\[Theta]/\[Pi]]/(rabifreq*t2)))]},
+	NoisyForm->{Subscript[Rz, q][\[Theta]],Subscript[asymBitFlip, q][probbfrot01,probbfrot10],Subscript[Deph, q][0.5(1-E^(-0.5*Abs[\[Theta]/\[Pi]]/(rabifreq*t2)))]},
 	GateDuration-> Abs[\[Theta]]/rabifreq
 	|>
 	, 
@@ -710,7 +723,6 @@ Module[{\[CapitalDelta]t, lossatoms, lossatomsprob, globaltime, stdpn, t1, atoml
 |>
 	]
 ]
-
 SetAttributes[PlotAtoms,HoldFirst]
 PlotAtoms[rydbergdev_,opt:OptionsPattern[{PlotAtoms,Graphics}]]:=With[
 {
@@ -729,7 +741,7 @@ Which[
 	Show[
 		Sequence@@Table[Graphics[{Cyan,Opacity[0.15],EdgeForm[Directive[Dashed,Orange]],Disk[unit*qulocs[b],blrad]}],{b,blockade}],
 		Sequence@@Table[Graphics[{Red,Disk[unit*v,0.15]}],{v,Values@availqubits}],
-		Sequence@@Table[Graphics[Text[k,({0.15,0.15}+qulocs[k])*unit]],{k,Keys@availqubits}],
+		Sequence@@Table[Graphics[Text[k,({0.1,0.1}+qulocs[k])*unit]],{k,Keys@availqubits}],
 		If[showloss,Sequence@@Table[Graphics[{Gray,Disk[unit*v,0.15]}],{v,Values@lossqubits}],Sequence@@{}],
 		If[showloss,Sequence@@Table[Graphics[Text[k,unit*({0.15,0.15}+qulocs[k])]],{k,Keys@lossqubits}],Sequence@@{}],
 			Evaluate@FilterRules[{opt}, Options[Graphics]],Sequence@@style,AxesLabel->{"x","y"}
@@ -847,7 +859,7 @@ measf[q__]:=Which[
 	MemberQ[{q},0],(*start*)
 	Flatten@{
 	(*mimics 2 readout  *)
-	{bitFlip[1-(1-fidread)^2,0,1],Subscript[M, 0],Subscript[M, 1],Subscript[Damp, 0][1-(1-fidread)^2],Subscript[X, 0],Subscript[Damp, 1][1-(1-fidread)^2]},
+	{Subscript[Kraus, 0][bitFlip1[1-(1-fidread)^2]],Subscript[M, 0],Subscript[M, 1],Subscript[Damp, 0][1-(1-fidread)^2],Subscript[X, 0],Subscript[Damp, 1][1-(1-fidread)^2]},
 	(* 2 rotation errors + 1 readout *)
 	Table[{Subscript[Depol, i][er1xy[i][[1]]],Subscript[Deph, i][er1xy[i][[2]]],Subscript[M, i],Subscript[Damp, i][1-(1-fidread)]},{i,Complement[{q},{0,1}]}]
 	}
@@ -855,7 +867,7 @@ measf[q__]:=Which[
 	MemberQ[{q},qubitsnum-1],(*end*)
 	Flatten@{
 	(*mimics 2 readout  *)
-	{bitFlip[1-(1-fidread)^2,qubitsnum-1,qubitsnum-2],Subscript[M, qubitsnum-1],Subscript[M, qubitsnum-2],Subscript[Damp, qubitsnum-1][1-(1-fidread)^2],Subscript[X, qubitsnum-1],Subscript[Damp, qubitsnum-2][1-(1-fidread)^2]},
+	{Subscript[Kraus, qubitsnum-1,qubitsnum-2][bitFlip2[1-(1-fidread)^2]],Subscript[M, qubitsnum-1],Subscript[M, qubitsnum-2],Subscript[Damp, qubitsnum-1][1-(1-fidread)^2],Subscript[X, qubitsnum-1],Subscript[Damp, qubitsnum-2][1-(1-fidread)^2]},
 	(* 2 rotation errors + 1 readout *)
 	Table[{Subscript[Depol, i][er1xy[i][[1]]],Subscript[Deph, i][er1xy[i][[2]]],Subscript[M, i],Subscript[Damp, i][1-(1-fidread)]},{i,Complement[{q},{qubitsnum-1,qubitsnum-2}]}]
 	}
@@ -1216,7 +1228,7 @@ Gates ->{
 		GateDuration->dur
 	|>],
 	Subscript[Read, q_][node_]/; checkpsd[q,node] :><|
-		NoisyForm->{bitFlip[bfprob@node,qmap[node][q]],Subscript[Read, qmap[node][q]],scatnoise[q,node],passivenoise[node,durread[node],q]}, 
+		NoisyForm->{Subscript[Kraus, qmap[node][q]][bitFlip1[bfprob@node]],Subscript[Read, qmap[node][q]],scatnoise[q,node],passivenoise[node,durread[node],q]}, 
 		GateDuration->durread[node]
 	|>,
 	Subscript[Init, q_][node_]/; checkpsd[q,node] :><|
@@ -1372,7 +1384,7 @@ measf[q__]:=Which[
 	MemberQ[{q},0],(*start*)
 	Flatten@{
 	(*mimics 2 readout  *)
-	{bitFlip[1-(1-fidread)^2,0,1],Subscript[M, 0],Subscript[M, 1],Subscript[Damp, 0][1-(1-fidread)^2],Subscript[X, 0],Subscript[Damp, 1][1-(1-fidread)^2]},
+	{Subscript[Kraus, 0,1][bitFlip2[1-(1-fidread)^2]],Subscript[M, 0],Subscript[M, 1],Subscript[Damp, 0][1-(1-fidread)^2],Subscript[X, 0],Subscript[Damp, 1][1-(1-fidread)^2]},
 	(* 2 rotation errors + 1 readout *)
 	Table[{Subscript[Depol, i][er1xy[i][[1]]],Subscript[Deph, i][er1xy[i][[2]]],Subscript[M, i],Subscript[Damp, i][1-(1-fidread)]},{i,Complement[{q},{0,1}]}]
 	}
@@ -1380,7 +1392,7 @@ measf[q__]:=Which[
 	MemberQ[{q},qubitsnum-1],(*end*)
 	Flatten@{
 	(*mimics 2 readout  *)
-	{bitFlip[1-(1-fidread)^2,qubitsnum-1,qubitsnum-2],Subscript[M, qubitsnum-1],Subscript[M, qubitsnum-2],Subscript[Damp, qubitsnum-1][1-(1-fidread)^2],Subscript[X, qubitsnum-1],Subscript[Damp, qubitsnum-2][1-(1-fidread)^2]},
+	{Subscript[Kraus, qubitsnum-1,qubitsnum-2][bitFlip2[1-(1-fidread)^2]],Subscript[M, qubitsnum-1],Subscript[M, qubitsnum-2],Subscript[Damp, qubitsnum-1][1-(1-fidread)^2],Subscript[X, qubitsnum-1],Subscript[Damp, qubitsnum-2][1-(1-fidread)^2]},
 	(* 2 rotation errors + 1 readout *)
 	Table[{Subscript[Depol, i][er1xy[i][[1]]],Subscript[Deph, i][er1xy[i][[2]]],Subscript[M, i],Subscript[Damp, i][1-(1-fidread)]},{i,Complement[{q},{qubitsnum-1,qubitsnum-2}]}]
 	}
