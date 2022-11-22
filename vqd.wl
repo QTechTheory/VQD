@@ -145,6 +145,7 @@ Meas::usage="Perform measurement on the qubits";
 ProbLeakInit::usage="Leakage probability in the Rydberg initialisation. The noise is decribed with non-trace-preserving map.";
 ProbLeakCZ::usage="Leakage probability in executi multi-controlled-Z.";
 ProbLossMeas::usage="Probability of phyiscal atom loss due to measurement.";
+ProbLeakMove::usage="Probability of leakage in the process of moving atoms.";
 ProbBFRot::usage="Assymetric Bit-flip probability on single rotation operation. {01->p1, 10->p2}";
 RydbergRabiFreq::usage="Rydberg Rabi frequency";
 RabiFreq::usage="The Rabi frequency frequency in average or on each qubit with unit MHz.";
@@ -181,6 +182,7 @@ OffResonantRabi::error="`1`";
 ProbLeakInit::error="`1`";
 ProbLeakCZ::error="`1`";
 ProbLossMeas::error="`1`";
+ProbLeakMove::error="`1`";
 RabiFreq::error="`1`";
 StdPassiveNoise::error="`1`";
 T1::error="`1`";
@@ -559,6 +561,7 @@ RydbergHub[OptionsPattern[]]:=With[
 	durmeas=OptionValue@DurMeas,
 	problossmeas=OptionValue@ProbLossMeas,
 	probleakcz=OptionValue@ProbLeakCZ,
+	probleakmove=OptionValue@ProbLeakMove,
 	qubits=Keys@OptionValue@AtomLocations
 },
 
@@ -567,6 +570,7 @@ RydbergHub[OptionsPattern[]]:=With[
 	Catch@If[\[Not](0<=probleakinit<=1), Throw@Message[ProbLeakInit::error,"Needs value within [0,1]"]];
 	Catch@If[\[Not](0<=problossmeas<=1), Throw@Message[ProbLossMeas::error,"Needs value within [0,1]"]];
 	Catch@If[\[Not](0<=probleakcz<=1), Throw@Message[ProbLeakCZ::error,"Needs value within [0,1]"]];
+	Catch@If[\[Not](0<=probleakmove<=1), Throw@Message[ProbLeakMove::error,"Needs value within [0,1]"]];
 
 Module[{\[CapitalDelta]t, lossatoms, lossatomsprob, globaltime, stdpn, t1, atomlocs, distloc,blockadecheck},
 	atomlocs=atomlocations;
@@ -686,7 +690,7 @@ Module[{\[CapitalDelta]t, lossatoms, lossatomsprob, globaltime, stdpn, t1, atoml
 	,
 	Subscript[ShiftLoc, q__][v_]/;legShift[Flatten@{q},v,atomlocs]:> <|
 	UpdateVariables-> Function[atomlocs[#]+=v &/@Flatten[{q}];],
-	NoisyForm-> stdpn[#,4\[Pi]/rabifreq]&/@Flatten[{q}],
+	NoisyForm-> Join[stdpn[#,4\[Pi]/rabifreq]&/@Flatten[{q}], Subscript[KrausNonTP,#][{{{Sqrt[1-probleakmove],0},{0,1}}}]&/@Flatten[{q}]],
 	GateDuration->4\[Pi]/rabifreq
 	|>
 	,
