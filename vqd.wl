@@ -537,10 +537,23 @@ legShift[q_,v_,atomlocs_]:=Module[{qlocs=atomlocs},
 
 asymBitFlip::usage="Asymmetric bit-flip error. Realised with amplitude damping and symmetric bitflip";
 Subscript[asymBitFlip, q_][p01_,p10_]:=Module[{pbf=Min[p01,p10], pmax=Max[p01,p10],edamp,x},
-(*Here, we assume damping and bitflip are independent events. 
-P(damp or bf)=P(damp)+P(bf)-P(damp)P(bf)*)
-edamp=First[x/.Solve[x+pbf-x*pbf==pmax,{x}]];
-Sequence@@{Subscript[X, q],Subscript[Damp, q][edamp],Subscript[X, q],Subscript[Kraus, q][bitFlip1[1-pbf]]}
+	(*Here, we assume damping and bitflip are independent events. 
+	P(damp or bf)=P(damp)+P(bf)-P(damp)P(bf)*)
+	edamp=First[x/.Solve[x+pbf-x*pbf==pmax,{x}]];
+
+	Which[
+		(* more states are flipped to 1*)
+		p01>p10,
+		Sequence@@{Subscript[X, q],Subscript[Damp, q][edamp],Subscript[X, q],Subscript[Kraus, q][bitFlip1[1-pbf]]}
+		,
+		p01<p10,
+		(*more states are flipped to 0*)
+		Sequence@@{Subscript[Damp, q][edamp],Subscript[Kraus, q][bitFlip1[1-pbf]]}
+		,
+		True,
+		(*equals*)
+		Subscript[Kraus, q][bitFlip1[1-pbf]]
+	]
 ]	
 			
 							
@@ -690,7 +703,7 @@ Module[{\[CapitalDelta]t, lossatoms, lossatomsprob, globaltime, stdpn, t1, atoml
 	,
 	Subscript[ShiftLoc, q__][v_]/;legShift[Flatten@{q},v,atomlocs]:> <|
 	UpdateVariables-> Function[atomlocs[#]+=v &/@Flatten[{q}];],
-	NoisyForm-> Join[stdpn[#,4\[Pi]/rabifreq]&/@Flatten[{q}], Subscript[KrausNonTP,#][{{{Sqrt[1-probleakmove],0},{0,1}}}]&/@Flatten[{q}]],
+	NoisyForm-> Join[stdpn[#,4\[Pi]/rabifreq]&/@Flatten[{q}], Subscript[KrausNonTP,#][{{{1,0},{0,Sqrt[1-probleakmove]}}}]&/@Flatten[{q}]],
 	GateDuration->4\[Pi]/rabifreq
 	|>
 	,
