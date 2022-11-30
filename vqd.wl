@@ -409,23 +409,23 @@ ToyDevice[OptionsPattern[]]:=With[
 (**************************** NVCENTER_DELFT *****************************)
 NVCenterDelft[OptionsPattern[]]:=With[
 {
-qubitsnum=OptionValue@qubitsNum,
-t1=OptionValue@T1,
-t2=OptionValue@T2,
-globalfield=OptionValue@GlobalField,
-globalfielddetuning=OptionValue@GlobalFieldDetuning,
-freqcrot=OptionValue@FreqCRot,
-freqsinglexy=OptionValue@FreqSingleXY,
-freqsinglez=OptionValue@FreqSingleZ,
-fidcrot=OptionValue@FidCRot,
-fidsinglexy=OptionValue@FidSingleXY,
-fidsinglez=OptionValue@FidSingleZ,
-efsinglexy=OptionValue@EFSingleXY,
-efcrot=OptionValue@EFCRot,
-fidinit=OptionValue@FidInit,
-fidmeas=OptionValue@FidMeas,
-durmeas=OptionValue@DurMeas,
-durinit=OptionValue@DurInit
+	qubitsnum=OptionValue@qubitsNum,
+	t1=OptionValue@T1,
+	t2=OptionValue@T2,
+	globalfield=OptionValue@GlobalField,
+	globalfielddetuning=OptionValue@GlobalFieldDetuning,
+	freqcrot=OptionValue@FreqCRot,
+	freqsinglexy=OptionValue@FreqSingleXY,
+	freqsinglez=OptionValue@FreqSingleZ,
+	fidcrot=OptionValue@FidCRot,
+	fidsinglexy=OptionValue@FidSingleXY,
+	fidsinglez=OptionValue@FidSingleZ,
+	efsinglexy=OptionValue@EFSingleXY,
+	efcrot=OptionValue@EFCRot,
+	fidinit=OptionValue@FidInit,
+	fidmeas=OptionValue@FidMeas,
+	durmeas=OptionValue@DurMeas,
+	durinit=OptionValue@DurInit
 },
 
 
@@ -470,6 +470,8 @@ Gates ->{
 			NoisyForm->stdpn[#,dur]&/@Flatten{qubits},
 			GateDuration->dur
 		|>,
+		
+		(* Z-rotations are unconditional for both electron and nuclear spins *)
 		Subscript[Rz, q_][\[Theta]_] :> <|
 			NoisyForm -> Circuit[Subscript[Rz, q][\[Theta]]Subscript[Deph, q][Min[ersinglez[q][[2]]*Abs[\[Theta]]/\[Pi],0.5]]],
 			GateDuration -> Abs[\[Theta]]/(\[Pi]*freqsinglez[q])
