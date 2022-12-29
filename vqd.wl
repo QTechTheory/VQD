@@ -486,13 +486,13 @@ Gates ->{
 			NoisyForm -> Circuit[Subscript[Ry, q][\[Theta]]Subscript[Depol, q][Min[ersinglexy[q][[1]]Abs[\[Theta]]/\[Pi],0.75]]Subscript[Deph, q][Min[ersinglexy[q][[2]]Abs[\[Theta]]/\[Pi],0.5]]],
 			GateDuration -> Abs[\[Theta]]/(\[Pi]*freqsinglexy[q])
 		|>,
-		(* ROTATIONS CONDITIONED ON ELETRON SPIN. electron needs to set at ms=-1*)
+		(* ROTATIONS CONDITIONED ON ELETRON SPIN. electron needs to set at ms=-1: horrible*)
 		Subscript[Rx, q_][\[Theta]_]/;q>0 :> <|
-			NoisyForm -> Circuit[Subscript[CRx, 0,q][-\[Theta]]Subscript[Depol, q][Min[ersinglexy[q][[1]]Abs[\[Theta]]/\[Pi],0.75]]Subscript[Deph, q][Min[ersinglexy[q][[2]]*Abs[\[Theta]]/\[Pi],0.5]]],
+			NoisyForm -> Circuit[Subscript[Rx,q][\[Theta]]Subscript[Depol, q][Min[ersinglexy[q][[1]]Abs[\[Theta]]/\[Pi],0.75]]Subscript[Deph, q][Min[ersinglexy[q][[2]]*Abs[\[Theta]]/\[Pi],0.5]]],
 			GateDuration -> Abs[\[Theta]]/(\[Pi]*freqsinglexy[q])
 		|>,
 		Subscript[Ry, q_][\[Theta]_]/;q>0 :> <|
-			NoisyForm -> Circuit[Subscript[CRy, 0,q][\[Theta]]Subscript[Depol, q][Min[ersinglexy[q][[1]]Abs[\[Theta]]/\[Pi],0.75]]Subscript[Deph, q][Min[ersinglexy[q][[2]]*Abs[\[Theta]]/\[Pi],0.5]]],
+			NoisyForm -> Circuit[Subscript[Ry,q][\[Theta]]Subscript[Depol, q][Min[ersinglexy[q][[1]]Abs[\[Theta]]/\[Pi],0.75]]Subscript[Deph, q][Min[ersinglexy[q][[2]]*Abs[\[Theta]]/\[Pi],0.5]]],
 			GateDuration -> Abs[\[Theta]]/(\[Pi]*freqsinglexy[q])
 		|>,
 		(* Conditional rotations *)
