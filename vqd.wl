@@ -128,6 +128,7 @@ FreqSingleZ::usage="Rabi frequency(ies) for the single Z- rotations with unit MH
 FreqCZ::usage="Rabi frequency(ies) for the CZ gate with unit MHz.";
 FreqEnt::usage="Frequency of remote entanglement.";
 FreqCRot::usage="Frequency of conditional rotation in NV-center obtained by dynamical decoupling and RF pulse.";
+FreqWeakZZ::usage="Frequency of coherent cross-talk noise in form of ZZ-coupling that slowly entangle the qubits.";
 FidRead::usage="Readout fidelity";
 GlobalField::usage="Global magnetic field fluctuation in NV-center due to C13 bath. It causes dephasing on the electron in 4\[Mu]s.";
 GlobalFieldDetuning::usage="TODO:? forgot";
@@ -412,8 +413,6 @@ NVCenterDelft[OptionsPattern[]]:=With[
 	qubitsnum=OptionValue@qubitsNum,
 	t1=OptionValue@T1,
 	t2=OptionValue@T2,
-	globalfield=OptionValue@GlobalField,
-	globalfielddetuning=OptionValue@GlobalFieldDetuning,
 	freqcrot=OptionValue@FreqCRot,
 	freqsinglexy=OptionValue@FreqSingleXY,
 	freqsinglez=OptionValue@FreqSingleZ,
@@ -425,19 +424,29 @@ NVCenterDelft[OptionsPattern[]]:=With[
 	fidinit=OptionValue@FidInit,
 	fidmeas=OptionValue@FidMeas,
 	durmeas=OptionValue@DurMeas,
-	durinit=OptionValue@DurInit
+	durinit=OptionValue@DurInit,
+	freqweakzz=OptionValue@FreqWeakZZ
 },
 
 
-Module[{\[CapitalDelta]t, stdpn,ersinglexy,ersinglez,ercrot},
+Module[{\[CapitalDelta]t, stdpn,pn,ersinglexy,ersinglez,ercrot,nuclearq,weakzz},
 (** standard passive noise **) 
-	stdpn[q_,dur_]:={Subscript[Depol, q][0.75(1-E^(-dur/t1[q]))],Subscript[Deph, q][0.5(1-E^(-dur/t2[q]))]};	
+	stdpn[q_,dur_]:={Subscript[Depol, q][0.75(1-E^(-dur/t1[q]))],Subscript[Deph, q][0.5(1-E^(-dur/t2[q]))]};
+	(* 
+	some note: cross-talk ZZ-coupling in order of Hz on passive noise, Phase entanglement among nuclear spins 
+	Subscript[C, n1][Subscript[Rz, n2][\[CapitalDelta]t]], weak rotation for all combinations of n1,n2, few Hz.
+	implement: Exp[-i dur ZZ]
+	*)	
+	weakzz[q_,dur_]:=R[dur*\[Pi]/freqweakzz,Subscript[Z, #] Subscript[Z, #2]]&@@@Subsets[DeleteElements[Range[1,qubitsnum-1],{q}],{2}];
+
+	pn[q_,dur_]:=If[NumberQ@freqweakzz,Flatten@{stdpn[q,dur],weakzz[q,dur]},stdpn[q,dur]];
+
 
 (* error parameters *)
 	ersinglexy=fid2DepolDeph[#,efsinglexy,1,FidSingleXY]&/@fidsinglexy;
 	ersinglez=fid2DepolDeph[#,{0,1},1,FidSingleZ]&/@fidsinglez;
 	ercrot=fid2DepolDeph[#,efcrot,2,FidCRot]&/@fidcrot;
-	
+
 <|
 	(* A helpful description of the device *)
 	DeviceDescription ->"One node of an NV center, where qubit 0 is the electronic spin. It has start connectivity with qubit 0 at the center.",
@@ -461,7 +470,7 @@ Gates ->{
 			GateDuration -> durinit
 		|>,
 		Subscript[M, q_]/;q===0 :> <|
-			NoisyForm -> {Subscript[X, 0],Subscript[Damp, 0][1-fidmeas],Subscript[X, 0],Subscript[M, 0],Subscript[Damp, 0][1]},
+			NoisyForm -> {Subscript[X, 0],Subscript[Damp, 0][1-fidmeas],Subscript[X, 0],Subscript[M, 0]},
 			GateDuration -> durmeas
 		|>,
 		(* Electron and nuclear spins *)
@@ -517,13 +526,15 @@ Gates ->{
 	(* The passive noise on qubits when NOT being operated upon.  *)
 (* Note 'globalField' is the unwanted [positive or negative] field offset for the present circuit; *)
 (* this should be set on a per-run basis as in examples below. Could be augmented with e.g. a drifting function of t *)
+(** other potential passive noise: Global magnetic field fluctuation due to ^13C bath 
+Causes dephasing on the electron in 4 \[Mu]s
+External field is effectively perfect
+**)
+
 		Qubits -> {
-	(* to consider: cross-talk ZZ-coupling in order of Hz on passive noise, Phase entanglement among nuclear spins 
-	Subscript[C, n1][Subscript[Rz, n2][\[CapitalDelta]t]], weak rotation for all combinations of n1,n2, few Hz
-	*)
 		q_ :> <|
-		PassiveNoise -> stdpn[q,\[CapitalDelta]t]
-		|>	
+				PassiveNoise -> pn[q,\[CapitalDelta]t]
+			|>	
 	}
 |>
 
@@ -996,16 +1007,26 @@ Show[
 (* zone-related functions *)
 getZone[q_,node_]:=(Association@Flatten@Table[Table[v->k,{v,node[k]}],{k,Keys@node}])[q]
 
-(* Legitimate split move *)
+(* 
+Legitimate split moves:
+	1) both ions initially stay in the same zone: zone 1-3.
+	2) destination split must be different with the initial zone.
+	3) the ions assigned to split must stay next to each other.
+	4) there is no ions in between zones: the split is linear, no jumps.
+*)
 legSplit[nodes_,nodename_,q1_,q2_,zone_]:=With[{z1=getZone[q1,nodes[nodename]],z2=getZone[q2,nodes[nodename]],node=nodes[nodename]},
-	If[z1!=z2,Return@False];
+	If[z1!=z2,Return@False]; If[(z1===4)||(z2===4),Return@False];
 	If[(z1===zone)||(z2===zone),Return@False];
 	If[Abs[Position[node[z1],q1][[1,1]]- Position[node[z1],q2]][[1,1]]!=1,Return@False];
 	If[Length@Flatten[Table[node[z],{z,Range[Min[z1,zone]+1,Max[z1,zone]-1]}]]>0,Return@False];
 	True
 ]
 
-(* Shuttling qubits to zone *)
+(* Legitimate shuttling moves:
+	1) The zone destination is different with the start zone
+    2) Shuttle only works for the entire ions sitting in a zone
+    3) There is no ions in between moves, shuttle is linear
+*)
 legShutl[nodes_,nodename_,zone_,qubits__]:=With[
 {zstart=getZone[#,nodes[nodename]]&/@{qubits},node=nodes[nodename]},
 If[\[Not]Equal@@zstart,Return@False];
@@ -1013,22 +1034,27 @@ If[nodes[nodename][zstart[[1]]]!={qubits},Return@False];
 Length@Flatten[Table[node[z],{z,Range[Min[zone,zstart[[1]]]+1,Max[zone,zstart[[1]]]-1]}]]===0
 ]
 
-(*Legitimate combine moves *)
+(* Legitimate combine moves:
+1) When the final zone unspecified, the ions must be sitting in the same zone
+2) One can move to a higher zone or lower zone, zone destination must be 1-3. 
+3) No ions in between, combine shuttle is linear
+*)
 legComb[nodes_,nodename_,q1_,q2_,zonedest_:None,connectivity_:None]:=Module[{zone,node=nodes[nodename],z1,z2,cond1,cond2,zstart,ps,pz,qs,qz,cond3},
 	(* combine to the one of the zone *)
 	z1=getZone[q1,node];
 	z2=getZone[q2,node];
 	
-	(*unspecified zone destination must be done within the same zone*)
+	(* Unspecified zone destination must be done within the same zone*)
 	zone=If[zonedest===None, z1, zonedest];
 	cond1=Or[z1===zone, z2===zone];
 	
+	(* [check again] *)
 	If[\[Not]cond1, Return[False]];
 	If[z1===zone,
 		zstart=z2;qs=q2;qz=q1,
 		zstart=z1;qs=q1;qz=q2
 	];
-		
+	If[zone===4, Return[False]];	
 	(* merge from start zone to zone destination *)
 	ps=Position[node[zstart],qs][[1,1]];
 	pz=Position[node[zone],qz][[1,1]];
@@ -1054,7 +1080,7 @@ legComb[nodes_,nodename_,q1_,q2_,zonedest_:None,connectivity_:None]:=Module[{zon
 	True
 ]
 
-(* Legitimate split move *)
+(** Split move **)
 Subscript[splitZ, i_,j_][inodes_,node_,zone_]:=Module[{zq1,zq2,pos,sq,szone,nodes},
 	nodes=inodes;
 	zq1=getZone[i,nodes@node];
@@ -1152,18 +1178,18 @@ TrappedIonOxford[OptionsPattern[]]:=With[
 	
 	{nodesinit,qmap,qnum}=createNodes[initnodes];
 	(* empty list of connectivitiy of two-qubit gates generated by Comb gate. stored as graphs *)
-	conninit := Association[Table[ n->With[{vex=nodes[n][1]},Graph[Table[vex[[i]]\[UndirectedEdge]vex[[i+1]],{i,-1+Length@vex}],VertexLabels->"Name"]],{n,Keys@nodes}]];
+	conninit := Association[Table[n->With[{vex=nodes[n][1]},Graph[Table[vex[[i]]\[UndirectedEdge]vex[[i+1]],{i,-1+Length@vex}],VertexLabels->"Name"]],{n,Keys@nodes}]];
 
 	nodes=nodesinit;
 	connectivity=conninit;
 	
 	(**scattering on the neighborhood **) 
 	scatnoise[qubit_, node_]:=With[{g=Graph@ReplaceList[getZone[qubit,nodes[node]],{p___,a_,b_,q___}:>a\[UndirectedEdge]b]}, 
-		Sequence@@Table[Subscript[Damp, n][scatprob[node]],{n,AdjacencyList[g,qubit]}]]; 
+		Sequence@@Table[Subscript[Depol, n][scatprob[node]],{n,AdjacencyList[g,qubit]}]]; 
 	(** check zones **)
 	(* prepare, store, detect *)
 	checkpsd[q_,node_]:=MemberQ[{1,2,3},getZone[q,nodes[node]]];
-	checkpsd[p_,q_,node_]:=MemberQ[{1,2,3},getZone[q,nodes[node]]]&&MemberQ[{1,2,3},getZone[p,nodes[node]]];
+	checkpsd[p_,q_,node_]:=And[MemberQ[{1,2,3},getZone[q,nodes[node]]],MemberQ[{1,2,3},getZone[p,nodes[node]]],EdgeQ[connectivity[node],p\[UndirectedEdge]q]];
 	(*logic*)
 	checklog[q_,node_]:=MemberQ[{2,3},getZone[q,nodes[node]]];
 	checklog[p_,q_,node_]:=And[MemberQ[{2,3},getZone[q,nodes[node]]],getZone[q,nodes@node]===getZone[p,nodes@node],EdgeQ[connectivity[node],p\[UndirectedEdge]q]];
@@ -1193,7 +1219,6 @@ TrappedIonOxford[OptionsPattern[]]:=With[
 	stdp[node_,t_,q_]:={Subscript[Damp, qmap[node][q]][.75(1-E^(-t/t1[node]))],Subscript[Deph, qmap[node][q]][.5(1-Exp[-(t/t2s[node])^2])]};
 	passivenoise[node_,t_,q__]:=Sequence@@If[stdpn,Flatten@Table[stdp[node,t,i],{i,Complement[Flatten@Values[nodes[node]],{q}]}],{}];
 	passivenoise[node_,t_]:=Sequence@@If[stdpn,{stdp[node,t,#]&/@Flatten[Values[nodes[node]]]},{}];
-
 <|
 	(*no hidden qubits/ancilla here *)
 	DeviceType->"TrappedIonOxford",
@@ -1235,6 +1260,13 @@ Gates ->{
 		GateDuration->dur
 	|>
 	],
+	(* effectively virtual, noiseless *)
+	Subscript[Rz, q_][node_,\[Theta]_] :>
+	<|
+		NoisyForm->{Subscript[Rz, qmap[node][q]][\[Theta]]},
+		GateDuration->10^-10
+	|>
+	,
 	Subscript[CZ, i_,j_][node_]/;checklog[i,j,node]:>With[{dur=freqcz[node]*0.5},
 	<|
 		NoisyForm->{Subscript[C, qmap[node][i]][Subscript[Z, qmap[node][j]]],gnoise[i,j,node,\[Pi]],passivenoise[node,dur,i,j]},
@@ -1251,7 +1283,7 @@ Gates ->{
 		GateDuration->durread[node]
 	|>,
 	Subscript[Init, q_][node_]/; checkpsd[q,node] :><|
-		NoisyForm->{Subscript[Init, qmap[node][q]][fidinit[node]],passivenoise[node,durinit[node],q]}, 
+		NoisyForm->{Subscript[Init, qmap[node][q]][fidinit[node]],scatnoise[q,node],passivenoise[node,durinit[node],q]}, 
 		GateDuration->durinit[node]
 	|>,
 	Subscript[Wait, q__][node_,t_]:><|
@@ -1310,177 +1342,6 @@ Gates ->{
 	]
 ]
 (*******  ENDOF_TRAPPED_IONS_OXFORD   *****)
-
-(********************MACHINE COLLETIONS WITH NOISE TWICE AS BAD************************)
-
-(***** SILICON_DELFT2 *****)
-SiliconDelft2[OptionsPattern[]]:=With[
-	{
-	(*validate and format parameter specification*)
-	(*Numbers*)
-	qubitsnum=Catch@validate[OptionValue@qubitsNum,IntegerQ,qubitsNum,"not an integer"],
-	(*Fractions*)
-	efsinglexy=Catch@validate[OptionValue@EFSingleXY,(Total[#]==1||Total[#]==0)&,EFSingleXY,"not a fraction with total 1 "],
-	efcz=Catch@validate[OptionValue@EFCZ,(Total[#]==1||Total[#]==0)&,EFCZ,"not a fraction with total 1 "],
-	(*Number as average or association to specify each*)
-	t1=Catch@validate[OptionValue@T1,checkAss[#,OptionValue@qubitsNum]&,T1,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
-	t2=Catch@validate[OptionValue@T2,checkAss[#,OptionValue@qubitsNum]&,T2,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
-	rabifreq=Catch@validate[OptionValue@RabiFreq,checkAss[#,OptionValue@qubitsNum]&,RabiFreq,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
-	qubitfreq=Catch@validate[OptionValue@QubitFreq,checkAss[#,OptionValue@qubitsNum]&,QubitFreq,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
-	freqcz=Catch@validate[OptionValue@FreqCZ,checkAss[#,-1+OptionValue@qubitsNum]&,FreqCZ,numass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
-	(*Number as average or association to specify each fidelity*)
-	fidcz=Catch@validate[OptionValue@FidCZ,checkAss[#,-1+OptionValue@qubitsNum,0<=#<=1&]&,FidCZ,fidass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
-	fidsinglexy=Catch@validate[OptionValue@FidSingleXY,checkAss[#,OptionValue@qubitsNum,0<=#<=1&]&,FidSingleXY,fidass[OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
-	(*single things*)
-	fidread=Catch@validate[OptionValue@FidRead,0<=#<=1&,FidRead,"invalid fidelity"],
-	durread=Catch@validate[OptionValue@DurRead,NumberQ,DurMeas,"invalid duration"],
-	repeatread=Catch@validate[OptionValue@RepeatRead,IntegerQ,RepeatRead,"not an integer"],
-	(* assoc or boolean *)
-	exchangerotoff=Catch@validate[OptionValue@ExchangeRotOff,Or[AssociationQ@#,#===False]&,ExchangeRotOff,"Set to association or False"],
-	(* True/False*)
-
-	offresonantrabi=Catch@validate[OptionValue@OffResonantRabi,BooleanQ,OffResonantRabi,"Set to true or false"],
-	stdpassivenoise=Catch@validate[OptionValue@StdPassiveNoise,BooleanQ,StdPassiveNoise,"Set to true or false"],
-	(*a matrix or a boolean*)
-	exchangeroton=Catch@validate[OptionValue@ExchangeRotOn,Or[SquareMatrixQ[#],BooleanQ[#]]&,ExchangeRotOn,StringForm["set to false or specify with a square matrix with dim ``^2",-1+OptionValue@qubitsNum]],
-	(*probability error of depolarising and dephasing noise *)
-	er1xy=fid2DepolDeph[#,OptionValue@EFSingleXY,1,FidSingleXY,True]&/@OptionValue[FidSingleXY],
-	ercz=fid2DepolDeph[#,OptionValue@EFCZ,2,FidCZ,True]&/@OptionValue[FidCZ],
-	(* frequently used stuff *)
-	qubits=Range[0,-1+OptionValue@qubitsNum]
-	},
-
-	Module[
-	{\[CapitalDelta]T, miseq,initf,measf, passivenoisecirc, offresrabi, stdpn, exczon,durinit,sroterr,g2=False},
-	stdpn[q_,dur_]:=If[stdpassivenoise,
-	{Subscript[Deph, q][.5(1-E^(-dur/t2[q]))],Subscript[Depol, q][.75(1-E^(-dur/t1[q]))]},{}];
-	passivenoisecirc[q_Integer,g2_,dur_]:=Flatten@{
-	If[\[Not]g2&&q<qubitsnum-1 && AssociationQ@exchangerotoff,Subscript[C, q][Subscript[Rz, q+1][(2dur/\[Pi])*exchangerotoff[q]]],{}],stdpn[q,dur]
-	};
-	(*single rotation noise *)
-	offresrabi[q_,\[Theta]_]:=If[offresonantrabi,
-	Table[Subscript[U, j][OffResRabiOsc[rabifreq[q],qubitfreq[j]-qubitfreq[q],Abs[\[Theta]]]],{j,Delete[qubits,q+1]}],{}];
-	
-	(*Exchange rotation C-Rz[j] interaction when CZ gate on*)
-	exczon[targ_]:=If[ListQ@exchangeroton,Subscript[C, #-1][Subscript[Rz, #][exchangeroton[[targ,#]]]]&/@Delete[Range[qubitsnum-1],targ],{}];
-	
-	(*Errors on single rotations*)
-	sroterr[q_,\[Theta]_]:=Flatten@{Subscript[Depol, q][er1xy[q][[1]]],Subscript[Deph, q][er1xy[q][[2]]],offresrabi[q,\[Theta]]};
-	(*measurement and initialisation sequence*)
-	miseq[q__]:=(Length@{q}>1)&&((Sort[{q}]===Range[0,Max@q])||(Sort[{q}]===Range[Min@q,-1+qubitsnum]));
-	(* final init state is 1000...0001: 2 reads+1 cond-X *)
-		
-initf[q__]:=Which[MemberQ[{q},0],(*start*)
-		Flatten@{
-		(*mimics 2 readout *)
-		{Subscript[Damp, 0][1-(1-Sqrt[fidread])^2],Subscript[X, 0],Subscript[Damp, 1][1-(1-Sqrt[fidread])^2]},
-		(* perfect partial swaps + 1 readout *)
-		Table[{Subscript[C, i][Subscript[X, i-1]],sroterr[i-1,\[Pi]],sroterr[i-1,\[Pi]],Subscript[C, i-1][Subscript[X, i]],sroterr[i,\[Pi]],sroterr[i,\[Pi]]},{i,Complement[{q},{0,1}]}]
-		,
-		{Subscript[Damp, 1][1-(1-fidread)]}
-		}
-		,
-		MemberQ[{q},qubitsnum-1],
-		(*end*)
-		Flatten@{
-		{Subscript[Damp, qubitsnum-1][1-(1-Sqrt@fidread)^2],Subscript[X, qubitsnum-1],Subscript[Damp, qubitsnum-2][1-(1-Sqrt@fidread)^2]},
-		(* perfect partial swaps + 1 readout *)
-		Table[{Subscript[C, i][Subscript[X, i+1]],sroterr[i+1,\[Pi]],sroterr[i+1,\[Pi]],Subscript[C, i+1][Subscript[X, i]],sroterr[i,\[Pi]],sroterr[i,\[Pi]]},{i,Complement[{q},{qubitsnum-1,qubitsnum-2}]}]
-		,
-		{Subscript[Damp, qubitsnum-2][1-(1-fidread)]}
-		}
-		,
-		True,
-		Throw[Message[Init::error,"Error in Init operation"]]
-];
-
-		
-(*duration of a single initialisation: 3 readout + 2X + 1 CX *)	
-durinit[q__]:=durread*3+1.5*Total[Flatten@Table[rabifreq[i],{i, Complement[{q},{0,qubitsnum-1}]}]]; 
-						
-(* measurment has bitflip errors at the edge and single qubit errors in the middle *)		
-measf[q__]:=Which[
-	MemberQ[{q},0],(*start*)
-	Flatten@{
-	(*mimics 2 readout  *)
-	{Subscript[Kraus, 0,1][bitFlip2[1-(1-fidread)^2]],Subscript[M, 0],Subscript[M, 1],Subscript[Damp, 0][1-(1-fidread)^2],Subscript[X, 0],Subscript[Damp, 1][1-(1-fidread)^2]},
-	(* 2 rotation errors + 1 readout *)
-	Table[{Subscript[Depol, i][er1xy[i][[1]]],Subscript[Deph, i][er1xy[i][[2]]],Subscript[M, i],Subscript[Damp, i][1-(1-fidread)]},{i,Complement[{q},{0,1}]}]
-	}
-	,
-	MemberQ[{q},qubitsnum-1],(*end*)
-	Flatten@{
-	(*mimics 2 readout  *)
-	{Subscript[Kraus, qubitsnum-1,qubitsnum-2][bitFlip2[1-(1-fidread)^2]],Subscript[M, qubitsnum-1],Subscript[M, qubitsnum-2],Subscript[Damp, qubitsnum-1][1-(1-fidread)^2],Subscript[X, qubitsnum-1],Subscript[Damp, qubitsnum-2][1-(1-fidread)^2]},
-	(* 2 rotation errors + 1 readout *)
-	Table[{Subscript[Depol, i][er1xy[i][[1]]],Subscript[Deph, i][er1xy[i][[2]]],Subscript[M, i],Subscript[Damp, i][1-(1-fidread)]},{i,Complement[{q},{qubitsnum-1,qubitsnum-2}]}]
-	}
-	,
-	True,
-	Throw[Message[M::error,"Error in Measurement operation"]]
-];
-
-<|
-	(*no hidden qubits/ancilla here *)
-	DeviceType->"SiliconDelft",
-	DeviceDescription -> "Delft Silicon device with "<>ToString[qubitsnum]<>"-qubits arranged as a linear array with nearest-neighbor connectivity and control qubits are the lower ones.",
-	NumAccessibleQubits -> qubitsnum,
-	NumTotalQubits -> qubitsnum,
-	
-	Aliases -> {
-		Subscript[Wait, q__][t_] :> {},
-		Subscript[Init, q__]:> {},
-		Subscript[Meas, q__]:> {}
-		}
-		,	
-	Gates ->{
-		Subscript[Wait, q__][t_]:><|
-			NoisyForm->Flatten@Table[passivenoisecirc[i,False,2t],{i,Flatten@{q}}],
-			GateDuration->t,
-			UpdateVariables->Function[g2=False]
-	|>,
-(* Measurements and initialisation *)
-	Subscript[Meas, q__]/; miseq[q] :><|
-		NoisyForm-> measf[q],
-		GateDuration->durread,
-		UpdateVariables->Function[g2=False]
-	|>,
-	Subscript[Init, q__]/; miseq[q] :><|
-		NoisyForm-> initf[q],
-		GateDuration-> durinit[q],
-		UpdateVariables->Function[g2=False]
-	|>,		
-(* Singles *)
-	Subscript[Rx,q_][\[Theta]_]:><|
-		NoisyForm->Flatten@{Subscript[Rx, q][\[Theta]],sroterr[q,\[Theta]],sroterr[q,\[Theta]]},
-		GateDuration->Abs[\[Theta]]/(2\[Pi]*rabifreq[q]),
-		UpdateVariables->Function[g2=False] 
-	|>,
-	Subscript[Ry,q_][\[Theta]_]:><|
-		NoisyForm->Flatten@{Subscript[Ry, q][\[Theta]],sroterr[q,\[Theta]],sroterr[q,\[Theta]]},
-		GateDuration->Abs[\[Theta]]/(2\[Pi]*rabifreq[q]),
-		UpdateVariables->Function[g2=False]
-	|>,
-(* Twos *)
-	Subscript[C, p_][Subscript[Z, q_]]/; (q-p)===1  :><|
-		(*The last bit undo the exchange in the passive noise *)
-		NoisyForm->{Subscript[C, p][Subscript[Z, q]],Subscript[Depol, p,q][ercz[p][[1]]],Subscript[Deph, p,q][ercz[p][[2]]],Sequence@@exczon[q],Subscript[Depol, p,q][ercz[p][[1]]],Subscript[Deph, p,q][ercz[p][[2]]],Sequence@@exczon[q]}, 
-		GateDuration->0.5/freqcz[p],
-		UpdateVariables->Function[g2=True] 
-	|>		
-},
-(* Declare that \[CapitalDelta]t will refer to the duration of the current gate/channel. *)
-DurationSymbol -> \[CapitalDelta]T, 
-(* Passive noise *)
-Qubits :> {
-		q_/;(0<=q<qubitsnum) :> <|
-		PassiveNoise ->passivenoisecirc[q,g2,2\[CapitalDelta]T]
-		|>		 
-		}	
-	|>
-]
-]
-(***** ENDOF SILICON_DELFT2 *****)
 
 (******* CIRCUIT_CONSTRUCTION ***********)
 SetAttributes[CircRydbergHub, HoldAll]
