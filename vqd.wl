@@ -366,33 +366,33 @@ ToyDevice[OptionsPattern[]]:=With[
 	(* Singles *)
 		Subscript[Rx,q_][\[Theta]_]:><|
 			NoisyForm->Flatten@{Subscript[Rx, q][\[Theta]],Subscript[Depol, q][erone[[1]]],Subscript[Deph, q][erone[[2]]]},
-			GateDuration->Abs[\[Theta]]/(2\[Pi]*rabifreq)
+			GateDuration->Abs[\[Theta]]/rabifreq
 		|>,
 		Subscript[Ry,q_][\[Theta]_]:><|
 			NoisyForm->Flatten@{Subscript[Ry, q][\[Theta]],Subscript[Depol, q][erone[[1]]],Subscript[Deph, q][erone[[2]]]},
-			GateDuration->Abs[\[Theta]]/(2\[Pi]*rabifreq)
+			GateDuration->Abs[\[Theta]]/rabifreq
 		|>,
 			Subscript[Rz,q_][\[Theta]_]:><|
 			NoisyForm->Flatten@{Subscript[Rz, q][\[Theta]],Subscript[Depol, q][erone[[1]]],Subscript[Deph, q][erone[[2]]]},
-			GateDuration->Abs[\[Theta]]/(2\[Pi]*rabifreq)
+			GateDuration->Abs[\[Theta]]/rabifreq
 		|>,
 	(* Twos *)
 			Subscript[C, p_][Subscript[Rx, q_][\[Theta]_]]/; Abs[q-p]===1  :><|
 			NoisyForm->{Subscript[C, p][Subscript[Rx, q][\[Theta]]],Subscript[Depol, p,q][Min[ertwo[[1]]*Abs[\[Theta]/\[Pi]],15/16]],Subscript[Deph, p,q][Min[ertwo[[2]]*Abs[\[Theta]/\[Pi]],3/4]]},
-			GateDuration->Abs[\[Theta]]/(2\[Pi]*twogatefreq)
+			GateDuration->Abs[\[Theta]]/twogatefreq
 		|>,
 			Subscript[C, p_][Subscript[Ry, q_][\[Theta]_]]/; Abs[q-p]===1  :><|
 			NoisyForm->{Subscript[C, p][Subscript[Ry, q][\[Theta]]],Subscript[Depol, p,q][Min[ertwo[[1]]*Abs[\[Theta]/\[Pi]],15/16]],Subscript[Deph, p,q][Min[ertwo[[2]]*Abs[\[Theta]/\[Pi]],3/4]]},
-			GateDuration->Abs[\[Theta]]/(2\[Pi]*twogatefreq)
+			GateDuration->Abs[\[Theta]]/twogatefreq
 		|>,
 			Subscript[C, p_][Subscript[Rz, q_][\[Theta]_]]/; Abs[q-p]===1  :><|
 			NoisyForm->{Subscript[C, p][Subscript[Rz, q][\[Theta]]],Subscript[Depol, p,q][Min[ertwo[[1]]*Abs[\[Theta]/\[Pi]],15/16]],Subscript[Deph, p,q][Min[ertwo[[2]]*Abs[\[Theta]/\[Pi]],3/4]]},
-			GateDuration->Abs[\[Theta]]/(2\[Pi]*twogatefreq)
+			GateDuration->Abs[\[Theta]]/twogatefreq
 		|>	
 		,(* parameterised swap*)
 			Subscript[PSW, p_,q_][\[Theta]_]/; Abs[q-p]===1  :><|
 			NoisyForm->{Subscript[PSW, p,q][\[Theta]],Subscript[Depol, p,q][ertwo[[1]]],Subscript[Deph, p,q][ertwo[[2]]]},
-			GateDuration->Abs[\[Theta]]/(2\[Pi]*twogatefreq)
+			GateDuration->Abs[\[Theta]]/twogatefreq
 		|>	
 	},
 	(* Declare that \[CapitalDelta]t will refer to the duration of the current gate/channel. *)
@@ -483,37 +483,37 @@ Gates ->{
 		(* Z-rotations are unconditional for both electron and nuclear spins *)
 		Subscript[Rz, q_][\[Theta]_] :> <|
 			NoisyForm -> Circuit[Subscript[Rz, q][\[Theta]]Subscript[Deph, q][Min[ersinglez[q][[2]]*Abs[\[Theta]]/\[Pi],0.5]]],
-			GateDuration -> Abs[\[Theta]]/(\[Pi]*freqsinglez[q])
+			GateDuration -> Abs[\[Theta]]/freqsinglez[q]
 		|>, 
 		
 		Subscript[Rx, q_][\[Theta]_]/;q===0 :> <|
 			NoisyForm -> Circuit[Subscript[Rx, q][\[Theta]]Subscript[Depol, q][Min[ersinglexy[q][[1]]*Abs[\[Theta]]/\[Pi],0.75]]Subscript[Deph,q][Min[ersinglexy[q][[2]]Abs[\[Theta]]/\[Pi],0.5]]],
-			GateDuration -> Abs[\[Theta]]/(\[Pi]*freqsinglexy[q])
+			GateDuration -> Abs[\[Theta]]/freqsinglexy[q]
 		|>,
 		
 		Subscript[Ry, q_][\[Theta]_]/;q===0 :> <|
 			NoisyForm -> Circuit[Subscript[Ry, q][\[Theta]]Subscript[Depol, q][Min[ersinglexy[q][[1]]Abs[\[Theta]]/\[Pi],0.75]]Subscript[Deph, q][Min[ersinglexy[q][[2]]Abs[\[Theta]]/\[Pi],0.5]]],
-			GateDuration -> Abs[\[Theta]]/(\[Pi]*freqsinglexy[q])
+			GateDuration -> Abs[\[Theta]]/freqsinglexy[q]
 		|>,
 		(* ROTATIONS CONDITIONED ON ELETRON SPIN. electron needs to set at ms=-1: horrible*)
 		Subscript[Rx, q_][\[Theta]_]/;q>0 :> <|
 			NoisyForm -> Circuit[Subscript[Rx,q][\[Theta]]Subscript[Depol, q][Min[ersinglexy[q][[1]]Abs[\[Theta]]/\[Pi],0.75]]Subscript[Deph, q][Min[ersinglexy[q][[2]]*Abs[\[Theta]]/\[Pi],0.5]]],
-			GateDuration -> Abs[\[Theta]]/(\[Pi]*freqsinglexy[q])
+			GateDuration -> Abs[\[Theta]]/freqsinglexy[q]
 		|>,
 		Subscript[Ry, q_][\[Theta]_]/;q>0 :> <|
 			NoisyForm -> Circuit[Subscript[Ry,q][\[Theta]]Subscript[Depol, q][Min[ersinglexy[q][[1]]Abs[\[Theta]]/\[Pi],0.75]]Subscript[Deph, q][Min[ersinglexy[q][[2]]*Abs[\[Theta]]/\[Pi],0.5]]],
-			GateDuration -> Abs[\[Theta]]/(\[Pi]*freqsinglexy[q])
+			GateDuration -> Abs[\[Theta]]/(freqsinglexy[q])
 		|>,
 		(* Conditional rotations *)
 		Subscript[CRx, e_,n_][\[Theta]_] /; (e==0 && n>0):> <|
 			(* Its noisy form depolarises the control and target qubits *)
 			NoisyForm -> Circuit[Subscript[CRx, e,n][\[Theta]]Subscript[Depol,e,n][Min[ercrot[n][[1]]Abs[\[Theta]]/\[Pi],15/16]]Subscript[Deph,e,n][Min[ercrot[n][[2]]Abs[\[Theta]]/\[Pi],3/4]]],
-			GateDuration -> Abs[\[Theta]]/(\[Pi]*freqcrot[n]) 
+			GateDuration -> Abs[\[Theta]]/(freqcrot[n]) 
 		|>,
 		Subscript[CRy, e_,n_][\[Theta]_] /; (e==0 && n>0):> <|
 			(* Its noisy form depolarises the control and target qubits *)
 			NoisyForm -> Circuit[Subscript[CRy, e,n][\[Theta]]Subscript[Depol,e,n][Min[ercrot[n][[1]]Abs[\[Theta]]/\[Pi],15/16]]Subscript[Deph,e,n][Min[ercrot[n][[2]]Abs[\[Theta]]/\[Pi],3/4]]],
-			GateDuration -> Abs[\[Theta]]/(\[Pi]*freqcrot[n])    
+			GateDuration -> Abs[\[Theta]]/(freqcrot[n])    
 		|>		
 	}	
 	,
@@ -939,25 +939,25 @@ measf[q__]:=Which[
 	(* Singles *)
 		Subscript[Rx,q_][\[Theta]_]:><|
 			NoisyForm->Flatten@{Subscript[Rx, q][\[Theta]],sroterr[q,\[Theta]]},
-			GateDuration->Abs[\[Theta]]/(2\[Pi]*rabifreq[q]),
+			GateDuration->Abs[\[Theta]]/(rabifreq[q]),
 			UpdateVariables->Function[g2=False] 
 		|>,
 		Subscript[Ry,q_][\[Theta]_]:><|
 			NoisyForm->Flatten@{Subscript[Ry, q][\[Theta]],sroterr[q,\[Theta]]},
-			GateDuration->Abs[\[Theta]]/(2\[Pi]*rabifreq[q]),
+			GateDuration->Abs[\[Theta]]/(rabifreq[q]),
 			UpdateVariables->Function[g2=False]
 		|>,
 	(* Twos *)
 		Subscript[C, p_][Subscript[Z, q_]]/; q-p===1  :><|
 			(*The last bit undo the exchange in the passive noise *)
 			NoisyForm->{Subscript[C, p][Subscript[Z, q]],Subscript[Depol, p,q][ercz[p][[1]]],Subscript[Deph, p,q][ercz[p][[2]]],Sequence@@exczon[q]}, 
-			GateDuration->0.5/freqcz[p],
+			GateDuration->\[Pi]/freqcz[p],
 			UpdateVariables->Function[g2=True]
 		|>,
 		Subscript[C, p_][Subscript[Ph, q_][\[Theta]_]]/; q-p===1  :><|
 			(*The last bit undo the exchange in the passive noise *)
 			NoisyForm->{Subscript[C, p][Subscript[Ph, q][\[Theta]]],Subscript[Depol, p,q][Min[ercz[p][[1]]Abs[\[Theta]/\[Pi]],15/16]],Subscript[Deph, p,q][Min[ercz[p][[2]]*Abs[\[Theta]/\[Pi]],3/4]],Sequence@@exczon[q]}, 
-			GateDuration->Abs[\[Theta]/2\[Pi]]/freqcz[p],
+			GateDuration->Abs[\[Theta]]/freqcz[p],
 			UpdateVariables->Function[g2=True]
 		|>		
 	},
@@ -1220,7 +1220,7 @@ TrappedIonOxford[OptionsPattern[]]:=With[
 	(* passive noise: T1 exp decay and T2* with gaussian decay *)
 	stdp[node_,t_,q_]:={Subscript[Damp, qmap[node][q]][.75(1-E^(-t/t1[node]))],Subscript[Deph, qmap[node][q]][.5(1-Exp[-(t/t2s[node])^2])]};
 	passivenoise[node_,t_,q__]:=Sequence@@If[stdpn,Flatten@Table[stdp[node,t,i],{i,Complement[Flatten@Values[nodes[node]],{q}]}],{}];
-	passivenoise[node_,t_]:=Sequence@@If[stdpn,{stdp[node,t,#]&/@Flatten[Values[nodes[node]]]},{}];
+	passivenoise[node_,t_]:=Sequence@@If[stdpn,Flatten@{stdp[node,t,#]&/@Flatten[Values[nodes[node]]]},{}];
 <|
 	(*no hidden qubits/ancilla here *)
 	DeviceType->"TrappedIonOxford",
@@ -1239,7 +1239,7 @@ TrappedIonOxford[OptionsPattern[]]:=With[
 	
 	(* Init, Read, Rx, Ry, C[Z], Ent[node1,node2], SWAP, Splz, Comb  *)
 	Aliases -> {
-		Subscript[Wait, q__][node_,t_] :> {},
+		Subscript[Wait, q__][node_,t_] :> Sequence@@{},
 		Subscript[Init, q_][fid_]:> Subscript[Damp, q][fid],
 		Subscript[Splz, i_,j_]:> Sequence@@{},
 		Subscript[Comb, i_,j_]:>Sequence@@{},
@@ -1250,18 +1250,16 @@ TrappedIonOxford[OptionsPattern[]]:=With[
 		}
 	,	
 Gates ->{
-	Subscript[Rx, q_][node_,\[Theta]_]/;checklog[q,node] :> With[{dur=rabifreq[node]*Abs[\[Theta]]/(2\[Pi])}, 
+	Subscript[Rx, q_][node_,\[Theta]_]/;checklog[q,node]:> With[{dur=Abs[\[Theta]]/rabifreq[node]}, 
 	<|
 		NoisyForm->{Subscript[Rx, qmap[node][q]][\[Theta]],gnoise[q,node,\[Theta]],passivenoise[node,dur,q]},  
 		GateDuration->dur
-	|>
-	],
-	Subscript[Ry, q_][node_,\[Theta]_]/;checklog[q,node]:>With[{dur=rabifreq[node]*Abs[\[Theta]]/(2\[Pi])},
+	|> ],
+	Subscript[Ry, q_][node_,\[Theta]_]/;checklog[q,node]:>With[{dur=Abs[\[Theta]]/rabifreq[node]},
 	<|
 		NoisyForm->{Subscript[Ry, qmap[node][q]][\[Theta]],gnoise[q,node,\[Theta]],passivenoise[node,dur,q]},
 		GateDuration->dur
-	|>
-	],
+	|> ],
 	(* effectively virtual, noiseless *)
 	Subscript[Rz, q_][node_,\[Theta]_] :>
 	<|
@@ -1269,17 +1267,16 @@ Gates ->{
 		GateDuration->10^-10
 	|>
 	,
-	Subscript[CZ, i_,j_][node_]/;checklog[i,j,node]:>With[{dur=freqcz[node]*0.5},
+	Subscript[CZ, i_,j_][node_]/;checklog[i,j,node]:> With[{dur=\[Pi]/freqcz[node]},
 	<|
 		NoisyForm->{Subscript[C, qmap[node][i]][Subscript[Z, qmap[node][j]]],gnoise[i,j,node,\[Pi]],passivenoise[node,dur,i,j]},
 		GateDuration->dur
-	|>
-	],
+	|>	],
 	Subscript[Ent, q1_,q2_][node1_,node2_]/;checkrent[q1,node1,q2,node2]:>With[{dur=1/freqent},
 	<|
 		NoisyForm-> {Subscript[Ent, qmap[node1][q1],qmap[node2][q2]],entnoise[q1,q2,node1,node2],passivenoise[node1,dur,q1],passivenoise[node2,dur,q2]},
 		GateDuration->dur
-	|>],
+	|>   ],
 	Subscript[Read, q_][node_]/; checkread[q,node] :><|
 		NoisyForm->{Subscript[Kraus, qmap[node][q]][bitFlip1[bfprob@node]],Subscript[Read, qmap[node][q]],passivenoise[node,durread[node],q]}, 
 		GateDuration->durread[node]
@@ -1289,7 +1286,7 @@ Gates ->{
 		GateDuration->durinit[node]
 	|>,
 	Subscript[Wait, q__][node_,t_]:><|
-		NoisyForm->passivenoise[node,t],
+		NoisyForm->{passivenoise[node,t]},
 		GateDuration->t
 	|>,
 	(** physically moving operations **)
@@ -1300,11 +1297,11 @@ Gates ->{
 	|>,
 	
 	Subscript[Shutl, q__][node_, zone_]/;legShutl[nodes,node,zone,q]:><|
-		NoisyForm->{Subscript[Shutl, Sequence[qmap[node]/@{q}]]},
+		NoisyForm->{Subscript[Shutl, Sequence[qmap[node]/@{q}]],passivenoise[node,durmove[node][Splz]]},
 		GateDuration->durmove[node][Shutl],
 		UpdateVariables->Function[
-		nodes=Subscript[shutl, q][nodes,node,zone]
-		]
+					nodes=Subscript[shutl, q][nodes,node,zone]
+						]
 	|>,
 	
 	Subscript[Splz, i_,j_][node_,zone_]/;legSplit[nodes,node,i,j,zone] :><|
@@ -1482,18 +1479,20 @@ CircTrappedIons[circuit_,device_,OptionsPattern[]]:=Module[
 		
 	,{gate,Flatten@circuit}];
 	ccirc=Table[DeleteCases[DeleteCases[Values@c,None],True],{c,sorted}];
-(* TODO: This map is incorrect when there is SWAPLoc*)
 	If[mapq,
 	ccirc/.{
 	Subscript[Shutl, qs__][n_,z_]:>Subscript[Shutl, Sequence@@Table[qmap[n][q],{q,{qs}}]][n,z],
-	Subscript[Splz, q1_,q2_][n_,z_]:>Subscript[Splz, qmap[n][q1],qmap[n][q2]][n,z],
-	Subscript[Comb, q1_,q2_][n_,z_]:>Subscript[Comb, qmap[n][q1],qmap[n][q2]][n,z],
-	Subscript[Comb, q1_,q2_][n_]:>Subscript[Comb, qmap[n][q1],qmap[n][q2]][n],
-	Subscript[Ent, q1_,q2_][n1_,n2_]:>Subscript[Ent, qmap[n1][q1],qmap[n2][q2]][n1,n2],
-	Subscript[CZ, q1_,q2_][n_]:>Subscript[CZ, qmap[n][q1],qmap[n][q2]][n],
-	Subscript[SWAPLoc, q1_,q2_][n_]:>Subscript[SWAPLoc, qmap[n][q1],qmap[n][q2]][n],
-	Subscript[Init, q_][n_]:>Subscript[Init, qmap[n][q]][n],
-	Subscript[Read, q_][n_]:>Subscript[Read, qmap[n][q]][n]
+	Subscript[Splz, q1_,q2_][n_,z_]:>Subscript[Splz, qmap[n][q1],qmap[n][q2]],
+	Subscript[Comb, q1_,q2_][n_,z_]:>Subscript[Comb, qmap[n][q1],qmap[n][q2]],
+	Subscript[Comb, q1_,q2_][n_]:>Subscript[Comb, qmap[n][q1],qmap[n][q2]],
+	Subscript[Ent, q1_,q2_][n1_,n2_]:>Subscript[Ent, qmap[n1][q1],qmap[n2][q2]],
+	Subscript[CZ, q1_,q2_][n_]:>Subscript[C, qmap[n][q1]][Subscript[Z, qmap[n][q2]]],
+	Subscript[Rx, q_][n_,\[Theta]_]:>Subscript[Rx, qmap[n][q]][\[Theta]],
+	Subscript[Ry, q_][n_,\[Theta]_]:>Subscript[Ry, qmap[n][q]][\[Theta]],
+	Subscript[Rz, q_][n_,\[Theta]_]:>Subscript[Rz, qmap[n][q]][\[Theta]],
+	Subscript[SWAPLoc, q1_,q2_][n_]:>Subscript[SWAPLoc, qmap[n][q1],qmap[n][q2]],
+	Subscript[Init, q_][n_]:>Subscript[Init, qmap[n][q]],
+	Subscript[Read, q_][n_]:>Subscript[M, qmap[n][q]]
 	},
 	ccirc
 	]	
