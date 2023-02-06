@@ -451,17 +451,18 @@ SuperconductingHub[OptionsPattern[]]:=With[
 	(* Assertions *)
 	Catch@If[CountDistinct[Values@qubitfreq]==Length@qubitfreq, Throw@Message[QubitFreq::error,"All qubits frequencies must be distinct. Fix the QubitFreq value."]];
 	Module[
-	{ccv,ug, stdpn, zz, zzpn, lessNeighbor, zzon, passivenoise, \[CapitalDelta]t, activeq,counter=0},
+	{ccv,ug, stdpn, zz, zzpn, lessNeighbor, zzon, passivenoise, \[CapitalDelta]t, activeq,counter=0,init=True},
 	ccv=graphConnectivity[qubitsnum,exchangecoupling,qubitfreq];	
 	(* undirected graph *)
 	ug=UndirectedGraph[ccv];
 	activeq=<|Table[q->False,{q,Range[0,qubitsnum-1]}]|>;
 	(* if ZZ gate is on *)
 	zzon=False;
-	
-	(* standard T1- T2- passive noise decays *)
-	Subscript[stdpn, q_][\[CapitalDelta]t_]:=If[stdpassivenoise&&\[Not]activeq[q],{Subscript[Depol, q][0.75(1-E^(-\[CapitalDelta]t/t1[q]))],Subscript[Deph, q][0.5(1-E^(-\[CapitalDelta]t/t2[q]))]},{}];
-	
+	(* Free-induction T1- T2- passive noise decays *)
+	Subscript[stdpn, q_][\[CapitalDelta]t_]:=If[stdpassivenoise&&\[Not]activeq[q]&&\[CapitalDelta]t>0,
+					{Subscript[gAmp, q][(1-E^(-\[CapitalDelta]t/t1[q])),1-excitedinit[q]],
+					Subscript[Deph, q][0.5(1-E^(-\[CapitalDelta]t/t2[q]))]},
+					{}];
 	(* Fixed ZZ-interaction on passive noise, where p is the first/control and q is the later/target *)
 	Subscript[zz, c_, t_]:=With[
 	{\[CapitalDelta]ct=Abs[qubitfreq[c]-qubitfreq[t]],\[Alpha]t=anharmonicity[t],\[Alpha]c=anharmonicity[c],J=If[KeyExistsQ[exchangecoupling,c\[UndirectedEdge]t],exchangecoupling[c\[UndirectedEdge]t],exchangecoupling[t\[UndirectedEdge]c]]},
@@ -473,6 +474,8 @@ SuperconductingHub[OptionsPattern[]]:=With[
 			If[\[Not]zzon,(If[\[CapitalDelta]t>0&&And[\[Not]activeq[#[[1]]],\[Not]activeq[#[[2]]]],Subscript[zz, #[[1]],#[[2]]],{}])&/@ng,{}],{}];
 			noise
 			];
+			
+			
 	<|
 	(*no hidden qubits/ancilla here *)
 	DeviceType->"Superconducting",
@@ -482,21 +485,49 @@ SuperconductingHub[OptionsPattern[]]:=With[
 	Connectivity->ccv,
 	Aliases -> {
 		Subscript[ZZ, p_,q_]:>R[\[Pi],Subscript[Z, p] Subscript[Z, q]],
-		Subscript[ZX, p_,q_]:>R[\[Pi],Subscript[Z, p] Subscript[X, q]]
+		Subscript[ZX, p_,q_]:>R[\[Pi],Subscript[Z, p] Subscript[X, q]],
+			(* Subscript[\[Rho], \[Infinity]]=p|0X0|+(1-p)|1X1| *)
+		Subscript[Init, q_]:>Sequence@@{},
+		Subscript[Wait, q_]:>Sequence@@{}
 	},	
 	Gates ->{
 	(* Initialisation and measurement *)
+	Subscript[Init, q_]/;(init==True):><|
+		NoisyForm->{Subscript[Init, q],Subscript[gAmp, q][1,1-excitedinit[q]]},
+		GateDuration->0
+	|>,
+	(* should be placed at the end only, but I don't know how :-/ *)
+	Subscript[Read, q_]:><|
+		(* mess up the final result as well *)
+		NoisyForm->{Subscript[Depol, q][1-fidread[q]],Subscript[M, q],Subscript[Depol, q][1-fidread[q]]}
+	
+	|>,
+	(* doing nothing, is equivalent to being passive *)
+	Subscript[Wait, q_][t_]:><|
+		NoisyForm->Flatten@{Subscript[stdpn, q][\[CapitalDelta]t],Subscript[zzpn, q][\[CapitalDelta]t]},
+		GateDuration->t,
+		UpdateVariables->Function[
+			activeq[q]=False
+			]
+	|>,
 	(* Singles *)
-		Subscript[Rx,q_][\[Theta]_]:><|
+		Subscript[Rx,q_][\[Theta]_]/;And[(-\[Pi]<=\[Theta]<=\[Pi]),Abs[\[Theta]]>0]:><|
 			NoisyForm->{Subscript[Rx, q][\[Theta]]},
 			GateDuration->durrxry,
-			UpdateVariables->Function[activeq[q]=True]
+			UpdateVariables->Function[
+			activeq[q]=True;
+			init=False;
+			]
 		|>,
-		Subscript[Ry,q_][\[Theta]_]:><|
+		Subscript[Ry,q_][\[Theta]_]/;And[(-\[Pi]<=\[Theta]<=\[Pi]),Abs[\[Theta]]>0]:><|
 			NoisyForm->{Subscript[Ry, q][\[Theta]]},
 			GateDuration->durrxry,
-			UpdateVariables->Function[activeq[q]=True]
+			UpdateVariables->Function[
+			activeq[q]=True;
+			init=False;
+			]
 		|>,
+		
 		Subscript[Rz,q_][\[Theta]_]:><|
 			NoisyForm->Flatten@{Subscript[Rz, q][\[Theta]]},
 			GateDuration->0.
@@ -506,6 +537,7 @@ SuperconductingHub[OptionsPattern[]]:=With[
 			NoisyForm->{Subscript[ZZ, p,q]},
 			GateDuration->durzz,
 			UpdateVariables->Function[
+				init=False;
 				zzon=True;	
 				activeq[q]=True;
 				activeq[p]=True;
@@ -515,6 +547,7 @@ SuperconductingHub[OptionsPattern[]]:=With[
 			NoisyForm->{Subscript[ZX, p,q]},
 			GateDuration->durzx,
 			UpdateVariables->Function[
+				init=False;
 				activeq[q]=True;
 				activeq[p]=True;
 			]
