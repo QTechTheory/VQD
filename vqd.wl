@@ -40,7 +40,7 @@ ParameterDevices::usage="Show all parameters used to specify all devices. To see
 CalcFidelityDensityMatrices::usage="CalcFidelityDensityMatrices[\[Rho],\[Sigma]] fidelity of two density matrices, \[Rho] and \[Sigma] can be density matrix of Quregs. Fidelity of two density matrices.";
 PartialTrace::usage="PartialTrace[qureg/density matrix, tracedoutqubits_List]. Return the partial trace as a matrix.";
 RandomMixState::usage="RandomMixState[nqubits, nsamples:None]. Return a random mixed quantum density state matrix.";
-
+GenerateOptionTable::usage="GenerateOptionTable[options,columnwidth:{3cm,3cm,10cm}]. Create summary of options in Latex. Very buggy.";
 (* Custom gates *)
 SWAPLoc::usage="Swap the spatial locations of two qubits";
 ShiftLoc::usage="ShiftLoc[v] the physical coordinate of a qubit by some vector v.";
@@ -510,8 +510,8 @@ SuperconductingHub[OptionsPattern[]]:=With[
 			activeq[q]=False
 			]
 	|>,
-	(* Singles *)
-		Subscript[Rx,q_][\[Theta]_]/;And[(-\[Pi]<=\[Theta]<=\[Pi]),Abs[\[Theta]]>0]:><|
+	(* Singles: commenting the angle rule for VQE program *)
+		Subscript[Rx,q_][\[Theta]_](*/;And[(-\[Pi]<=\[Theta]<=\[Pi]),Abs[\[Theta]]>0]*):><|
 			NoisyForm->{Subscript[Rx, q][\[Theta]]},
 			GateDuration->durrxry,
 			UpdateVariables->Function[
@@ -519,7 +519,7 @@ SuperconductingHub[OptionsPattern[]]:=With[
 			init=False;
 			]
 		|>,
-		Subscript[Ry,q_][\[Theta]_]/;And[(-\[Pi]<=\[Theta]<=\[Pi]),Abs[\[Theta]]>0]:><|
+		Subscript[Ry,q_][\[Theta]_](*/;And[(-\[Pi]<=\[Theta]<=\[Pi]),Abs[\[Theta]]>0]*):><|
 			NoisyForm->{Subscript[Ry, q][\[Theta]]},
 			GateDuration->durrxry,
 			UpdateVariables->Function[
@@ -1690,7 +1690,15 @@ RandomMixState[nqubits_]:=Module[{size=2^nqubits,gm,um,dm,id},
 	dm=(id+um) . gm . ConjugateTranspose[gm] . (id+ConjugateTranspose[um]);
 	dm/Tr[dm]//Chop
 ]
-
+GenerateOptionTable[options_,columnwidth_:{"3cm","3cm","10cm"}]:=Module[{vars, header,content,contenf,contenl,fvalues,finfo},
+vars=Keys@options;
+header=StringForm["\\begin{tabular}{p{``}p{``}p{``}}\n\\toprule",Sequence@@columnwidth];
+fvalues=List@@#&/@Values@options;
+finfo=ToString@Information[#]&/@Keys[options];
+content=Transpose@{Keys@options,fvalues,finfo};
+contenl=Join[{"\\textbf{Variable}&\\textbf{Value}&\\textbf{Description}"},StringRiffle[#,"&"]&/@content];
+StringRiffle[Join[{header},contenl,{"\\bottomrule"}],"\\\\ \n"]<>"\n\\end{tabular}"
+]
 SetAttributes[symbolNameJoin, HoldAll];
 symbolNameJoin[symbols__Symbol] := Symbol @ Apply[
   StringJoin,
