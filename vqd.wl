@@ -499,8 +499,8 @@ SuperconductingHub[OptionsPattern[]]:=With[
 	(* should be placed at the end only, but I don't know how :-/ *)
 	Subscript[Read, q_]:><|
 		(* mess up the final result as well *)
-		NoisyForm->{Subscript[Depol, q][1-fidread[q]],Subscript[M, q],Subscript[Depol, q][1-fidread[q]]}
-	
+		NoisyForm->{Subscript[Depol, q][1-fidread[q]],Subscript[M, q],Subscript[Depol, q][1-fidread[q]]},
+	GateDuration->durmeas
 	|>,
 	(* doing nothing, is equivalent to being passive *)
 	Subscript[Wait, q_][t_]:><|
