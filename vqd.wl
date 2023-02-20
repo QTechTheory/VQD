@@ -484,8 +484,12 @@ SuperconductingHub[OptionsPattern[]]:=With[
 	NumTotalQubits -> qubitsnum,
 	Connectivity->ccv,
 	Aliases -> {
-		Subscript[ZZ, p_,q_]:>R[\[Pi],Subscript[Z, p] Subscript[Z, q]],
-		Subscript[ZX, p_,q_]:>R[\[Pi],Subscript[Z, p] Subscript[X, q]],
+		(* These parameterised gates below are rudimentary and made for VQE purposes*)
+		Subscript[ZZ, p_,q_][\[Theta]_]:>R[\[Theta],Subscript[Z, p] Subscript[Z, q]],
+		Subscript[ZX, p_,q_][\[Theta]_]:>R[\[Theta],Subscript[Z, p] Subscript[X, q]],
+		
+		Subscript[ZZ, p_,q_]:>R[\[Pi]/2,Subscript[Z, p] Subscript[Z, q]],
+		Subscript[ZX, p_,q_]:>R[\[Pi]/2,Subscript[Z, p] Subscript[X, q]],
 			(* Subscript[\[Rho], \[Infinity]]=p|0X0|+(1-p)|1X1| *)
 		Subscript[Init, q_]:>Sequence@@{},
 		Subscript[Wait, q_]:>Sequence@@{}
@@ -532,9 +536,10 @@ SuperconductingHub[OptionsPattern[]]:=With[
 			NoisyForm->Flatten@{Subscript[Rz, q][\[Theta]]},
 			GateDuration->0.
 		|>,
+		
 		(* siZZle gate *)
 		Subscript[ZZ, p_,q_]/;EdgeQ[ug,p\[UndirectedEdge]q] :><|
-			NoisyForm->{Subscript[ZZ, p,q]},
+			NoisyForm->{Subscript[ZZ, p,q]}, 
 			GateDuration->durzz,
 			UpdateVariables->Function[
 				init=False;
@@ -544,7 +549,28 @@ SuperconductingHub[OptionsPattern[]]:=With[
 			]
 		|>,
 		Subscript[ZX, p_,q_]/;EdgeQ[ccv,p\[DirectedEdge]q] :><|
-			NoisyForm->{Subscript[ZX, p,q]},
+			NoisyForm->{Subscript[ZX, p,q]}, 
+			GateDuration->durzx,
+			UpdateVariables->Function[
+				init=False;
+				activeq[q]=True;
+				activeq[p]=True;
+			]
+		|>,
+		
+		(* Rudimentary, made for VQE purposes *)
+		Subscript[ZZ, p_,q_][\[Theta]_]/;EdgeQ[ug,p\[UndirectedEdge]q] :><|
+			NoisyForm->{Subscript[ZZ, p,q][\[Theta]]}, 
+			GateDuration->durzz,
+			UpdateVariables->Function[
+				init=False;
+				zzon=True;	
+				activeq[q]=True;
+				activeq[p]=True;
+			]
+		|>,
+		Subscript[ZX, p_,q_][\[Theta]_]/;EdgeQ[ccv,p\[DirectedEdge]q] :><|
+			NoisyForm->{Subscript[ZX, p,q][\[Theta]]}, 
 			GateDuration->durzx,
 			UpdateVariables->Function[
 				init=False;
@@ -554,6 +580,13 @@ SuperconductingHub[OptionsPattern[]]:=With[
 		|>
 		
 	},
+	(*TODO: option to activate/deactivate this. Re-initialized when invoking InsertCircuitNoise *)
+	InitVariables->Function[
+		activeq=<|Table[q->False,{q,Range[0,qubitsnum-1]}]|>;
+		zzon=False;
+		init=True;
+	],
+	
 	(* Passive noise *)
 	(* Declare that \[CapitalDelta]t will refer to the duration of the current gate/channel. *)
 	DurationSymbol -> \[CapitalDelta]t, 
