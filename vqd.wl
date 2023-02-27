@@ -984,7 +984,7 @@ Which[
 	3===Length@First@Values@qulocs,
 	Show[
 		Sequence@@Table[Graphics3D[{Red,Sphere[v*unit,0.1]}],{v,Values@availqubits}],
-		Sequence@@Table[Graphics3D[{Text[k,unit*({0.15,0.15,0.15}+qulocs[k])]}],{k,Keys@availqubits}],
+		Sequence@@Table[Graphics3D[{Text[k,unit*({0.05,0.05,0.05}+qulocs[k])]}],{k,Keys@availqubits}],
 		Sequence@@Table[Graphics3D[{Cyan,Opacity[0.1],Sphere[unit*qulocs[b],blrad]}],{b,blockade}],
 		If[showloss,Sequence@@Table[Graphics3D[{Gray,Sphere[unit*v,0.1]}],{v,Values@lossqubits}],{}],
 		If[showloss,Sequence@@Table[Graphics3D[Text[k,{0.15,0.15,0.15}+unit*qulocs[k]]],{k,Keys@lossqubits}],Sequence@@{}],
