@@ -41,6 +41,7 @@ CalcFidelityDensityMatrices::usage="CalcFidelityDensityMatrices[\[Rho],\[Sigma]]
 PartialTrace::usage="PartialTrace[qureg/density matrix, tracedoutqubits_List]. Return the partial trace as a matrix.";
 RandomMixState::usage="RandomMixState[nqubits, nsamples:None]. Return a random mixed quantum density state matrix.";
 GenerateOptionTable::usage="GenerateOptionTable[options,columnwidth:{3cm,3cm,10cm}]. Create summary of options in Latex. Very buggy.";
+
 (* Custom gates *)
 SWAPLoc::usage="Swap the spatial locations of two qubits";
 ShiftLoc::usage="ShiftLoc[v] the physical coordinate of a qubit by some vector v.";
@@ -148,7 +149,7 @@ Nodes::usage="Entire nodes of a trapped ions system <|node1 -> number_of_qubits_
 NIons::usage="The total number of ions in a trapped ion device.";
 OffResonantRabi::usage="Put the noise due to off-resonant Rabi oscillation when applying single qubit rotations.";
 qubitsNum::usage="The number of physical active qubits for computations.";
-QubitFreq::usage="The Qubit frequency for each qubit with unit MHz.";
+QubitFreq::usage="The fundamental qubit frequency for each qubit with unit MHz.";
 QMap::usage="Show maps from nodes in trapped ions to the actual emulated qubits";
 Meas::usage="Perform measurement on the qubits";
 ProbLeakInit::usage="Leakage probability in the Rydberg initialisation. The noise is decribed with non-trace-preserving map.";
@@ -983,7 +984,7 @@ Which[
 	3===Length@First@Values@qulocs,
 	Show[
 		Sequence@@Table[Graphics3D[{Red,Sphere[v*unit,0.1]}],{v,Values@availqubits}],
-		Sequence@@Table[Graphics3D[{Text[k,unit*({0.15,0.15,0.15}+qulocs[k])]}],{k,Keys@availqubits}],
+		Sequence@@Table[Graphics3D[{Text[k,unit*({0.05,0.05,0.05}+qulocs[k])]}],{k,Keys@availqubits}],
 		Sequence@@Table[Graphics3D[{Cyan,Opacity[0.1],Sphere[unit*qulocs[b],blrad]}],{b,blockade}],
 		If[showloss,Sequence@@Table[Graphics3D[{Gray,Sphere[unit*v,0.1]}],{v,Values@lossqubits}],{}],
 		If[showloss,Sequence@@Table[Graphics3D[Text[k,{0.15,0.15,0.15}+unit*qulocs[k]]],{k,Keys@lossqubits}],Sequence@@{}],
@@ -1723,14 +1724,20 @@ RandomMixState[nqubits_]:=Module[{size=2^nqubits,gm,um,dm,id},
 	dm=(id+um) . gm . ConjugateTranspose[gm] . (id+ConjugateTranspose[um]);
 	dm/Tr[dm]//Chop
 ]
-GenerateOptionTable[options_,columnwidth_:{"3cm","3cm","10cm"}]:=Module[{vars, header,content,contenf,contenl,fvalues,finfo},
-vars=Keys@options;
-header=StringForm["\\begin{tabular}{p{``}p{``}p{``}}\n\\toprule",Sequence@@columnwidth];
-fvalues=List@@#&/@Values@options;
-finfo=ToString@Information[#]&/@Keys[options];
-content=Transpose@{Keys@options,fvalues,finfo};
-contenl=Join[{"\\textbf{Variable}&\\textbf{Value}&\\textbf{Description}"},StringRiffle[#,"&"]&/@content];
-StringRiffle[Join[{header},contenl,{"\\bottomrule"}],"\\\\ \n"]<>"\n\\end{tabular}"
+
+GenerateOptionTable[options_,columnwidth_:{"3cm","3cm","10cm"}]:=Module[{vars, contents, header,content,contenf,contenl,fvalues,finfo,cw1,cw2,cw3},
+	vars=Keys@options;
+	{cw1,cw2,cw3}=columnwidth;
+	header=StringForm["\\begin{tabular}{p{``}p{``}p{``}}\n\\toprule",cw1,cw2,cw3];
+	header=StringRiffle[{header,"\\textbf{Variable}&\\textbf{Value}&\\textbf{Description}\\\\ \n\\midrule\n"}];
+	fvalues=List@@#&/@Values@options;
+	finfo=ToString@Information[#]&/@Keys[options];
+	finfo=Quiet[StringReplace[#,
+	{"Rx"->"$Rx$", "Ry"->"$Ry$", "Rz"->"$Rz$","T1"->"$T_1$","T2s"->"$T_2^s$","T2"->"$T_2$"}]&/@finfo;
+	content=Transpose@{Keys@options,fvalues,finfo}];
+	contenl=StringRiffle[#,"&"]&/@content;
+	contents=StringRiffle[contenl,"\\\\ \n"];
+	header<>contents<>"\\\\ \n \\bottomrule\n\\end{tabular}"
 ]
 SetAttributes[symbolNameJoin, HoldAll];
 symbolNameJoin[symbols__Symbol] := Symbol @ Apply[
