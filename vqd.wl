@@ -10,9 +10,9 @@ BeginPackage["VQD`"];
 
 (* some constants *)
 (*Planck constant, Js*)
-hbar=1.054571817*10^34 ;
+(*hbar=1.054571817*10^34;*)
 (*Bohr magneton J/T*)
-\[Mu]B=9.274009994*10^-24;
+(*\[Mu]B=9.274009994*10^-24;*)
 
 (* Devices *)
 (*silicon devices*)
@@ -44,7 +44,7 @@ ToyDevice::usage="Return a specification with simple standard model.";
 CalcFidelityDensityMatrices::usage="CalcFidelityDensityMatrices[\[Rho],\[Sigma]] fidelity of two density matrices, \[Rho] and \[Sigma] can be density matrix of Quregs. Fidelity of two density matrices.";
 PartialTrace::usage="PartialTrace[qureg/density matrix, tracedoutqubits_List]. Return the partial trace as a matrix.";
 RandomMixState::usage="RandomMixState[nqubits, nsamples:None]. Return a random mixed quantum density state matrix.";
-GenerateOptionTable::usage="GenerateOptionTable[options,columnwidth:{3cm,3cm,10cm}]. Create summary of options in Latex. Very buggy.";
+GenerateOptionTable::usage="GenerateOptionTable[options,columnwidth:{3cm,3cm,10cm}]. Create summary of options in Latex.Very buggy.";
 
 (* Custom gates *)
 SWAPLoc::usage="Swap the spatial locations of two qubits";
@@ -63,9 +63,13 @@ PSW::usage="PSW[\[Theta]], parameterised swaps";
 UG::usage="Single unitary gate rotation obtained by the evolution of driven qubit, e.g., by laser: UG[\[Phi],\[CapitalDelta],t,\[CapitalOmega]], where \[Phi] is laser phase, \[CapitalDelta] is detuning, t is laser duration, and \[CapitalOmega] is the Rabi frequency.";
 SRot::usage="Single qubit gate in a driven Rydberg qubit via two-photon Raman transition: SRot[\[Phi],\[CapitalDelta],t] where \[Phi] is laser phase, \[CapitalDelta] is detuning, t is laser duration.";
 
-(*Visualisations*)
+(* Custom keys *)
+OptionsUsed::usage="All options used in a virtual device specification.";
+
+
+(***  Visualisations   ***)
 DeviceType::usage="The type of device. Normally, the name of the function that generates it.";
-DrawIons::usage="Draw the current string of ions";
+DrawIons::usage="Draw the current string of ions.";
 
 (** PlotAtoms options for Rydberg device **)
 PlotAtoms::usage="PlotAtoms[rydberg_device]. Plot the atoms of a Rydberg device. Set ShowBlockade->{qubits} to show the blockade radius of a set of qubits. Set ShowLossAtoms->True, to show the atoms that are loss as well. It will be indicated with grey color.
@@ -74,6 +78,7 @@ PlotAtoms::error="`1`";
 Options[PlotAtoms]={ShowBlockade->{},ShowLossAtoms->False};
 ShowBlockade::usage="List the qubits to draw the blockade radius.";
 ShowLossAtoms::usage="Set true to show the atoms lost into the evironment. This shows the last coordinate before being lost.";
+
 (* Options for functions *)
 Parallel::usage="Parallel options in arrangement of gates: False, Default, All. 
 False: serial, default: parallel according to the device specification, and All: full quantum parallel";
@@ -88,6 +93,7 @@ CircTrappedIons::usage="CircTrappedIons[circuit, device, MapQubits->True, Parall
 CircSiliconDelft::usage="CircSiliconDelft[circuit, device, Parallel->False]. Circuit arrangement according to the device. Note that Parallle->True is not available yet.";
 CircRydbergHub::usage="CircRydbergHub[circuit, device, Parallel->(False, True)]";
 Serialize::usage="Serialize circuit. Every quantum operation is done without concurency.";
+
 CircTrappedIons::error="`1`";
 CircSiliconDelft::error="`1`";
 CircRydbergHub::error="`1`";
@@ -806,10 +812,10 @@ RydbergHub[OptionsPattern[]]:=With[
 	Catch@If[\[Not](0<=probleakcz<=1), Throw@Message[ProbLeakCZ::error,"Needs value within [0,1]"]];
 	Catch@If[\[Not](0<=probleakmove<=1), Throw@Message[ProbLeakMove::error,"Needs value within [0,1]"]];
 
-Module[{\[CapitalDelta]t, lossatoms, lossatomsprob, globaltime, stdpn, t1, atomlocs, distloc,blockadecheck},
+Module[{\[CapitalDelta]t, lossatoms, lossatomsprob, globaltime, stdpn, t1, atomlocs, distloc, blockadecheck},
 	atomlocs=atomlocations;
 	(* the atoms that are lost to the environment *)
-	lossatoms=<|Table[k->False,{k,Keys@atomlocations}]|>;
+	lossatoms=<|Table[k->False,{k,Keys@atomlocations}]|>;	
 	lossatomsprob=<|Table[k->0,{k,Keys@atomlocations}]|>;
 	t1=vaclifetime/qubitsnum;
 	
@@ -822,6 +828,23 @@ Module[{\[CapitalDelta]t, lossatoms, lossatomsprob, globaltime, stdpn, t1, atoml
 	blockadecheck[q_List]:=And@@((distloc@@#<= blockaderad)&/@Subsets[Flatten[q],{2}]);
 
 <|
+	OptionsUsed ->{
+				qubitsNum->qubitsnum,
+				AtomLocations->atomlocations,
+				T2->t2,
+				VacLifeTime->vaclifetime,
+				RabiFreq->rabifreq,
+				ProbBFRot-><|10->probbfrot10,01->probbfrot01|>,
+				UnitLattice->unitlattice,
+				BlockadeRadius->blockaderad,
+				ProbLeakInit->probleakinit,
+				ProbLeakMove->probleakmove,
+				DurInit->durinit,
+				FidMeas->fidmeas,
+				DurMeas->durmeas,
+				ProbLossMeas->problossmeas,
+				ProbLeakCZ->probleakcz
+				},
 	DeviceDescription -> ToString[qubitsnum]<>" Rydberg qubits in a 3D lattice.",
 	NumAccessibleQubits -> qubitsnum,
 	NumTotalQubits ->qubitsnum,
@@ -1095,7 +1118,7 @@ Module[
 		|>,
 	(* Measurement *)
 		Subscript[MeasP, q0_,q1_]/; MemberQ[edgeq,{q0,q1}] :><|
-			NoisyForm-> {Subscript[MeasP, q0,q1],Subscript[Kraus, q0,q1][bitFlip2[fidread]]},
+			NoisyForm-> {Subscript[Kraus, q0,q1][bitFlip2[fidread]],Subscript[MeasP, q0,q1],Subscript[Kraus, q0,q1][bitFlip2[fidread]]},
 			GateDuration->durread,
 			UpdateVariables->Function[g2=False]
 		|>,		
@@ -1117,6 +1140,7 @@ Module[
 			GateDuration->\[Pi]/freqcz[p],
 			UpdateVariables->Function[g2=True]
 		|>,
+		
 		Subscript[C, p_][Subscript[Ph, q_][\[Theta]_]]/; Abs[q-p]==1  :><|
 			(*The last bit undo the exchange in the passive noise *)
 			NoisyForm->{Subscript[C, p][Subscript[Ph, q][\[Theta]]],Subscript[Depol, p,q][Min[ercz[p][[1]]Abs[\[Theta]/\[Pi]],15/16]],Subscript[Deph, p,q][Min[ercz[p][[2]]*Abs[\[Theta]/\[Pi]],3/4]],Sequence@@exczon[q]}, 
