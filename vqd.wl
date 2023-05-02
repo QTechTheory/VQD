@@ -919,7 +919,7 @@ Begin["`Private`"];
 	
 		]
 	]
-
+	
 (*  RYDBERG_HUB_HARVARD  *)
 
 (* legitimate shift move *) 
