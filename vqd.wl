@@ -76,6 +76,7 @@ MapQubits::usage = "Options in the CircTrappedIons[] that maps the local qubits 
 
 (** Custom gates, used in Aliases **)
 BeginPackage["`CustomGates`"];
+
 	SWAPLoc::usage = "Swap the spatial locations of two qubits. This is implemented in neutral atoms and trapped ions.";	
 	ShiftLoc::usage = "ShiftLoc[v] the physical coordinate of a qubit by some vector v. This is implemented in neutral atoms.";
 	Wait::usage = "Wait[\[CapitalDelta]t] gate, doing nothing/identity operation for duration \[CapitalDelta]t.";
@@ -92,10 +93,15 @@ BeginPackage["`CustomGates`"];
 	Init::usage = "Initialise qubit to its fiducial state; mostly to state \!\(\*TemplateBox[{\"0\"},\n\"Ket\"]\)";
 	ZZ::usage = "The siZZle gate on a Superconducting device. Implemented by Exp[-(i\[Theta]/2) ZZ].";
 	ZX::usage = "The cross-resonance gate on a Superconducting device. Implemented by Exp[-(i\[Theta]/2) ZX].";
+	
+	MPar::usage = "Perform parity measurement for two qubits that projects them into even (00,11) subspace and odd (01,10) subspace. In the case of Silicon qubit, state 01 decays to 10.";
+	MPar::error="`1`";
+	
 EndPackage[]
 
 (** All parameters used in virtual device configuration **)
 BeginPackage["`ParameterDevices`"];
+
 	AtomLocations::usage = "Three-dimensional physical locations of each atom/qubit.";
 	Anharmonicity::usage = "The anharmonicity in the Superconducting device capturing the capacitor property.";
 	BFProb::usage = "Probability of bit-flip error";
@@ -155,11 +161,9 @@ BeginPackage["`ParameterDevices`"];
 	Nodes::usage = "Entire nodes of a trapped ions system <|node1 -> number_of_qubits_1, ... |>";
 	NIons::usage = "The total number of ions in a trapped ion device.";
 	OffResonantRabi::usage = "Put the noise due to off-resonant Rabi oscillation when applying single qubit rotations.";
-	qubitsNum::usage = "The number of physical active qubits for computations.";
+	QubitNum::usage = "The number of physical active qubits for computations.";
 	QubitFreq::usage = "The fundamental qubit frequency for each qubit with unit MHz.";
 	QMap::usage = "Show maps from nodes in trapped ions to the actual emulated qubits";
-	Meas::usage = "Perform measurement on the qubits";
-	MeasP::usage = "Perform parity measurement for two qubits that projects them into even (00,11) subspace and odd (01,10) subspace. In the case of Silicon qubit, state 01 decays to 10.";
 	ProbLeakInit::usage = "Leakage probability in the Rydberg initialisation. The noise is decribed with non-trace-preserving map.";
 	ProbLeakCZ::usage = "Leakage probability in executi multi-controlled-Z.";
 	ProbLossMeas::usage = "Probability of phyiscal atom loss due to measurement.";
@@ -167,7 +171,6 @@ BeginPackage["`ParameterDevices`"];
 	ProbBFRot::usage = "Assymetric Bit-flip probability on single rotation operation. {01->p1, 10->p2}";
 	RydbergRabiFreq::usage = "Rydberg Rabi frequency";
 	RabiFreq::usage = "The Rabi frequency frequency in average or on each qubit with unit MHz.";
-	RepeatRead::usage = "The number of repeated readout (n) performed. The final fidelity of readout is \!\(\*SuperscriptBox[\(FidRead\), \(n\)]\).";
 	starkshift::usage = "Crosstalk error model using stark shift on modeled with MS gate Exp[-i\[Theta]XX], M\[OSlash]lmer\[Dash]S\[OSlash]rensen gate";
 	ScatProb::usage = "Scattering probability";
 	ShowNodes::usage = "Draw all Ions on every nodes within the zones";
@@ -196,9 +199,7 @@ BeginPackage["`ParameterDevices`"];
 	FreqCZ::error="`1`";
 	QubitFreq::error="`1`";
 	Nodes::error="`1`";
-	qubitsNum::error="`1`";
-	Meas::error="`1`";
-	MeasP::error="`1`";
+	QubitNum::error="`1`";
 	OffResonantRabi::error="`1`";
 	ProbLeakInit::error="`1`";
 	ProbLeakCZ::error="`1`";
@@ -248,9 +249,11 @@ Begin["`Private`"];
 	
 	num2Ass[arg_Association, len_Integer] := 
 		arg
+	
 	(* TODO *)
 	numass[len_]:="not a number or association of numbers with length "<>ToString[len]
 	fidass[len_]:="not a fidelity number or association of fidelities with length "<>ToString[len]
+	
 	(*
 		fid2DepolDeph[fidelity, {ratio.Depol,ratio.Deph}, nqubits, error_variable, is_average_fidelity:True]. 
 		Return the parameter for depolarizing and dephasing noise that gives the total fidelity totFid [0,1], 
@@ -389,18 +392,19 @@ Begin["`Private`"];
 	(************  VIRTUAL_DEVICES *************)		
 																																														
 (* DEVICE_TOY *)
-	ToyDevice[OptionsPattern[]] :=
-		With[{qubitsnum = OptionValue[qubitsNum], 
-		t1 = OptionValue[T1], 
-		t2 = OptionValue[T2],
-		stdpassivenoise = OptionValue[StdPassiveNoise], 
-		fidsingle = OptionValue[FidSingle], 
-		fidtwo = OptionValue[FidTwo], 
-		efsingle = OptionValue[EFSingle], 
-		eftwo = OptionValue[EFTwo], 
-		rabifreq = OptionValue[RabiFreq], 
-		twogatefreq = OptionValue[TwoGateFreq]
-		},
+	ToyDevice[OptionsPattern[]] := With[
+	{
+		qubitnum = OptionValue @ QubitNum, 
+		t1 = OptionValue @ T1, 
+		t2 = OptionValue @ T2,
+		stdpassivenoise = OptionValue @ StdPassiveNoise, 
+		fidsingle = OptionValue @ FidSingle, 
+		fidtwo = OptionValue @ FidTwo, 
+		efsingle = OptionValue @ EFSingle, 
+		eftwo = OptionValue @ EFTwo, 
+		rabifreq = OptionValue @ RabiFreq, 
+		twogatefreq = OptionValue @ TwoGateFreq
+	},
 		
 			Module[{deltaT, erone, ertwo},
 				erone = fid2DepolDeph[fidsingle, efsingle, 1, FidSingle, True];
@@ -409,11 +413,11 @@ Begin["`Private`"];
 					(*no hidden qubits/ancilla here *)
 					DeviceType -> "Toy"
 					,
-					DeviceDescription -> "Toy device with " <> ToString[qubitsnum] <> "-qubits arranged as a linear array with nearest-neighbor connectivity."	
+					DeviceDescription -> "Toy device with " <> ToString[qubitnum] <> "-qubits arranged as a linear array with nearest-neighbor connectivity."	
 					,
-					NumAccessibleQubits -> qubitsnum
+					NumAccessibleQubits -> qubitnum
 					,
-					NumTotalQubits -> qubitsnum
+					NumTotalQubits -> qubitnum
 					,
 					Aliases -> {
 						(* parameterised swap *)
@@ -523,7 +527,7 @@ Begin["`Private`"];
 	*)
 	SuperconductingHub[OptionsPattern[]] :=
 	With[{
-		qubitsnum = OptionValue[qubitsNum],
+		qubitsnum = OptionValue[QubitNum],
 		t1 = OptionValue[T1],
 		t2 = OptionValue[T2],
 		excitedinit = OptionValue[ExcitedInit],
@@ -634,15 +638,22 @@ Begin["`Private`"];
 				Subscript[Init, q_] /; (init == True) :> 
 				<|
 					NoisyForm -> {Subscript[Init, q], Subscript[gAmp, q][1, 1 - excitedinit[q]]},
-					GateDuration -> 0
+					GateDuration -> 0,
+					UpdateVariables -> Function[
+							activeq[q] = True;
+						]
 				|>
 				,
 				(* TODO: assertion for the readout at the end only *)
-				Subscript[Read, q_] :>
+				Subscript[M, q_] :>
 				<|
 					(* depolarise up the final result as well *)
-					NoisyForm -> {Subscript[Depol, q][1 - fidread[q]], Subscript[M, q], Subscript[Depol, q][1-fidread[q]]},
-					GateDuration -> durmeas
+					NoisyForm -> {Subscript[gAmp, q][(1 - E ^ (-durmeas/t1[q]))],Subscript[Depol, q][1 - fidread[q]], Subscript[M, q], Subscript[Depol, q][1-fidread[q]]},
+					GateDuration -> durmeas,
+					UpdateVariables -> Function[
+							activeq[q] = True;
+							init = False;
+						]
 				|>
 				,
 				(* doing nothing, is equivalent to being passive *)
@@ -680,10 +691,9 @@ Begin["`Private`"];
 					<|
 						NoisyForm -> Flatten@{Subscript[Rz, q][theta]},
 						GateDuration -> 0
-					|>,
-					
-					(* two-qubit gates *)
-					
+					|>
+					,				
+					(** two-qubit gates **)
 					(* siZZle gate *)
 					Subscript[ZZ, p_, q_] /; EdgeQ[ug, p\[UndirectedEdge]q] :>
 					<|
@@ -713,7 +723,7 @@ Begin["`Private`"];
 			(*TODO: option to activate/deactivate this. Re-initialized when invoking InsertCircuitNoise *)
 			InitVariables -> 
 				Function[
-					activeq = Association[ # -> False & /@ Range[0, qubitsnum - 1] ];
+					activeq = Association[ # -> False & /@ Range[0, qubitsnum - 1]];
 					zzon = False;
 					init = True;
 				]
@@ -742,142 +752,177 @@ Begin["`Private`"];
 			|>
 		]
 	]
-
-(**************************** NVCENTER_DELFT *****************************)
-NVCenterDelft[OptionsPattern[]]:=With[
-{
-	qubitsnum=OptionValue@qubitsNum,
-	t1=OptionValue@T1,
-	t2=OptionValue@T2,
-	freqcrot=OptionValue@FreqCRot,
-	freqsinglexy=OptionValue@FreqSingleXY,
-	freqsinglez=OptionValue@FreqSingleZ,
-	fidcrot=OptionValue@FidCRot,
-	fidsinglexy=OptionValue@FidSingleXY,
-	fidsinglez=OptionValue@FidSingleZ,
-	efsinglexy=OptionValue@EFSingleXY,
-	efcrot=OptionValue@EFCRot,
-	fidinit=OptionValue@FidInit,
-	fidmeas=OptionValue@FidMeas,
-	durmeas=OptionValue@DurMeas,
-	durinit=OptionValue@DurInit,
-	freqweakzz=OptionValue@FreqWeakZZ
-},
-
-
-Module[{\[CapitalDelta]t, stdpn,pn,ersinglexy,ersinglez,ercrot,nuclearq,weakzz},
-(** standard passive noise **) 
-	stdpn[q_,dur_]:={Subscript[Depol, q][0.75(1-E^(-dur/t1[q]))],Subscript[Deph, q][0.5(1-E^(-dur/t2[q]))]};
-	(* 
-	some note: cross-talk ZZ-coupling in order of Hz on passive noise, Phase entanglement among nuclear spins 
-	Subscript[C, n1][Subscript[Rz, n2][\[CapitalDelta]t]], weak rotation for all combinations of n1,n2, few Hz.
-	implement: Exp[-i dur ZZ]
-	*)	
-	weakzz[q_,dur_]:=R[dur*\[Pi]/freqweakzz,Subscript[Z, #] Subscript[Z, #2]]&@@@Subsets[DeleteElements[Range[1,qubitsnum-1],{q}],{2}];
-
-	pn[q_,dur_]:=If[NumberQ@freqweakzz,Flatten@{stdpn[q,dur],weakzz[q,dur]},stdpn[q,dur]];
-
-
-(* error parameters *)
-	ersinglexy=fid2DepolDeph[#,efsinglexy,1,FidSingleXY]&/@fidsinglexy;
-	ersinglez=fid2DepolDeph[#,{0,1},1,FidSingleZ]&/@fidsinglez;
-	ercrot=fid2DepolDeph[#,efcrot,2,FidCRot]&/@fidcrot;
-
-<|
-	(* A helpful description of the device *)
-	DeviceDescription ->"One node of an NV center, where qubit 0 is the electronic spin. It has start connectivity with qubit 0 at the center.",
-	(* The number of accessible qubits. This informs the qubits that a user's circuit can target *)
-	NumAccessibleQubits -> qubitsnum,	
-	(* The total number of qubits which would be needed to simulate a circuit prescribed by this device.
-	 * This is > NumAccessibleQubits only when the spec uses hidden qubits for advanced noise modelling *)
-	NumTotalQubits -> qubitsnum,
-
-	(* Aliases are useful for declaring custom events. At this stage the specification is noise-free (but see later) *)
-Aliases -> {
-	Subscript[Init, q_]:> Sequence@@{},
-	Subscript[Wait, q__][t_]:>Sequence@@{},
-	Subscript[CRx, e_,n_][\[Theta]_]:>Sequence@@{Subscript[U, e,n][{{Cos[\[Theta]/2],0,-I Sin[\[Theta]/2],0},{0,Cos[\[Theta]/2],0,I Sin[\[Theta]/2]},{-I Sin[\[Theta]/2],0,Cos[\[Theta]/2],0},{0,I Sin[\[Theta]/2],0,Cos[\[Theta]/2]}}]},
-	Subscript[CRy, e_,n_][\[Theta]_]:>Sequence@@{Subscript[U, e,n][{{Cos[\[Theta]/2],0,-Sin[\[Theta]/2],0},{0,Cos[\[Theta]/2],0,Sin[\[Theta]/2]},{Sin[\[Theta]/2],0,Cos[\[Theta]/2],0},{0,-Sin[\[Theta]/2],0,Cos[\[Theta]/2]}}]}
-	},	
-Gates ->{
-(** exclusively on ELECTRON SPIN, q===0 **)
-		Subscript[Init, q_]/;q===0 :> <|
-			NoisyForm -> Circuit[Subscript[Damp, q][fidinit]], 
-			GateDuration -> durinit
-		|>,
-		Subscript[M, q_]/;q===0 :> <|
-			NoisyForm -> {Subscript[X, 0],Subscript[Damp, 0][1-fidmeas],Subscript[X, 0],Subscript[M, 0]},
-			GateDuration -> durmeas
-		|>,
-		(* Electron and nuclear spins *)
-		(* A simple 'wait' instruction, useful for padding a circuit. The content inside the table should be the same as the passive noise section below (copy / paste it) *)
-		Subscript[Wait, qubits__][dur_]:> <|
-			NoisyForm->stdpn[#,dur]&/@Flatten{qubits},
-			GateDuration->dur
-		|>,
+	
+	
+(* DEVICE_NVCENTER_DELFT *)
+	NVCenterDelft[OptionsPattern[]] := With[
+	{
+		qubitnum = OptionValue @ QubitNum,
+		t1 = OptionValue @ T1,
+		t2 = OptionValue @ T2,
+		freqcrot = OptionValue @ FreqCRot,
+		freqsinglexy = OptionValue @ FreqSingleXY,
+		freqsinglez = OptionValue @ FreqSingleZ,
+		fidcrot = OptionValue @ FidCRot,
+		fidsinglexy = OptionValue @ FidSingleXY,
+		fidsinglez = OptionValue @ FidSingleZ,
+		efsinglexy = OptionValue @ EFSingleXY,
+		efcrot = OptionValue @ EFCRot,
+		fidinit = OptionValue @ FidInit,
+		fidmeas = OptionValue @ FidMeas,
+		durmeas = OptionValue @ DurMeas,
+		durinit = OptionValue @ DurInit,
+		freqweakzz = OptionValue @ FreqWeakZZ
+	},
+	
+	Module[
+		{dt, stdpn, passivenoise, ersinglexy, ersinglez, ercrot, nuclearq, weakzz}
+		,
+		(* standard passive noise *) 
+		stdpn[q_, dur_] := 
+			{Subscript[Depol, q][0.75 (1 - E^(-dur/t1[q]))], Subscript[Deph, q][0.5 (1 - E^(-dur/t2[q]))]};
+		(* 
+		Note: cross-talk ZZ-coupling in order of Hz on passive noise, Phase entanglement among nuclear spins 
+		Subscript[C, n1][Subscript[Rz, n2][dt]], weak rotation for all combinations of n1,n2, few Hz.
+		implement: Exp[-i dur ZZ]
+		*)	
+		weakzz[q_, dur_] := 
+			R[dur * Pi/freqweakzz, Subscript[Z, #] Subscript[Z, #2]]& @@@ Subsets[DeleteElements[Range[1, qubitnum - 1], {q}], {2}];
+	
+		passivenoise[q_, dur_] :=
+			If[NumberQ @ freqweakzz,
+				Flatten @ {stdpn[q, dur], weakzz[q, dur]}
+				,
+				stdpn[q, dur]
+			];
+	
+		(* error parameters (depolarising and dephasing) *)
+		ersinglexy = fid2DepolDeph[#, efsinglexy, 1, FidSingleXY]& /@ fidsinglexy;	
 		
-		(* Z-rotations are unconditional for both electron and nuclear spins *)
-		Subscript[Rz, q_][\[Theta]_] :> <|
-			NoisyForm -> Circuit[Subscript[Rz, q][\[Theta]]Subscript[Deph, q][Min[ersinglez[q][[2]]*Abs[\[Theta]]/\[Pi],0.5]]],
-			GateDuration -> Abs[\[Theta]]/freqsinglez[q]
-		|>, 
+		ersinglez = fid2DepolDeph[#, {0, 1}, 1, FidSingleZ]& /@ fidsinglez;	
 		
-		Subscript[Rx, q_][\[Theta]_]/;q===0 :> <|
-			NoisyForm -> Circuit[Subscript[Rx, q][\[Theta]]Subscript[Depol, q][Min[ersinglexy[q][[1]]*Abs[\[Theta]]/\[Pi],0.75]]Subscript[Deph,q][Min[ersinglexy[q][[2]]Abs[\[Theta]]/\[Pi],0.5]]],
-			GateDuration -> Abs[\[Theta]]/freqsinglexy[q]
-		|>,
+		ercrot = fid2DepolDeph[#, efcrot, 2, FidCRot]& /@ fidcrot;
+	
+	<|
+		DeviceDescription ->"One node of an NV center, where qubit 0 is the electronic spin. It has start connectivity with qubit 0 at the center.",
 		
-		Subscript[Ry, q_][\[Theta]_]/;q===0 :> <|
-			NoisyForm -> Circuit[Subscript[Ry, q][\[Theta]]Subscript[Depol, q][Min[ersinglexy[q][[1]]Abs[\[Theta]]/\[Pi],0.75]]Subscript[Deph, q][Min[ersinglexy[q][[2]]Abs[\[Theta]]/\[Pi],0.5]]],
-			GateDuration -> Abs[\[Theta]]/freqsinglexy[q]
-		|>,
-		(* ROTATIONS CONDITIONED ON ELETRON SPIN. electron needs to set at ms=-1: horrible*)
-		Subscript[Rx, q_][\[Theta]_]/;q>0 :> <|
-			NoisyForm -> Circuit[Subscript[Rx,q][\[Theta]]Subscript[Depol, q][Min[ersinglexy[q][[1]]Abs[\[Theta]]/\[Pi],0.75]]Subscript[Deph, q][Min[ersinglexy[q][[2]]*Abs[\[Theta]]/\[Pi],0.5]]],
-			GateDuration -> Abs[\[Theta]]/freqsinglexy[q]
-		|>,
-		Subscript[Ry, q_][\[Theta]_]/;q>0 :> <|
-			NoisyForm -> Circuit[Subscript[Ry,q][\[Theta]]Subscript[Depol, q][Min[ersinglexy[q][[1]]Abs[\[Theta]]/\[Pi],0.75]]Subscript[Deph, q][Min[ersinglexy[q][[2]]*Abs[\[Theta]]/\[Pi],0.5]]],
-			GateDuration -> Abs[\[Theta]]/(freqsinglexy[q])
-		|>,
-		(* Conditional rotations *)
-		Subscript[CRx, e_,n_][\[Theta]_] /; (e==0 && n>0):> <|
-			(* Its noisy form depolarises the control and target qubits *)
-			NoisyForm -> Circuit[Subscript[CRx, e,n][\[Theta]]Subscript[Depol,e,n][Min[ercrot[n][[1]]Abs[\[Theta]]/\[Pi],15/16]]Subscript[Deph,e,n][Min[ercrot[n][[2]]Abs[\[Theta]]/\[Pi],3/4]]],
-			GateDuration -> Abs[\[Theta]]/(freqcrot[n]) 
-		|>,
-		Subscript[CRy, e_,n_][\[Theta]_] /; (e==0 && n>0):> <|
-			(* Its noisy form depolarises the control and target qubits *)
-			NoisyForm -> Circuit[Subscript[CRy, e,n][\[Theta]]Subscript[Depol,e,n][Min[ercrot[n][[1]]Abs[\[Theta]]/\[Pi],15/16]]Subscript[Deph,e,n][Min[ercrot[n][[2]]Abs[\[Theta]]/\[Pi],3/4]]],
-			GateDuration -> Abs[\[Theta]]/(freqcrot[n])    
-		|>		
-	}	
-	,
-	(* Declare that \[CapitalDelta]t will refer to the duration of the current gate/channel. *)
-	DurationSymbol -> \[CapitalDelta]t, 
-
-	(****)
-	(* PASSIVE NOISE *)
-	(****)
-	(* The passive noise on qubits when NOT being operated upon.  *)
-	(* Note 'globalField' is the unwanted [positive or negative] field offset for the present circuit; *)
-	(* this should be set on a per-run basis as in examples below. Could be augmented with e.g. a drifting function of t *)
-	(** other potential passive noise: Global magnetic field fluctuation due to ^13C bath 
-	Causes dephasing on the electron in 4 \[Mu]s
-	External field is effectively perfect
-	**)
-		Qubits -> {
-		q_ :> <|
-				PassiveNoise -> pn[q,\[CapitalDelta]t]
-			|>	
-	}
-|>
-
+		(* The number of accessible qubits. This informs the qubits that a user's circuit can target *)
+		NumAccessibleQubits -> qubitnum,	
+		
+		(* The total number of qubits which would be needed to simulate a circuit prescribed by this device.
+		 * This is > NumAccessibleQubits only when the spec uses hidden qubits for advanced noise modelling *)
+		NumTotalQubits -> qubitnum,
+	
+		(* Aliases are useful for declaring custom events. At this stage the specification is noise-free (but see later) *)
+	Aliases -> {
+		Subscript[Init, q_] :>  Nothing
+		,
+		Subscript[Wait, q__][t_] :> Nothing
+		,
+		Subscript[CRx, e_, n_][theta_] :> Subscript[U, e, n][
+				{{Cos[theta/2], 0, -I Sin[theta/2], 0}, {0, Cos[theta/2], 0, I Sin[theta/2]}, 
+				{-I Sin[theta/2], 0, Cos[theta/2], 0}, {0, I Sin[theta/2], 0, Cos[theta/2]}}
+			],
+		Subscript[CRy, e_, n_][theta_] :> Subscript[U, e, n][
+				{{Cos[theta/2], 0, -Sin[theta/2], 0}, {0, Cos[theta/2], 0, Sin[theta/2]},
+				{Sin[theta/2], 0, Cos[theta/2], 0},{0, -Sin[theta/2], 0, Cos[theta/2]}}
+			]
+		}
+		,	
+	Gates ->
+	{
+	(* exclusively on ELECTRON SPIN, q===0 *)
+			Subscript[Init, q_] /; q === 0  :>
+			<|
+				NoisyForm -> {Subscript[Damp, q][fidinit]}, 
+				GateDuration -> durinit
+			|>
+			,
+			Subscript[M, q_] /; q === 0 :> 
+			<|
+				NoisyForm -> {Subscript[X, 0], Subscript[Damp, 0][1-fidmeas], Subscript[X, 0], Subscript[M, 0]},
+				GateDuration -> durmeas
+			|>
+			,
+			(* Electron and nuclear spins *)
+			(* A simple 'wait' instruction, useful for padding a circuit. The content inside the table should be the same as the passive noise section below (copy / paste it) *)
+			Subscript[Wait, qubits__][dur_] :>
+			<|
+				NoisyForm -> stdpn[#, dur]& /@ Flatten[{qubits}],
+				GateDuration -> dur
+			|>
+			,			
+			(* Z-rotations are unconditional for both electron and nuclear spins *)
+			Subscript[Rz, q_][theta_] :> 
+			<|
+				NoisyForm -> {Subscript[Rz, q][theta],Subscript[Deph, q][Min[ersinglez[q][[2]] * Abs[theta]/Pi,0.5]]},
+				GateDuration -> Abs[theta]/freqsinglez[q]
+			|>
+			, 
+			Subscript[Rx, q_][theta_] /; q === 0 :> 
+			<|
+				NoisyForm -> {Subscript[Rx, q][theta], Subscript[Depol, q][Min[ersinglexy[q][[1]] Abs[theta]/Pi, 0.75]], Subscript[Deph, q][Min[ersinglexy[q][[2]] Abs[theta]/\[Pi], 0.5]]},
+				GateDuration -> Abs[theta]/freqsinglexy[q]
+			|>
+			,
+			Subscript[Ry, q_][theta_]/; q === 0 :> <|
+				NoisyForm -> {Subscript[Ry, q][theta], Subscript[Depol, q][Min[ersinglexy[q][[1]]Abs[theta]/Pi, 0.75]], Subscript[Deph, q][Min[ersinglexy[q][[2]] Abs[theta]/Pi, 0.5]]},
+				GateDuration -> Abs[theta]/freqsinglexy[q]
+			|>
+			,
+			(* NUCLEAR SPIN ROTATIONS CONDITIONED ON ELETRON SPIN. electron needs to be set at ms=-1: quite bad *)
+			Subscript[Rx, q_][theta_] /; q > 0 :> 
+			<|
+				NoisyForm -> {Subscript[Rx, q][theta], Subscript[Depol, q][Min[ersinglexy[q][[1]]Abs[theta]/Pi, 0.75]], Subscript[Deph, q][Min[ersinglexy[q][[2]] Abs[theta]/Pi, 0.5]]},
+				GateDuration -> Abs[theta]/freqsinglexy[q]
+			|>
+			,
+			Subscript[Ry, q_][theta_] /; q > 0 :>
+			<|
+				NoisyForm -> {Subscript[Ry, q][theta], Subscript[Depol, q][Min[ersinglexy[q][[1]] Abs[theta]/Pi, 0.75]], Subscript[Deph, q][Min[ersinglexy[q][[2]] Abs[theta]/Pi, 0.5]]},
+				GateDuration -> Abs[theta]/(freqsinglexy[q])
+			|>
+			,
+			(* conditional rotations *)
+			Subscript[CRx, e_, n_][theta_] /; (e == 0 && n > 0) :> 
+			<|
+				(* its noisy form depolarising the control and target qubits *)
+				NoisyForm -> {Subscript[CRx, e, n][theta], Subscript[Depol,e, n][Min[ercrot[n][[1]] Abs[theta]/Pi, 15/16]], Subscript[Deph, e, n][Min[ercrot[n][[2]]Abs[theta]/Pi, 3/4]]},
+				GateDuration -> Abs[theta]/(freqcrot[n]) 
+			|>
+			,
+			Subscript[CRy, e_, n_][theta_] /; (e == 0 && n > 0):> <|
+				(* its noisy form depolarises the control and target qubits *)
+				NoisyForm -> {Subscript[CRy, e, n][theta], Subscript[Depol, e, n][Min[ercrot[n][[1]] Abs[theta]/Pi, 15/16]], Subscript[Deph, e, n][Min[ercrot[n][[2]]Abs[theta]/Pi, 3/4]]},
+				GateDuration -> Abs[theta]/(freqcrot[n])    
+			|>		
+		}	
+		,
+		(* Declare that dt will refer to the duration of the current gate/channel. *)
+		DurationSymbol -> dt, 
+	
+		(* passive noise *)
+		(* 
+		Note 'globalField' is the unwanted (positive or negative) field offset for the present circuit; 
+		this should be set on a per-run basis as in examples below. Could be augmented with e.g. a drifting function of t 
+		other potential passive noise: Global magnetic field fluctuation due to ^13C bath 
+		causes dephasing on the electron in 4 \[Mu]s
+		external field is effectively perfect
+		*)
+			Qubits -> {
+				q_ :> 
+					<|
+						PassiveNoise -> passivenoise[q, dt]
+					|>	
+			}
+		|>
+	
+		]
 	]
-]
 
-(**************************** RYDBERG_HUB_HARVARD *****************************)
-(**legitimate shift move **) 
+(*  RYDBERG_HUB_HARVARD  *)
+
+(* legitimate shift move *) 
 legShift[q_,v_,atomlocs_]:=Module[{qlocs=atomlocs},
 	qlocs[#]+=v&/@Flatten[{q}];
 	Length@qlocs === Length@DeleteDuplicates@Values@qlocs
@@ -907,7 +952,7 @@ Subscript[asymBitFlip, q_][p01_,p10_]:=Module[{pbf=Min[p01,p10], pmax=Max[p01,p1
 							
 RydbergHub[OptionsPattern[]]:=With[
 {
-	qubitsnum=OptionValue@qubitsNum,
+	qubitsnum=OptionValue@QubitNum,
 	atomlocations=OptionValue@AtomLocations,
 	t2=OptionValue@T2,
 	vaclifetime=OptionValue@VacLifeTime,
@@ -927,7 +972,7 @@ RydbergHub[OptionsPattern[]]:=With[
 },
 
 	(**** assertions ****)
-	Catch@If[Length@atomlocations!=qubitsnum, Throw@Message[qubitsNum::error,"Missing or extra qubits in AtomLocations"]];
+	Catch@If[Length@atomlocations!=qubitsnum, Throw@Message[QubitNum::error,"Missing or extra qubits in AtomLocations"]];
 	Catch@If[\[Not](0<=probleakinit<=1), Throw@Message[ProbLeakInit::error,"Needs value within [0,1]"]];
 	Catch@If[\[Not](0<=problossmeas<=1), Throw@Message[ProbLossMeas::error,"Needs value within [0,1]"]];
 	Catch@If[\[Not](0<=probleakcz<=1), Throw@Message[ProbLeakCZ::error,"Needs value within [0,1]"]];
@@ -949,7 +994,7 @@ Module[{\[CapitalDelta]t, lossatoms, lossatomsprob, globaltime, stdpn, t1, atoml
 
 <|
 	OptionsUsed ->{
-				qubitsNum->qubitsnum,
+				QubitNum->qubitsnum,
 				AtomLocations->atomlocations,
 				T2->t2,
 				VacLifeTime->vaclifetime,
@@ -1151,21 +1196,21 @@ Which[
 SiliconDelft[OptionsPattern[]]:=With[
 {
 	(*validate and format parameter specification*)
-	qubitsnum=Catch@validate[OptionValue@qubitsNum,EvenQ,qubitsNum,"not an even number"],
+	qubitsnum=Catch@validate[OptionValue@QubitNum,EvenQ,QubitNum,"not an even number"],
 	(*Fractions*)
 	efsinglexy=Catch@validate[OptionValue@EFSingleXY,(Total[#]==1||Total[#]==0)&,EFSingleXY,"not a fraction with total 1 "],
 	efcz=Catch@validate[OptionValue@EFCZ,(Total[#]==1||Total[#]==0)&,EFCZ,"not a fraction with total 1 "],
 	
 	(*Number as average or association to specify each*)
-	t1=Catch@validate[OptionValue@T1,checkAss[#,OptionValue@qubitsNum]&,T1,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
-	t2=Catch@validate[OptionValue@T2,checkAss[#,OptionValue@qubitsNum]&,T2,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
-	rabifreq=Catch@validate[OptionValue@RabiFreq,checkAss[#,OptionValue@qubitsNum]&,RabiFreq,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
-	qubitfreq=Catch@validate[OptionValue@QubitFreq,checkAss[#,OptionValue@qubitsNum]&,QubitFreq,numass@OptionValue@qubitsNum,num2Ass[#,OptionValue@qubitsNum]&],
-	freqcz=Catch@validate[OptionValue@FreqCZ,checkAss[#,-1+OptionValue@qubitsNum]&,FreqCZ,numass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
+	t1=Catch@validate[OptionValue@T1,checkAss[#,OptionValue@QubitNum]&,T1,numass@OptionValue@QubitNum,num2Ass[#,OptionValue@QubitNum]&],
+	t2=Catch@validate[OptionValue@T2,checkAss[#,OptionValue@QubitNum]&,T2,numass@OptionValue@QubitNum,num2Ass[#,OptionValue@QubitNum]&],
+	rabifreq=Catch@validate[OptionValue@RabiFreq,checkAss[#,OptionValue@QubitNum]&,RabiFreq,numass@OptionValue@QubitNum,num2Ass[#,OptionValue@QubitNum]&],
+	qubitfreq=Catch@validate[OptionValue@QubitFreq,checkAss[#,OptionValue@QubitNum]&,QubitFreq,numass@OptionValue@QubitNum,num2Ass[#,OptionValue@QubitNum]&],
+	freqcz=Catch@validate[OptionValue@FreqCZ,checkAss[#,-1+OptionValue@QubitNum]&,FreqCZ,numass[-1+OptionValue@QubitNum],num2Ass[#,-1+OptionValue@QubitNum]&],
 	
 	(*Number as average or association to specify each fidelity*)
-	fidcz=Catch@validate[OptionValue@FidCZ,checkAss[#,-1+OptionValue@qubitsNum,0<=#<=1&]&,FidCZ,fidass[-1+OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
-	fidsinglexy=Catch@validate[OptionValue@FidSingleXY,checkAss[#,OptionValue@qubitsNum,0<=#<=1&]&,FidSingleXY,fidass[OptionValue@qubitsNum],num2Ass[#,-1+OptionValue@qubitsNum]&],
+	fidcz=Catch@validate[OptionValue@FidCZ,checkAss[#,-1+OptionValue@QubitNum,0<=#<=1&]&,FidCZ,fidass[-1+OptionValue@QubitNum],num2Ass[#,-1+OptionValue@QubitNum]&],
+	fidsinglexy=Catch@validate[OptionValue@FidSingleXY,checkAss[#,OptionValue@QubitNum,0<=#<=1&]&,FidSingleXY,fidass[OptionValue@QubitNum],num2Ass[#,-1+OptionValue@QubitNum]&],
 	
 	(*single things*)
 	fidread=Catch@validate[OptionValue@FidRead,0<=#<=1&,FidRead,"invalid fidelity"],
@@ -1179,13 +1224,13 @@ SiliconDelft[OptionsPattern[]]:=With[
 	offresonantrabi=Catch@validate[OptionValue@OffResonantRabi,BooleanQ,OffResonantRabi,"Set to true or false"],
 	stdpassivenoise=Catch@validate[OptionValue@StdPassiveNoise,BooleanQ,StdPassiveNoise,"Set to true or false"],
 	(*a matrix or a boolean*)
-	exchangeroton=Catch@validate[OptionValue@ExchangeRotOn,Or[SquareMatrixQ[#],BooleanQ[#]]&,ExchangeRotOn,StringForm["set to false or specify with a square matrix with dim ``^2",-1+OptionValue@qubitsNum]],
+	exchangeroton=Catch@validate[OptionValue@ExchangeRotOn,Or[SquareMatrixQ[#],BooleanQ[#]]&,ExchangeRotOn,StringForm["set to false or specify with a square matrix with dim ``^2",-1+OptionValue@QubitNum]],
 	(*probability error of depolarising and dephasing noise *)
 	er1xy=fid2DepolDeph[#,OptionValue@EFSingleXY,1,FidSingleXY,True]&/@OptionValue[FidSingleXY],
 	ercz=fid2DepolDeph[#,OptionValue@EFCZ,2,FidCZ,True]&/@OptionValue[FidCZ],
 	
 	(* frequently used stuff *)
-	qubits=Range[0,-1+OptionValue@qubitsNum]
+	qubits=Range[0,-1+OptionValue@QubitNum]
 },
 
 Module[
