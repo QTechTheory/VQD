@@ -962,7 +962,7 @@ Begin["`Private`"];
 	]
 	
 	
-(*  DEVICE_RYDBERGHUB  *)
+	(*  DEVICE_RYDBERGHUB  *)
 	
 	(* 
 	legitimate shift move check if the new spots are unoccupied 
@@ -1001,12 +1001,12 @@ Begin["`Private`"];
 	SetAttributes[PlotAtoms, HoldFirst]
 	PlotAtoms[rydbergdev_, opt : OptionsPattern[{PlotAtoms, Graphics}]] := With[{
 		qulocs = rydbergdev @ AtomLocations, 
-		lossqulocs = rydbergdev @ LossAtoms;
+		lossqulocs = rydbergdev @ LossAtoms,
 		blrad = rydbergdev @ BlockadeRadius, 
 		unit = rydbergdev @ UnitLattice, 
 		blockade = OptionValue @ ShowBlockade,
 		showloss = OptionValue @ ShowLossAtoms,
-		style = {}	
+		style = {ImageSize -> Medium, Frame -> True, Axes -> True}	
 		},
 		Which[
 			2 === Length @ First @ Values @ qulocs,
@@ -1015,17 +1015,18 @@ Begin["`Private`"];
 					Sequence @@ Table[Graphics[{Cyan, Opacity[0.15], EdgeForm[Directive[Dashed, Orange]], Disk[unit * qulocs[b], blrad]}], {b, blockade}],
 					Sequence @@ Table[Graphics[{Red, Disk[unit * v, 0.15]}], {v, Values @ qulocs}],
 					Sequence @@ Table[Graphics[Text[k, ({0.1, 0.1} + qulocs[k]) * unit]], {k, Keys @ qulocs}],
-					(* show the atoms lost to the environment: the last position *)
+					
+					(* show the atoms lost to the environment at the last position *)
 					If[showloss,
 						Sequence @@ Table[Graphics[{Gray, Disk[unit * v, 0.15]}], {v, Values @ lossqulocs}]
 						,
-						Nothing
+						Sequence @@ {}
 					]
 					,
 					If[showloss,
 						Sequence @@ Table[Graphics[Text[k, unit * ({0.15, 0.15} + qulocs[k])]], {k, Keys @ lossqulocs}]
 						,
-						Nothing
+						Sequence @@ {}
 					]
 					,
 					Evaluate @ FilterRules[{opt}, Options[Graphics]],
@@ -1035,19 +1036,19 @@ Begin["`Private`"];
 			,
 			3 === Length @ First @ Values @ qulocs,
 				Show[
-					Sequence @@ Flatten @ Table[{Graphics3D[{Text[Style[k, Bold, White], unit * qulocs[k]]}], Graphics3D[{Red, Sphere[qulocs[k] * unit, 0.15]}]}, {k, Keys @ availqubits}],
+					Sequence @@ Flatten @ Table[{Graphics3D[{Text[Style[k, Bold, White], unit * qulocs[k]]}], Graphics3D[{Red, Sphere[qulocs[k] * unit, 0.15]}]}, {k, Keys @ qulocs}],
 					Sequence @@ Table[Graphics3D[{Cyan, Opacity[0.15], Sphere[unit * qulocs[b], blrad]}], {b, blockade}],
 					(* show the atoms lost to the environment: the last position *)
 					If[showloss,
-						Sequence @@ Table[Graphics3D[{GrayLevel[0.5], Sphere[unit * v, 0.15]}], {v, Values @ lossqubits}]
+						Sequence @@ Table[Graphics3D[{GrayLevel[0.5], Sphere[unit * v, 0.15]}], {v, Values @ lossqulocs}]
 						,
-						Nothing
+						Sequence @@ {}
 					]
 					,
 					If[showloss,
-						Sequence @@ Table[Graphics3D[Text[Style[k, Bold, White], unit * qulocs[k]]], {k, Keys @ lossqubits}]
+						Sequence @@ Table[Graphics3D[Text[Style[k, Bold, White], unit * qulocs[k]]], {k, Keys @ lossqulocs}]
 						,
-						Nothing
+						Sequence @@ {}
 					],
 					Evaluate @ FilterRules[{opt}, Options[Graphics]],
 					Sequence @@ style,
@@ -1164,7 +1165,7 @@ Begin["`Private`"];
 			ProbLeakCZ -> probleakcz
 		}
 		,
-		DeviceDescription -> ToString[qubitsnum]<>" Rydberg atoms in a "<>Length[Length]<>"D lattice."
+		DeviceDescription -> ToString[qubitsnum]<>" Rydberg atoms in a "<>ToString@Length[First @ Values @ atomlocs]<>"D lattice."
 		,
 		NumAccessibleQubits -> qubitsnum
 		,
@@ -1331,7 +1332,7 @@ Begin["`Private`"];
 				Subscript[CZ, p_Integer, q_Integer][\[Phi]_] /; blockadecheck[{p, q}] :> 
 				<|
 					NoisyForm -> {Subscript[CZ, p, q][\[Phi]], Subscript[KrausNonTP, p, q][{{{1, 0, 0, 0}, {0, Sqrt[1 - probleakcz[01]], 0, 0}, {0, 0, Sqrt[1-probleakcz[01]], 0}, {0, 0, 0, Sqrt[1-probleakcz[11]]}}}]},
-					GateDuration -> Abs[\[Phi]]/rabifreq
+					GateDuration -> 4\[Pi]/rabifreq
 				|>
 				,
 				(* The parameterised multi-gates are suspended *)
@@ -1341,33 +1342,21 @@ Begin["`Private`"];
 					GateDuration ->  4\[Pi]/rabifreq
 				|>
 				,
-				Subscript[C, c__][Subscript[Z, t_]]/;blockadecheck[{c, t}]:> <|
-				NoisyForm -> Join[{Subscript[C, c][Subscript[Z, t]]}, Subscript[KrausNonTP, #][{{{1, 0}, {0, Sqrt[1 - probleakcz[11]]}}}]& /@ Flatten@{c,t}],
-				GateDuration -> 4\[Pi]/rabifreq
-				|>
-				(*
-				,
-				Subscript[C, c_][Subscript[Z, t__][\[Theta]_]]/; blockadecheck[{c, t}] :>
+				Subscript[C, c__][Subscript[Z, t_]]/;blockadecheck[{c, t}] :> 
 				<|
-					NoisyForm ->Join[Table[Subscript[C, c][Subscript[Z, targ]],{targ,{t}}], Subscript[KrausNonTP, #][{{{1,0},{0,Sqrt[1-probleakcz[11]]}}}]&/@Flatten@{c,t}],
-					GateDuration-> Abs[\[Theta]]/rabifreq
+					NoisyForm -> Join[{Subscript[C, c][Subscript[Z, t]]}, Subscript[KrausNonTP, #][{{{1, 0}, {0, Sqrt[1 - probleakcz[11]]}}}]& /@ Flatten @ {c, t}],
+					GateDuration -> 4\[Pi]/rabifreq
 				|>
-				,
-				Subscript[C, c__][Subscript[Z, t_][\[Theta]_]] :> <|
-				NoisyForm->Join[{Subscript[C, c][Subscript[Z, t]]},Subscript[KrausNonTP, #][{{{1,0},{0,Sqrt[1-probleakcz[11]]}}}]&/@Flatten@{c,t}],
-				GateDuration->Abs[\[Theta]]/rabifreq
-				|>
-				*)
-		}
+			}
 		,
 		DurationSymbol -> \[CapitalDelta]t,
 			Qubits -> { q_ :> <| PassiveNoise -> stdpn[q,\[CapitalDelta]t]|>}
 		|>
 		]
 	]
-
-
-(* DEVICE_SILICONDELFT *)
+	
+	
+	(* DEVICE_SILICONDELFT *)
 SiliconDelft[OptionsPattern[]]:=With[
 {
 	(*validate and format parameter specification*)
