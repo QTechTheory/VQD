@@ -127,10 +127,6 @@ BeginPackage["`ParameterDevices`"];
 	DurRxRy::usage = "Duration to run the rotation gates Rx and Ry, that is fixed regardless the angle.";
 	DurZX::usage="Duration of the resonance ZX gate on the superconducting qubits that is fixed regardless the angle.";
 	DurZZ::usage="Duration of the siZZle ZZ gate on the superconducting qubits that is fixed regardless the angle.";
-	DDActive::usage = "Apply dynamical decoupling: use T2 in the model if set True, otherwise use T2* if set False.";
-	entangling::usage = "Crosstalk error model pre equation (4) on applying the XX M\[OSlash]lmer\[Dash]S\[OSlash]rensen gate";
-	ErrCT::usage = "Error coefficient of the crosstalk with entanglement model";
-	ErrSS::usage = "Error coefficient of the crosstalk with stark shift model";
 	EFSingleXY::usage = "Error fraction/ratio, {depolarising, dephasing} of the single qubit X and Y rotations. Sum of the ratio must be 1 or 0 (off).";
 	EFSingle::usage = "Error fraction/ratio, {depolarising, dephasing} of the single qubit X, Y, and Z rotations. Sum of the ratio must be 1 or 0 (off).";
 	EFTwo::usage = "Error fraction/ratio, {depolarising, dephasing} of controlled-rotation. Sum of the ratio must be 1 or 0 (off).";
@@ -157,17 +153,16 @@ BeginPackage["`ParameterDevices`"];
 	FreqCZ::usage = "Rabi frequency(ies) for the CZ gate with unit MHz.";
 	FreqEnt::usage = "Frequency of remote entanglement.";
 	FreqCRot::usage = "Frequency of conditional rotation in NV-center obtained by dynamical decoupling and RF pulse.";
+	FreqTwoGate::usage = "Resonant frequency of two qubit gates";
 	FreqWeakZZ::usage = "Frequency of coherent cross-talk noise in form of ZZ-coupling that slowly entangle the qubits.";
 	FidRead::usage = "Readout fidelity";
 	GlobalField::usage = "Global magnetic field fluctuation in NV-center due to C13 bath. It causes dephasing on the electron in 4\[Mu]s.";
-	(* 
-	TODO: check the trapped ion innsbruck or silicon ESR 
-	GlobalFieldDetuning
-	*)
+	HeatFactor::usage = "The constant >=1 that enhance dephasing process. This happends in neutral atoms when moving the atoms.";
 	LossAtoms::usage = "Device key in the RydbergHub device that identifies atoms lost to the environment.";
 	LossAtomsProbability::usage = "Device key in the RydbergHub that identifies probability of atoms lost to the environment due to repeated measurement.";
-	MSCrossTalk::usage = "(entangling OR starkshift) The crosstalk model in applying M\[OSlash]lmer\[Dash]S\[OSlash]rensen gate";
-	MoveSpeed::usage = "The speed of moving atom \[Mu]m/\[Mu]s in Neutral Atom systems.";
+	(* future feature
+	MoveSpeed : "The speed of moving atom \[Mu]m/\[Mu]s in Neutral Atom systems. This will affect the heat factor";
+	*)
 	Nodes::usage = "Entire nodes of a trapped ions system <|node1 -> number_of_qubits_1, ... |>";
 	NIons::usage = "The total number of ions in a trapped ion device.";
 	OffResonantRabi::usage = "Put the noise due to off-resonant Rabi oscillation when applying single qubit rotations.";
@@ -181,14 +176,12 @@ BeginPackage["`ParameterDevices`"];
 	ProbBFRot::usage = "Assymetric Bit-flip probability on single rotation operation. {01->p1, 10->p2}";
 	RydbergRabiFreq::usage = "Rydberg Rabi frequency";
 	RabiFreq::usage = "The Rabi frequency frequency in average or on each qubit with unit MHz.";
-	starkshift::usage = "Crosstalk error model using stark shift on modeled with MS gate Exp[-i\[Theta]XX], M\[OSlash]lmer\[Dash]S\[OSlash]rensen gate";
 	ScatProb::usage = "Scattering probability";
 	ShowNodes::usage = "Draw all Ions on every nodes within the zones";
 	StdPassiveNoise::usage = "Set to True/False. Use the standard passive noise that involves T1, T2 or T2s inputs.";
 	T1::usage = "T1 duration(s) in \[Mu]s. Exponential decay time for the state to be complete mixed.";
 	T2::usage = "T2 duration(s) in \[Mu]s. Exponential decay time for the state to be classical with echo applied.";
 	T2s::usage = "T2* duration(s) in \[Mu]s. Exponential decay time for the state to be classical.";
-	TwoGateFreq::usage = "Resonant frequency of two qubit gates";
 	UnitLattice::usage = "The unit lattice AtomLocations in \[Mu]s. This gives access to internal device parameter in RydbergHub device.";
 	VacLifeTime::usage = "The lifetime of the qubit array is limited by its vacuum lifetime, where T1=VacTime/Nqubits.";
 	ZZPassiveNoise::usage = "The swtich for ZZ interaction passive noise in the Superconducting device.";
@@ -235,6 +228,7 @@ Begin["`Private`"];
 	Needs["QuEST`Option`"];
 	Needs["QuEST`Gate`"];
 	Needs["QuEST`DeviceSpec`"];
+	
 	(*Validate expression, throw error if false*)
 	validate[value_, expr_, err_, msg_, format_:Identity] :=
 	    (
@@ -263,6 +257,11 @@ Begin["`Private`"];
 	(* TODO *)
 	numass[len_]:="not a number or association of numbers with length "<>ToString[len]
 	fidass[len_]:="not a fidelity number or association of fidelities with length "<>ToString[len]
+	
+	(* convenient functions *)
+	
+	(* check if it is a probability number *)
+	isProbability[p_ ]:=If[0 <= p <= 1, True, False]
 	
 	(*
 		fid2DepolDeph[fidelity, {ratio.Depol,ratio.Deph}, nqubits, error_variable, is_average_fidelity:True]. 
@@ -413,7 +412,7 @@ Begin["`Private`"];
 		efsingle = OptionValue @ EFSingle, 
 		eftwo = OptionValue @ EFTwo, 
 		rabifreq = OptionValue @ RabiFreq, 
-		twogatefreq = OptionValue @ TwoGateFreq
+		twogatefreq = OptionValue @ FreqTwoGate
 	},
 		
 			Module[{deltaT, erone, ertwo},
@@ -433,7 +432,7 @@ Begin["`Private`"];
 						EFSingle -> efsingle, 
 						EFTwo -> eftwo, 
 						RabiFreq -> rabifreq, 
-						TwoGateFreq -> twogatefreq
+						FreqTwoGate -> twogatefreq
 					}
 					,
 					DeviceDescription -> "Toy device with " <> ToString[qubitnum] <> "-qubits arranged as a linear array with nearest-neighbor connectivity."	
@@ -932,7 +931,8 @@ Begin["`Private`"];
 				GateDuration -> Abs[theta]/(freqcrot[n]) 
 			|>
 			,
-			Subscript[CRy, e_, n_][theta_] /; (e == 0 && n > 0):> <|
+			Subscript[CRy, e_, n_][theta_] /; (e == 0 && n > 0):> 
+			<|
 				(* its noisy form depolarises the control and target qubits *)
 				NoisyForm -> {Subscript[CRy, e, n][theta], Subscript[Depol, e, n][Min[ercrot[n][[1]] Abs[theta]/Pi, 15/16]], Subscript[Deph, e, n][Min[ercrot[n][[2]]Abs[theta]/Pi, 3/4]]},
 				GateDuration -> Abs[theta]/(freqcrot[n])    
@@ -962,9 +962,11 @@ Begin["`Private`"];
 	]
 	
 	
-(*  RYDBERG_HUB_HARVARD  *)
+(*  DEVICE_RYDBERGHUB  *)
 	
-	(* legitimate shift move *)
+	(* 
+	legitimate shift move check if the new spots are unoccupied 
+	*)
 	legShift[q_, v_, atomlocs_] := Module[
 		{qlocs = atomlocs},
 		qlocs[#] += v& /@ Flatten[{q}];
@@ -993,54 +995,48 @@ Begin["`Private`"];
 		]
 	]			
 
-	(* Plot the neutral atoms configuration *)
+	(* 
+	Plot for the neutral atoms configuration 
+	*)
 	SetAttributes[PlotAtoms, HoldFirst]
 	PlotAtoms[rydbergdev_, opt : OptionsPattern[{PlotAtoms, Graphics}]] := With[{
-		qulocs = rydbergdev[AtomLocations], 
-		blrad = rydbergdev[BlockadeRadius], 
-		unit = rydbergdev[UnitLattice], 
-		blockade = OptionValue[ShowBlockade],
-		showloss = OptionValue[ShowLossAtoms],
-		availqubits = KeyTake[rydbergdev[AtomLocations], Keys @ Select[rydbergdev[LossAtoms], # === False&]], 
-		lossqubits = KeyTake[rydbergdev[AtomLocations], Keys @ Select[rydbergdev[LossAtoms], # === True&]], style = {ImageSize -> Medium, Frame -> True, Axes -> True}
+		qulocs = rydbergdev @ AtomLocations, 
+		lossqulocs = rydbergdev @ LossAtoms;
+		blrad = rydbergdev @ BlockadeRadius, 
+		unit = rydbergdev @ UnitLattice, 
+		blockade = OptionValue @ ShowBlockade,
+		showloss = OptionValue @ ShowLossAtoms,
+		style = {}	
 		},
 		Which[
 			2 === Length @ First @ Values @ qulocs,
 			(*2D lattice*)
 				Show[
-					Sequence @@ Table[Graphics[{Cyan, Opacity[0.15], EdgeForm[Directive[Dashed, Orange]], Disk[unit * qulocs[b], blrad]}], {b, blockade}]
-					,
-					Sequence @@ Table[Graphics[{Red, Disk[unit * v, 0.15]}], {v, Values @ availqubits}]
-					,
-					Sequence @@ Table[Graphics[Text[k, ({0.1, 0.1} + qulocs[k]) * unit]], {k, Keys @ availqubits}]
-					,
+					Sequence @@ Table[Graphics[{Cyan, Opacity[0.15], EdgeForm[Directive[Dashed, Orange]], Disk[unit * qulocs[b], blrad]}], {b, blockade}],
+					Sequence @@ Table[Graphics[{Red, Disk[unit * v, 0.15]}], {v, Values @ qulocs}],
+					Sequence @@ Table[Graphics[Text[k, ({0.1, 0.1} + qulocs[k]) * unit]], {k, Keys @ qulocs}],
 					(* show the atoms lost to the environment: the last position *)
 					If[showloss,
-						Sequence @@ Table[Graphics[{Gray, Disk[unit * v, 0.15]}], {v, Values @ lossqubits}]
+						Sequence @@ Table[Graphics[{Gray, Disk[unit * v, 0.15]}], {v, Values @ lossqulocs}]
 						,
 						Nothing
 					]
 					,
 					If[showloss,
-						Sequence @@ Table[Graphics[Text[k, unit * ({0.15, 0.15} + qulocs[k])]], {k, Keys @ lossqubits}]
+						Sequence @@ Table[Graphics[Text[k, unit * ({0.15, 0.15} + qulocs[k])]], {k, Keys @ lossqulocs}]
 						,
 						Nothing
 					]
 					,
-					Evaluate @ FilterRules[{opt}, Options[Graphics]]
-					,
-					Sequence @@ style
-					,
+					Evaluate @ FilterRules[{opt}, Options[Graphics]],
+					Sequence @@ style,
 					AxesLabel -> {"x", "y"}
 				]
 			,
 			3 === Length @ First @ Values @ qulocs,
 				Show[
-					Sequence @@ Flatten @ Table[{Graphics3D[{Text[Style[k, Bold, White], unit * qulocs[k]]}], Graphics3D[{Red, Sphere[qulocs[k] * unit, 0.15]}]}, {k, Keys @ availqubits}]
-					,
-					Sequence @@ Table[Graphics3D[{Cyan, Opacity[0.15], Sphere[unit * qulocs[b], blrad]}], {b, blockade}]
-					,
-					
+					Sequence @@ Flatten @ Table[{Graphics3D[{Text[Style[k, Bold, White], unit * qulocs[k]]}], Graphics3D[{Red, Sphere[qulocs[k] * unit, 0.15]}]}, {k, Keys @ availqubits}],
+					Sequence @@ Table[Graphics3D[{Cyan, Opacity[0.15], Sphere[unit * qulocs[b], blrad]}], {b, blockade}],
 					(* show the atoms lost to the environment: the last position *)
 					If[showloss,
 						Sequence @@ Table[Graphics3D[{GrayLevel[0.5], Sphere[unit * v, 0.15]}], {v, Values @ lossqubits}]
@@ -1052,27 +1048,24 @@ Begin["`Private`"];
 						Sequence @@ Table[Graphics3D[Text[Style[k, Bold, White], unit * qulocs[k]]], {k, Keys @ lossqubits}]
 						,
 						Nothing
-					]
-					,
-					Evaluate @ FilterRules[{opt}, Options[Graphics]]
-					,
-					Sequence @@ style
-					,
+					],
+					Evaluate @ FilterRules[{opt}, Options[Graphics]],
+					Sequence @@ style,
 					AxesLabel -> {"x", "y", "z"}
 				]
 			,
 			True
 			,
-			Throw[Message[PlotAtoms::error, "Only accepts 2D- or 3D-coordinates."]]
+			Message[PlotAtoms::error, "Only accepts 2D- or 3D-coordinates."];
+			Return @ $Failed
 		]
 	]
 		
-			
-				
+		
+	
 	(* 
-	TODO 
-	*)		
-										
+	The main virtual Rydberg function 
+	*)																																																																		
 	RydbergHub[OptionsPattern[]] := With[
 		{
 		qubitsnum = OptionValue @ QubitNum,
@@ -1088,47 +1081,69 @@ Begin["`Private`"];
 		durinit = OptionValue @ DurInit,
 		fidmeas = OptionValue @ FidMeas,
 		durmeas = OptionValue @ DurMeas,
+		durmove = OptionValue @ DurMove,
+		heatfactor = OptionValue @ HeatFactor,
 		problossmeas = OptionValue @ ProbLossMeas,
 		probleakcz = OptionValue @ ProbLeakCZ,
 		qubits = Keys @ OptionValue @ AtomLocations
 		},
 	
 		(* assertions *)
-		Catch @ If[Length @ atomlocations != qubitsnum,
-				Throw @ Message[QubitNum::error, "Missing or extra qubits in AtomLocations"
-					]];
-		Catch @ If[\[Not](0 <= probleakinit <= 1),
-				Throw @ Message[ProbLeakInit::error, "Needs value within [0,1]"]];
-		Catch @ If[\[Not](0 <= problossmeas <= 1),
-				Throw @ Message[ProbLossMeas::error, "Needs value within [0,1]"]];
-		Catch @ If[\[Not](0 <= probleakcz <= 1),
-				Throw @ Message[ProbLeakCZ::error, "Needs value within [0,1]"]];
+		If[Length @ atomlocations != qubitsnum,
+				Message[QubitNum::error, "Missing or extra qubits in AtomLocations"]; Return @ $Failed];
+		If[\[Not]isProbability[probleakinit],
+				Message[ProbLeakInit::error, "Needs value within [0,1]"]; Return @ $Failed];
+		If[\[Not]isProbability[problossmeas],
+				Message[ProbLossMeas::error, "Needs value within [0,1]"]; Return @ $Failed];
+		If[\[Not]isProbability[probleakcz],
+				Message[ProbLeakCZ::error, "Needs value within [0,1]"]; Return @ $Failed];
 	
 		Module[
-		{\[CapitalDelta]t, lossatoms, lossatomsprob, globaltime, stdpn, t1, atomlocs, distloc, blockadecheck}
+		{\[CapitalDelta]t,  lossatomprob, globaltime, stdpn, movenoise, t1, atomlocs, lossatomlocs, distloc, blockadecheck, circorloss}
 		,
 		(* record the location of each atom *)
 		atomlocs = atomlocations;
 		
-		(* the atoms that are lost to the environment *)
-		lossatoms = <|Table[k -> False, {k, Keys @ atomlocations}]|>;
+		(* record the last position of the loss atom; this records the atoms that are lost to the environment at the same time *)
+		lossatomlocs = <||>;
 		
 		(* Track loss probability of each atom. After measurement, a dice is thrown to decide if atom is still there *)
-		lossatomsprob = <|Table[k -> 0, {k, Keys @ atomlocations}]|>;
+		lossatomprob = <|Table[k -> 0, {k, Keys @ atomlocations}]|>;
 		
+		(* Check if the atoms are there, otherwise send a warning and just apply complete depolarising noise *)
+		circorloss[gate_, circ_, q__]:= With[{lostq = Intersection[Keys @ lossatomlocs, {q}]},
+				If[Length @ lostq >= 0
+					,
+					Subscript[Depol, #][3/4] & /@ {q};
+					Message[gate::warning, "Atoms "<>StringRiffle[lostq, ","]<>" are gone to the environment. Return complete depolarising instead on qubits "<>StringRiffle[{q},", "]]
+					,
+					circ
+				]
+			];
+
+		(* Vacuum life time limits qubits coherence *)
 		t1 = vaclifetime / qubitsnum;
 		
 		(* standard passive noise *) 
 		stdpn[q_, dur_] := 
 			{Subscript[Depol, q][0.75 (1 - E ^ (-dur / t1))], Subscript[Deph, q][0.5 (1 - E ^ (-dur / t2))]};	
-						
+			
+		(* move noise, similar *)				
+		movenoise[q_, dur_] := 
+			{Subscript[Depol, q][0.75 (1 - E ^ (-dur / t1))], Subscript[Deph, q][0.5 (1 - E ^ (- heatfactor dur / t2))]};
+										
 		(* coordinate distance measure *)
 		distloc[q1_, q2_] := 
 			Norm[atomlocs[q1] - atomlocs[q2], 2] * unitlattice;
 		
-		(* legitimate multi-qubit gates*) 
-		blockadecheck[q_List] := 
-			And @@ ((distloc @@ # <= blockaderad)& /@ Subsets[Flatten[q], {2}]);
+		(* 
+		legitimate multi-qubit gates by blockade condition 
+		*) 
+		blockadecheck[q_List] := If[IntersectingQ[q, Keys @ lossatomlocs], 
+			Message[LossAtoms::error, "Some atoms are lost before applying a multi-qubit gate", Return @ False]
+			,
+			And @@ ((distloc @@ # <= blockaderad)& /@ Subsets[Flatten[q], {2}])
+		];
 	
 	<|
 		OptionsUsed -> {
@@ -1144,6 +1159,7 @@ Begin["`Private`"];
 			DurInit -> durinit,
 			FidMeas -> fidmeas,
 			DurMeas -> durmeas,
+			DurMove -> durmove,
 			ProbLossMeas -> problossmeas,
 			ProbLeakCZ -> probleakcz
 		}
@@ -1155,9 +1171,9 @@ Begin["`Private`"];
 		NumTotalQubits -> qubitsnum
 		,
 		(** custom keys to access internal variables **)
-		LossAtomsProbability :> lossatomsprob
+		LossAtomsProbability :> lossatomprob
 		,
-		LossAtoms :> lossatoms
+		LossAtoms :> lossatomlocs
 		,
 		AtomLocations :> atomlocs
 		,
@@ -1169,8 +1185,8 @@ Begin["`Private`"];
 		(* re-initialized when invoking InsertCircuitNoise *)
 		InitVariables -> Function[
 			atomlocs = atomlocations;
-			lossatoms = <|Table[ k -> False, {k, Keys @ atomlocations}] |>;
-			lossatomsprob = <|Table[ k -> 0, {k, Keys @ atomlocations}] |>;
+			lossatom = <|Table[ k -> False, {k, Keys @ atomlocations}] |>;
+			lossatomprob = <|Table[ k -> 0, {k, Keys @ atomlocations}] |>;
 			]
 		,
 		*)
@@ -1188,119 +1204,170 @@ Begin["`Private`"];
 			,
 			Subscript[ShiftLoc, q__][v_] :> Nothing
 			,
-			(* multi-control gates *)
-			Subscript[C, c_Integer][Subscript[Z, t__Integer][\[Theta]_]] :>Table[Subscript[C, c][Subscript[Z, targ]], {targ, {t}}]
-			,
+			(* multi-qubit gates *)
 			Subscript[C, c_Integer][Subscript[Z, t__Integer]] :> Table[Subscript[C, c][Subscript[Z, targ]], {targ, {t}}]
 			,
-			(* single-control multi-Z*)
-			Subscript[C, c__Integer][Subscript[Z, t_Integer][\[Theta]_]] :> {Subscript[C, c][Subscript[Z, t]]}
+			Subscript[C, c__Integer][Subscript[Z, t_Integer]] :> {Subscript[C, c][Subscript[Z, t]]}
 		},
 		
 		(* Global time: not yet used here *)
-		TimeSymbol-> globaltime,
-		
+		TimeSymbol ->  globaltime
+		,
 		(* gates rules *)
 		Gates -> {
-		Subscript[Init, q_Integer] :> <|
-		 (* Put the electron back to the atom and reset leak probability *)
-			UpdateVariables-> Function[
-							lossatoms[q]=False;
-							lossatomsprob[q]=0],
-			NoisyForm -> {Subscript[Damp, q][1],Subscript[KrausNonTP,q][{{{Sqrt[1-probleakinit],0},{0,1}}}]}, 
-			GateDuration -> durinit
-		|>
-		,
-		Subscript[Wait, q__][dur_]/;(Complement[Flatten@{q},qubits]==={}):> <|
-		NoisyForm->Table[stdpn[j,dur],{j,Flatten@{q}}],
-		GateDuration->dur
-		|>
-		,
-		Subscript[M, q_Integer]:> <|
-		UpdateVariables-> Function[
-				lossatomsprob[q]=1-(1-lossatomsprob[q])*(1-problossmeas);
-				lossatoms[q]=RandomVariate[BinomialDistribution[1,lossatomsprob[q]]]/.{0->False,1->True}
-				],
-		NoisyForm -> {Subscript[Depol, q][Min[1-fidmeas,3/4]],Subscript[M, q]},  
-		GateDuration -> durmeas
-		|>
-		(** Single-qubit gates **)
-		,
-		Subscript[SRot, q_Integer][\[Phi]_,\[CapitalDelta]_,tg_]:><|
-		NoisyForm->{Subscript[SRot, q][\[Phi],\[CapitalDelta],tg],Subscript[Deph, q][0.5(1-E^(-tg*0.5/t2))]},
-		GateDuration-> tg
-		|>
-		,
-		Subscript[H, q_Integer]:> <|
-		NoisyForm->{Subscript[H, q],Subscript[Deph, q][0.5(1-E^(-0.5/(rabifreq*t2)))]},
-		GateDuration-> \[Pi]/rabifreq
-		|>
-		,
-		Subscript[Rx, q_Integer][\[Theta]_]:><|
-		NoisyForm->{Subscript[Rx, q][\[Theta]],Subscript[asymBitFlip, q][probbfrot01,probbfrot10],Subscript[Deph, q][0.5(1-E^(-0.5*Abs[\[Theta]/\[Pi]]/(rabifreq*t2)))]},
-		GateDuration-> Abs[\[Theta]]/rabifreq
-		|>
-		,
-		Subscript[Ry, q_Integer][\[Theta]_]:><|
-		NoisyForm->{Subscript[Ry, q][\[Theta]],Subscript[asymBitFlip, q][probbfrot01,probbfrot10],Subscript[Deph, q][0.5(1-E^(-0.5*Abs[\[Theta]/\[Pi]]/(rabifreq*t2)))]},
-		GateDuration-> Abs[\[Theta]]/rabifreq
-		|>
-		,
-		Subscript[Rz, q_Integer][\[Theta]_]:><|
-		NoisyForm->{Subscript[Rz, q][\[Theta]],Subscript[asymBitFlip, q][probbfrot01,probbfrot10],Subscript[Deph, q][0.5(1-E^(-0.5*Abs[\[Theta]/\[Pi]]/(rabifreq*t2)))]},
-		GateDuration-> Abs[\[Theta]]/rabifreq
-		|>
-		, 
-		(** two-qubit gates **)
-		Subscript[SWAPLoc, q1_Integer,q2_Integer]:> <|
-		UpdateVariables-> Function[{atomlocs[q1],atomlocs[q2]}={atomlocs[q2],atomlocs[q1]};],
-		NoisyForm-> Flatten@{stdpn[q1,4\[Pi]/rabifreq],stdpn[q2,4\[Pi]/rabifreq]},
-		GateDuration->4\[Pi]/rabifreq
-		|>
-		,
-		Subscript[ShiftLoc, q__][v_]/;legShift[Flatten@{q},v,atomlocs]:> <|
-		UpdateVariables-> Function[atomlocs[#]+=v &/@Flatten[{q}];],
-		NoisyForm-> stdpn[#,4\[Pi]/rabifreq]&/@Flatten[{q}](*, Subscript[KrausNonTP,#][{{{1,0},{0,Sqrt[1-probleakmove]}}}]&/@Flatten[{q}]*),
-		GateDuration->4\[Pi]/rabifreq
-		|>
-		,
-		Subscript[CZ, p_Integer,q_Integer][\[Phi]_]/;blockadecheck[{p,q}]:><|
-		NoisyForm->{Subscript[CZ, p,q][\[Phi]],Subscript[KrausNonTP, p,q][{{{1,0,0,0},{0,Sqrt[1-probleakcz[01]],0,0},{0,0,Sqrt[1-probleakcz[01]],0},{0,0,0,Sqrt[1-probleakcz[11]]}}}]},
-		GateDuration-> Abs[\[Phi]]/rabifreq
-		|>
-		,
-		(* If argument is presented, it acts as gate duration per \[CapitalOmega]  *)
-		Subscript[C, c_][Subscript[Z, t__]]/;blockadecheck[{c,t}]:><|
-		NoisyForm->Join[Table[Subscript[C, c][Subscript[Z, targ]],{targ,{t}}], Subscript[KrausNonTP, #][{{{1,0},{0,Sqrt[1-probleakcz[11]]}}}]&/@Flatten@{c,t}],
-		GateDuration->4\[Pi]/rabifreq
-		|>
-		,
-		Subscript[C, c_][Subscript[Z, t__][\[Theta]_]]/;blockadecheck[{c,t}]:><|
-		NoisyForm ->Join[Table[Subscript[C, c][Subscript[Z, targ]],{targ,{t}}], Subscript[KrausNonTP, #][{{{1,0},{0,Sqrt[1-probleakcz[11]]}}}]&/@Flatten@{c,t}],
-		GateDuration-> Abs[\[Theta]]/rabifreq
-		|>
-		,
-		Subscript[C, c__][Subscript[Z, t_]]/;blockadecheck[{c,t}]:> <|
-		NoisyForm->Join[{Subscript[C, c][Subscript[Z, t]]},Subscript[KrausNonTP, #][{{{1,0},{0,Sqrt[1-probleakcz[11]]}}}]&/@Flatten@{c,t}],
-		GateDuration->4\[Pi]/rabifreq
-		|>
-		,
-		Subscript[C, c__][Subscript[Z, t_][\[Theta]_]]:> <|
-		NoisyForm->Join[{Subscript[C, c][Subscript[Z, t]]},Subscript[KrausNonTP, #][{{{1,0},{0,Sqrt[1-probleakcz[11]]}}}]&/@Flatten@{c,t}],
-		GateDuration->Abs[\[Theta]]/rabifreq
-		|>
+				Subscript[Init, q_Integer] :> 
+				<|
+				 (* Put the electron back to the atom and reset leak probability *)
+					UpdateVariables -> Function[
+										lossatomprob[q] = 0;
+										KeyDropFrom[lossatomlocs, q];										
+									],
+					(* perfect init + leakage *)			
+					NoisyForm -> {Subscript[Damp, q][1], Subscript[KrausNonTP, q][{{{Sqrt[1 - probleakinit], 0}, {0, 1}}}]}, 
+					GateDuration -> durinit
+				|>
+				,
+				Subscript[Wait, q__][dur_] /; (Complement[Flatten @ {q}, qubits] === {}) :>
+				 <|
+					NoisyForm -> Table[stdpn[j, dur], {j, Flatten @ {q}}],
+					GateDuration -> dur
+				|>
+				,
+				Subscript[M, q_Integer] :> 
+				<|	
+					NoisyForm -> If[MemberQ[Keys @ lossatomlocs, q], 
+						Message[M::error, "Atom "<>ToString[q]<>" is gone to the environment, can't measure"],
+						{Subscript[Depol, q][Min[1 - fidmeas, 3/4]], Subscript[M, q]}
+					], 
+					UpdateVariables -> Function[
+						lossatomprob[q] = 1 - (1 - lossatomprob[q])(1 - problossmeas);
+						(* if the atom is lost, remove it from the location lists *)
+						If[\[Not]MemberQ[Keys @ lossatomlocs, q ],
+							(* throw a dice to throw the a *)
+							If[RandomVariate[BinomialDistribution[1, lossatomprob[q]]]/.{0 -> False, 1 -> True},
+								lossatomlocs[q] = atomlocs[q];
+								KeyDropFrom[atomlocs, q];
+							]
+						]
+					], 
+					GateDuration -> durmeas
+				|>
+				(* Single rotation by detuning, the native gate. The rest are derivative from SRot *)
+				,
+				Subscript[SRot, q_Integer][\[Phi]_, \[CapitalDelta]_, tg_] :> 
+				<|
+					NoisyForm -> circorloss[SRot, {Subscript[SRot, q][\[Phi], \[CapitalDelta], tg], Subscript[Deph, q][0.5( 1 - E^(- tg 0.5 / t2))]}, q],
+					GateDuration -> tg
+				|>
+				,
+				Subscript[H, q_Integer] :> 
+				<|
+					NoisyForm -> circorloss[H, {Subscript[H, q], Subscript[Deph, q][0.5 (1 - E^(-0.5 /(rabifreq t2)))]}, q],
+					GateDuration-> \[Pi]/rabifreq
+				|>
+				,
+				Subscript[Rx, q_Integer][\[Theta]_] :> 
+				<|
+					NoisyForm -> circorloss[Rx, {Subscript[Rx, q][\[Theta]], Subscript[asymBitFlip, q][probbfrot01, probbfrot10], Subscript[Deph, q][0.5(1 - E^(-0.5 Abs[\[Theta]/\[Pi]] / (rabifreq t2)))]}, q],
+					GateDuration-> Abs[\[Theta]]/rabifreq
+				|>
+				,
+				Subscript[Ry, q_Integer][\[Theta]_] :> 
+				<|
+					NoisyForm -> circorloss[Ry, {Subscript[Ry, q][\[Theta]], Subscript[asymBitFlip, q][probbfrot01, probbfrot10], Subscript[Deph, q][0.5(1 - E^(-0.5 Abs[\[Theta]/\[Pi]]/(rabifreq t2)))]}, q],
+					GateDuration-> Abs[\[Theta]]/rabifreq
+				|>
+				,
+				Subscript[Rz, q_Integer][\[Theta]_] :>
+				<|
+					NoisyForm -> circorloss[Rz, {Subscript[Rz, q][\[Theta]], Subscript[asymBitFlip, q][probbfrot01, probbfrot10], Subscript[Deph, q][0.5 (1 - E^(-0.5 Abs[\[Theta]/\[Pi]]/(rabifreq t2)))]}, q],
+					GateDuration -> Abs[\[Theta]]/rabifreq
+				|>
+				, 
+				(* moves *)
+				Subscript[SWAPLoc, q1_Integer, q2_Integer] :> 
+				<|
+					UpdateVariables -> Function[
+						(* check cases: present atoms, partial loss, complete loss *)
+						Which[
+							\[Not]MemberQ[Keys @ lossatomlocs, q1] && \[Not]MemberQ[Keys @ lossatomlocs, q2],
+							{atomlocs[q1], atomlocs[q2]} = {atomlocs[q2], atomlocs[q1]};
+							,
+							\[Not]MemberQ[Keys @ lossatomlocs, q1] && MemberQ[Keys @ lossatomlocs, q2],
+							atomlocs[q1] = atomlocs[q2];
+							Message[SWAPLoc::warning, "Atom "<>ToString[q2]<>" has lost to the environment, only location of atom "<>ToString[q1]<>" changed."]
+							,
+							MemberQ[Keys @ lossatomlocs, q1] && \[Not]MemberQ[Keys @ lossatomlocs, q2],
+							atomlocs[q2] = atomlocs[q1];
+							Message[SWAPLoc::warning, "Atom "<>ToString[q1]<>" has lost to the environment, only location of atom "<>ToString[q2]<>" changed."]
+							,
+							True
+							,
+							Message[SWAPLoc::warning, "Atom "<>ToString[q1]<>" and "<>ToString[q2]<>" has lost to the environment, no moving on them."]
+						]
+						
+						],
+					NoisyForm -> Flatten[circorloss[SWAPLoc, movenoise[#, durmove], #]& /@ {q1, q2}],
+					GateDuration -> durmove
+				|>
+				,
+				Subscript[ShiftLoc, q__][v_] /; legShift[Flatten @ {q}, v, atomlocs] :> 
+				<|
+					UpdateVariables -> Function[
+						If[KeyExistsQ[atomlocs ,#], atomlocs[#] += v] & /@ {q};																											
+						With[{qgone = Intersection[Keys @ lossatomlocs, {q}]}, 
+							If[Length @ qgone > 0, 
+								Message[ShiftLoc::warning, "Atoms "<>StringRiffle[qgone,", "]<>" are lost to the environment. Do nothing on them."]
+							]
+						];
+					],
+					NoisyForm -> Flatten[circorloss[ShiftLoc, movenoise[#, durmove], #]& /@ {q}],
+					GateDuration -> durmove
+				|>
+				,
+				(* 
+					Multi-qubit gates need all atoms to be present which is checked in the blockadecheck function
+				 *)
+				Subscript[CZ, p_Integer, q_Integer][\[Phi]_] /; blockadecheck[{p, q}] :> 
+				<|
+					NoisyForm -> {Subscript[CZ, p, q][\[Phi]], Subscript[KrausNonTP, p, q][{{{1, 0, 0, 0}, {0, Sqrt[1 - probleakcz[01]], 0, 0}, {0, 0, Sqrt[1-probleakcz[01]], 0}, {0, 0, 0, Sqrt[1-probleakcz[11]]}}}]},
+					GateDuration -> Abs[\[Phi]]/rabifreq
+				|>
+				,
+				(* The parameterised multi-gates are suspended *)
+				Subscript[C, c_][Subscript[Z, t__]] /; blockadecheck[{c, t}] :>
+				<|
+					NoisyForm -> Join[Table[Subscript[C, c][Subscript[Z, targ]], {targ, {t}}], Subscript[KrausNonTP, #][{{{1, 0}, {0, Sqrt[1 - probleakcz[11]]}}}]& /@ Flatten @ {c, t}],
+					GateDuration ->  4\[Pi]/rabifreq
+				|>
+				,
+				Subscript[C, c__][Subscript[Z, t_]]/;blockadecheck[{c, t}]:> <|
+				NoisyForm -> Join[{Subscript[C, c][Subscript[Z, t]]}, Subscript[KrausNonTP, #][{{{1, 0}, {0, Sqrt[1 - probleakcz[11]]}}}]& /@ Flatten@{c,t}],
+				GateDuration -> 4\[Pi]/rabifreq
+				|>
+				(*
+				,
+				Subscript[C, c_][Subscript[Z, t__][\[Theta]_]]/; blockadecheck[{c, t}] :>
+				<|
+					NoisyForm ->Join[Table[Subscript[C, c][Subscript[Z, targ]],{targ,{t}}], Subscript[KrausNonTP, #][{{{1,0},{0,Sqrt[1-probleakcz[11]]}}}]&/@Flatten@{c,t}],
+					GateDuration-> Abs[\[Theta]]/rabifreq
+				|>
+				,
+				Subscript[C, c__][Subscript[Z, t_][\[Theta]_]] :> <|
+				NoisyForm->Join[{Subscript[C, c][Subscript[Z, t]]},Subscript[KrausNonTP, #][{{{1,0},{0,Sqrt[1-probleakcz[11]]}}}]&/@Flatten@{c,t}],
+				GateDuration->Abs[\[Theta]]/rabifreq
+				|>
+				*)
 		}
 		,
 		DurationSymbol -> \[CapitalDelta]t,
 			Qubits -> { q_ :> <| PassiveNoise -> stdpn[q,\[CapitalDelta]t]|>}
-	|>
+		|>
 		]
 	]
 
 
-(****************** ENDOF RYDBERG_HUB*********************)
-
-(***** SILICON_DELFT *****)
+(* DEVICE_SILICONDELFT *)
 SiliconDelft[OptionsPattern[]]:=With[
 {
 	(*validate and format parameter specification*)
