@@ -88,8 +88,15 @@ MapQubits::usage = "Options in the CircTrappedIons[] that maps the local qubits 
 BeginPackage["`CustomGates`"];
 
 	SWAPLoc::usage = "Swap the spatial locations of two qubits. This is implemented in neutral atoms and trapped ions.";	
+	SWAPLoc::error = "`1`";
+	SWAPLoc::warning = "`1`";
+	
 	ShiftLoc::usage = "ShiftLoc[v] the physical coordinate of a qubit by some vector v. This is implemented in neutral atoms.";
+	ShiftLoc::error = "`1`";
+	ShiftLoc::warning = "`1`";
+	
 	Wait::usage = "Wait[\[CapitalDelta]t] gate, doing nothing/identity operation for duration \[CapitalDelta]t.";
+
 	CZ::usage = "Controlled-Z operation.";
 	CRx::usage = "Conditional Rx[\[Theta]] rotation on the nuclear 13C NV-center qubit, conditioned on the electron spin state.";
 	CRy::usage = "Conditional Ry[\[Theta]] rotation on the nuclear 13C NV-center qubit, conditioned on the electron spin state.";
@@ -398,7 +405,7 @@ Begin["`Private`"];
 				 , {rabi >= 0, vdelta >= 0}]
 		]
 																																															
-	(************  VIRTUAL_DEVICES *************)		
+	(************  VIRTUAL_DEVICES  *************)		
 																																														
 (* DEVICE_TOY *)
 	ToyDevice[OptionsPattern[]] := With[
@@ -963,15 +970,6 @@ Begin["`Private`"];
 	
 	
 	(*  DEVICE_RYDBERGHUB  *)
-	
-	(* 
-	legitimate shift move check if the new spots are unoccupied 
-	*)
-	legShift[q_, v_, atomlocs_] := Module[
-		{qlocs = atomlocs},
-		qlocs[#] += v& /@ Flatten[{q}];
-		Length @ qlocs === Length @ DeleteDuplicates @ Values @ qlocs
-	];
 
 	(* 
 	Asymmetric bit-flip error where where one can assign the bit-flip of 0->1 and 1->0 separately. 
@@ -1100,7 +1098,7 @@ Begin["`Private`"];
 				Message[ProbLeakCZ::error, "Needs value within [0,1]"]; Return @ $Failed];
 	
 		Module[
-		{\[CapitalDelta]t,  lossatomprob, globaltime, stdpn, movenoise, t1, atomlocs, lossatomlocs, distloc, blockadecheck, circorloss}
+		{\[CapitalDelta]t,  lossatomprob, globaltime, stdpn, movenoise, t1, atomlocs, lossatomlocs, distloc, blockadecheck, circorloss, legshift}
 		,
 		(* record the location of each atom *)
 		atomlocs = atomlocations;
@@ -1113,10 +1111,10 @@ Begin["`Private`"];
 		
 		(* Check if the atoms are there, otherwise send a warning and just apply complete depolarising noise *)
 		circorloss[gate_, circ_, q__]:= With[{lostq = Intersection[Keys @ lossatomlocs, {q}]},
-				If[Length @ lostq >= 0
+				If[Length @ lostq > 0
 					,
-					Subscript[Depol, #][3/4] & /@ {q};
-					Message[gate::warning, "Atoms "<>StringRiffle[lostq, ","]<>" are gone to the environment. Return complete depolarising instead on qubits "<>StringRiffle[{q},", "]]
+					Message[gate::warning, "Atoms "<>StringRiffle[lostq, ","]<>" are gone to the environment. Return complete depolarising instead on qubits "<>StringRiffle[{q},", "]];
+					Subscript[Depol, #][3/4] & /@ {q}
 					,
 					circ
 				]
@@ -1135,7 +1133,7 @@ Begin["`Private`"];
 										
 		(* coordinate distance measure *)
 		distloc[q1_, q2_] := 
-			Norm[atomlocs[q1] - atomlocs[q2], 2] * unitlattice;
+			Norm[atomlocs[q1] - atomlocs[q2], 2]  unitlattice;
 		
 		(* 
 		legitimate multi-qubit gates by blockade condition 
@@ -1143,7 +1141,16 @@ Begin["`Private`"];
 		blockadecheck[q_List] := If[IntersectingQ[q, Keys @ lossatomlocs], 
 			Message[LossAtoms::error, "Some atoms are lost before applying a multi-qubit gate", Return @ False]
 			,
-			And @@ ((distloc @@ # <= blockaderad)& /@ Subsets[Flatten[q], {2}])
+			And @@ ((distloc @@ # <= 2 blockaderad)& /@ Subsets[Flatten[q], {2}])
+		];
+				
+		(* 
+		legitimate shift move check if the new spots are unoccupied 
+		*)
+		legshift[q_List, v_] := Module[
+			{initlocs = atomlocs},
+			initlocs[#] += v & /@ Complement[q, Keys @ lossatomlocs];
+			Length @ initlocs === Length @ DeleteDuplicates @ Values @ initlocs
 		];
 	
 	<|
@@ -1186,8 +1193,8 @@ Begin["`Private`"];
 		(* re-initialized when invoking InsertCircuitNoise *)
 		InitVariables -> Function[
 			atomlocs = atomlocations;
-			lossatom = <|Table[ k -> False, {k, Keys @ atomlocations}] |>;
-			lossatomprob = <|Table[ k -> 0, {k, Keys @ atomlocations}] |>;
+			lossatom = <| Table[k -> False, {k, Keys @ atomlocations}] |>;
+			lossatomprob = <| Table[k -> 0, {k, Keys @ atomlocations}] |>;
 			]
 		,
 		*)
@@ -1312,15 +1319,15 @@ Begin["`Private`"];
 					GateDuration -> durmove
 				|>
 				,
-				Subscript[ShiftLoc, q__][v_] /; legShift[Flatten @ {q}, v, atomlocs] :> 
+				Subscript[ShiftLoc, q__][v_] /; legshift[{q}, v] :> 
 				<|
-					UpdateVariables -> Function[
-						If[KeyExistsQ[atomlocs ,#], atomlocs[#] += v] & /@ {q};																											
+					UpdateVariables -> Function[																												
 						With[{qgone = Intersection[Keys @ lossatomlocs, {q}]}, 
 							If[Length @ qgone > 0, 
 								Message[ShiftLoc::warning, "Atoms "<>StringRiffle[qgone,", "]<>" are lost to the environment. Do nothing on them."]
 							]
 						];
+						If[KeyExistsQ[atomlocs , #], atomlocs[#] += v] & /@ {q};
 					],
 					NoisyForm -> Flatten[circorloss[ShiftLoc, movenoise[#, durmove], #]& /@ {q}],
 					GateDuration -> durmove
@@ -1342,7 +1349,7 @@ Begin["`Private`"];
 					GateDuration ->  4\[Pi]/rabifreq
 				|>
 				,
-				Subscript[C, c__][Subscript[Z, t_]]/;blockadecheck[{c, t}] :> 
+				Subscript[C, c__][Subscript[Z, t_]] /; blockadecheck[{c, t}] :> 
 				<|
 					NoisyForm -> Join[{Subscript[C, c][Subscript[Z, t]]}, Subscript[KrausNonTP, #][{{{1, 0}, {0, Sqrt[1 - probleakcz[11]]}}}]& /@ Flatten @ {c, t}],
 					GateDuration -> 4\[Pi]/rabifreq
@@ -1350,7 +1357,11 @@ Begin["`Private`"];
 			}
 		,
 		DurationSymbol -> \[CapitalDelta]t,
-			Qubits -> { q_ :> <| PassiveNoise -> stdpn[q,\[CapitalDelta]t]|>}
+			Qubits -> { 
+				q_ :> <| 
+					PassiveNoise -> stdpn[q, \[CapitalDelta]t]
+				|>
+			}
 		|>
 		]
 	]
