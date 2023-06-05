@@ -52,15 +52,20 @@ PartialTrace::usage = "PartialTrace[qureg/density matrix, tracedoutqubits_List].
 RandomMixState::usage = "RandomMixState[nqubits, nsamples:None]. Return a random mixed quantum density state matrix.";
 GenerateOptionTable::usage = "GenerateOptionTable[options,columnwidth:{3cm,3cm,10cm}]. Create summary of options in Latex.Very buggy.";
 
-(** Information keys **)
-OptionsUsed::usage = "Show all options used in a virtual device specification instance.";
+(* 
+Information keys 
+*)
+Connectivity::usage = "Show the connectivity graph of a Superconducting qubit device, where the arrow show possible direction of the cross-resonant ZX gates.";
 DeviceType::usage = "The type of device. Normally, the name of the function that generates it.";
+LossAtoms::usage = "Device key in the RydbergHub device that identifies atoms lost to the environment.";
+OptionsUsed::usage = "Show all options used in a virtual device specification instance.";
+QMap::usage = "Show maps from nodes in trapped ions to the actual emulated qubits";
+ShowNodes::usage = "Draw all Ions on every nodes within the zones";
 
-(***  Visualisations   ***)
-(* trapped ions *)
-DrawIons::usage = "Draw the current cunfiguration string of ions in ion traps.";
-DrawIons::error = "`1`";
-(* neutral atoms *)
+(*  
+Visualisations functions and keys  
+*)
+
 PlotAtoms::usage = "PlotAtoms[rydberg_device]. Plot the neutral atoms. Set ShowBlockade->{atoms} to visualise the blockade radii. Set ShowLossAtoms->True, to show the atoms that are loss as well (grey color). It also receives options of Graphic function to style the visualisation.";
 PlotAtoms::error = "`1`";
 Options[PlotAtoms] = {ShowBlockade -> {}, ShowLossAtoms -> False};
@@ -68,23 +73,28 @@ Options[PlotAtoms] = {ShowBlockade -> {}, ShowLossAtoms -> False};
 ShowBlockade::usage = "List the qubits to draw the blockade radius.";
 ShowLossAtoms::usage = "Set true to show the atoms lost into the evironment. This shows the last coordinate before being lost.";
 
-(** Circuit arrangements **)
-(* default arrangement according to devices *)
-Options[CircTrappedIons] = {MapQubits -> True, Parallel -> False};
-Options[CircSiliconDelft] = {Parallel -> False};
-Options[CircRydbergHub] = {Parallel -> False};
+(* 
+Circuit arrangements 
+*)
 CircTrappedIons::usage = "CircTrappedIons[circuit, device, MapQubits->True, Parallel->False]. Circuit arrangement according to the device. Note that Parallle->True is not available yet.";
-CircSiliconDelft::usage = "CircSiliconDelft[circuit, device, Parallel->False]. Circuit arrangement according to the device. Note that Parallle->True is not available yet.";
-CircRydbergHub::usage = "CircRydbergHub[circuit, device, Parallel->(False, True)]";
-Serialize::usage = "Serialize circuit. Every quantum operation is done without concurency.";
 CircTrappedIons::error = "`1`";
+Options[CircTrappedIons] = {MapQubits -> True, Parallel -> False};
+
+CircSiliconDelft::usage = "CircSiliconDelft[circuit, device, Parallel->False]. Circuit arrangement according to the device. Note that Parallle->True is not available yet.";
 CircSiliconDelft::error = "`1`";
+Options[CircSiliconDelft] = {Parallel -> False};
+
+CircRydbergHub::usage = "CircRydbergHub[circuit, device, Parallel->(False, True)]";
 CircRydbergHub::error = "`1`";
+Options[CircRydbergHub] = {Parallel -> False};
+
+Serialize::usage = "Serialize circuit. Every quantum operation is done without concurency.";
 Serialize::error = "`1`";
 
-(* arrangement options *)
+(* options *)
 Parallel::usage = "Parallel options in arrangement of gates: False, Default, All. False: serial, default: parallel according to the device specification, and All: full quantum parallel";
 MapQubits::usage = "Options in the CircTrappedIons[] that maps the local qubits (\[Rho]A) into the total qubits of the total (large) density matrix (\[Rho]AB).";
+
 
 (** Custom gates, used in Aliases **)
 BeginPackage["`CustomGates`"];
@@ -98,20 +108,46 @@ BeginPackage["`CustomGates`"];
 	ShiftLoc::warning = "`1`";
 	
 	Wait::usage = "Wait[\[CapitalDelta]t] gate, doing nothing/identity operation for duration \[CapitalDelta]t.";
+	Wait::error="`1`";
 
 	CZ::usage = "Controlled-Z operation.";
+	CZ::error="`1`";
+	
 	CRx::usage = "Conditional Rx[\[Theta]] rotation on the nuclear 13C NV-center qubit, conditioned on the electron spin state.";
+	CRx::error="`1`";
+	
 	CRy::usage = "Conditional Ry[\[Theta]] rotation on the nuclear 13C NV-center qubit, conditioned on the electron spin state.";
+	CRy::error="`1`";
+	
 	CRot::usage = "Conditional rotation in Silicon spin qubit; this effectively implements CNOT gate.";
+	CRot::error="`1`";
+	
 	Ent::usage = "Remote entanglement operation on multi-node trapped ions.";
+	Ent::error="`1`";
+	
 	Splz::usage = "Splz[node, zone_destination]. Split a string of ions in a zone of a trapped-ion Oxford device";
+	Splz::error="`1`";
+	
 	Shutl::usage = "Shutl[node,zone_destination]. Shuttle the qubit(s) to the destination zone";
+	Shutl::error="`1`";
+	
 	Comb::usage = "Comb[node, zone_destination]. Combine a string of ions to a zone of a trapped-ion Oxford device";
+	Comb::error="`1`";
+	
 	PSW::usage = "PSW[\[Theta]], parameterised swaps";
-	SRot::usage = "Single qubit gate in a driven Rydberg qubit via two-photon Raman transition. Usage: SRot[\[Phi],\[CapitalDelta],t] where \[Phi] is laser phase, \[CapitalDelta] is detuning, t is laser duration.";
-	Init::usage = "Initialise qubit to its fiducial state; mostly to state \!\(\*TemplateBox[{\"0\"},\n\"Ket\"]\)";
-	ZZ::usage = "The siZZle gate on a Superconducting device. Implemented by Exp[-(i\[Theta]/2) ZZ].";
-	ZX::usage = "The cross-resonance gate on a Superconducting device. Implemented by Exp[-(i\[Theta]/2) ZX].";
+	PSW::error="`1`";
+	
+	SRot::usage = "Single qubit gate realised by driving a Rydberg atom via two-photon Raman transition. Usage: SRot[\[Phi],\[CapitalDelta],t] where \[Phi] is laser phase, \[CapitalDelta] is detuning, t is laser duration.";
+	SRot::error="`1`";
+	
+	Init::usage = "Initialise qubit to its fiducial state; typically to state |0>";
+	Init::error="`1`";
+	
+	ZZ::usage = "The siZZle (Stark-induced ZZ by level excursion) gate on Superconducting device. Implemented by operator Exp[-(i\[Theta]/2) ZZ].";
+	ZZ::error="`1`";
+	
+	ZX::usage = "Cross-resonance gate on a Superconducting device. Implemented by Exp[-(i\[Theta]/2) ZX].";
+	ZX::error="`1`";
 	
 	MeasP::usage = "Perform parity measurement for two qubits that projects them into even (00,11) subspace and odd (01,10) subspace. In the case of Silicon qubit, state 01 decays to 10.";
 	MeasP::error="`1`";
@@ -120,115 +156,171 @@ EndPackage[]
 
 (** All parameters used in virtual device configuration **)
 BeginPackage["`ParameterDevices`"];
+	(* future features
+	MoveSpeed : "The speed of moving atom \[Mu]m/\[Mu]s in Neutral Atom systems. This will affect the heat factor";
+	GlobalField: "Global magnetic field fluctuation in NV-center due to C13 bath. It causes dephasing on the electron in 4\[Mu]s.";
+	*)
 
 	AtomLocations::usage = "Three-dimensional physical locations of each atom/qubit.";
+	AtomLocations::error="`1`";
+	
 	Anharmonicity::usage = "The anharmonicity in the Superconducting device capturing the capacitor property.";
-	BFProb::usage = "Probability of bit-flip error";
-	BField::usage = "The electromagnetic field strength in the z-direction from the lab reference with unit Tesla.";
+	Anharmonicity::error="`1`";
+
 	BlockadeRadius::usage = "Short-range dipole-dipole interaction of Rydberg atoms in \[Mu]s. This allows multi-qubit gates.";
-	Connectivity::usage = "Show the connectivity graph of a Superconducting qubit device, where the arrow show possible direction of the cross-resonant ZX gates.";
-	DurTwoGate::usage = "Duration of two qubit gates with rotation of Pi";
+	BlockadeRadius::error="`1`";
+	
 	DurMeas::usage = "Duration of measurement";
+	DurMeas::error="`1`";
+	
 	DurInit::usage = "Duration of initialisation";
-	DurRead::usage = "Readout duration in \[Mu]s";
-	DurShuffle::usage = "Duration to shuffle location of ions";
-	DurMove::usage = "Duration for physically moving operation in Trapped Ions such as Splz and Comb.";
-	DurRxRy::usage = "Duration to run the rotation gates Rx and Ry, that is fixed regardless the angle.";
-	DurZX::usage="Duration of the resonance ZX gate on the superconducting qubits that is fixed regardless the angle.";
-	DurZZ::usage="Duration of the siZZle ZZ gate on the superconducting qubits that is fixed regardless the angle.";
-	EFSingleXY::usage = "Error fraction/ratio, {depolarising, dephasing} of the single qubit X and Y rotations. Sum of the ratio must be 1 or 0 (off).";
-	EFSingle::usage = "Error fraction/ratio, {depolarising, dephasing} of the single qubit X, Y, and Z rotations. Sum of the ratio must be 1 or 0 (off).";
-	EFTwo::usage = "Error fraction/ratio, {depolarising, dephasing} of controlled-rotation. Sum of the ratio must be 1 or 0 (off).";
-	EFCZ::usage = "Error fraction/ratio, {depolarising, dephasing} of the controlled-Z gates. Sum of the ratio must be 1 or 0 (off).";
-	EFInit::usage = "Error fraction/ratio {depolarising, dephasing} of the initialisation gate.  Sum of the ratio must be 1 or 0 (off).";
-	EFCRot::usage = "Error fraction/ratio, {depolarising, dephasing} of the controlled-Rx and -Ry gates. Sum of the ratio must be 1 or 0 (off).";
-	EFEnt::usage = "Error fraction/ratio {depolarising, dephasing} of remote entanglement.  Sum of the ratio must be 1 or 0 (off).";
-	EFRead::usage = "Error fraction/ratio of {depolarising,dephasing} of the readout. Sum of the ratio must be 1 or 0 (off)." ;
-	ExchangeRotOn::usage = "Maximum interaction j on the passive qubit crosstalk when applying CZ gates; The noise form is C[Rz[j.\[Theta]]] It must be a square matrix with size (nqubit-2)x(nqubit-2).";
-	ExchangeRotOff::usage = "Crosstalks error C-Rz[ex] on the passive qubits when not applying two-qubit gates.";
-	ExcitedInit::usage = "The probability/fraction of the population excited in the thermal state. This is the same initialisation state.";
-	ExchangeCoupling::usage = "The exchange coupling strength of resonators in Superconducting devices";
-	FidCRot::usage = "Fidelity of conditional rotation in NV-center obtained by dynamical decoupling and RF pulse or the Controlled-X180 in the Silicon qubits that is used in readout/measurement.";
-	FidSingleXY::usage = "Fidelity(ies) of single Rx[\[Theta]] and Ry[\[Theta]] rotations obtained by random benchmarking.";
-	FidSingleZ::usage = "Fidelity(ies) of single Rz[\[Theta]] rotation obtained by random benchmarking.";
-	FidSingle::usage = "Fidelity(ies) of single rotations: Rx[\[Theta]], Ry[\[Theta]], Rz[\[Theta]] obtained by random benchmarking.";
-	FidTwo::usage = "Fidelity(ies) of two qubit gates obtained by random benchmarking.";
-	FidEnt::usage = "Fidelity of remote entanglement operation.";
-	FidMeas::usage = "Fidelity of measurement";
-	FidInit::usage = "Fidelity of qubit initialisation";
-	FidCZ::usage = "Fidelity(ies) of the CZ gates.";
-	FreqSingleXY::usage = "Rabi frequency(ies) for the single X- and Y- rotations with unit MHz";
-	FreqSingleZ::usage = "Rabi frequency(ies) for the single Z- rotations with unit MHz";
-	FreqCZ::usage = "Rabi frequency(ies) for the CZ gate with unit MHz.";
-	FreqEnt::usage = "Frequency of remote entanglement.";
-	FreqCRot::usage = "Frequency of conditional rotation in NV-center obtained by dynamical decoupling and RF pulse.";
-	FreqTwoGate::usage = "Resonant frequency of two qubit gates";
-	FreqWeakZZ::usage = "Frequency of coherent cross-talk noise in form of ZZ-coupling that slowly entangle the qubits.";
-	FidRead::usage = "Readout fidelity";
-	GlobalField::usage = "Global magnetic field fluctuation in NV-center due to C13 bath. It causes dephasing on the electron in 4\[Mu]s.";
-	HeatFactor::usage = "The constant >=1 that enhance dephasing process. This happends in neutral atoms when moving the atoms.";
-	LossAtoms::usage = "Device key in the RydbergHub device that identifies atoms lost to the environment.";
-	LossAtomsProbability::usage = "Device key in the RydbergHub that identifies probability of atoms lost to the environment due to repeated measurement.";
-	(* future feature
-	MoveSpeed : "The speed of moving atom \[Mu]m/\[Mu]s in Neutral Atom systems. This will affect the heat factor";
-	*)
-	Nodes::usage = "Entire nodes of a trapped ions system <|node1 -> number_of_qubits_1, ... |>";
-	NIons::usage = "The total number of ions in a trapped ion device.";
-	OffResonantRabi::usage = "Put the noise due to off-resonant Rabi oscillation when applying single qubit rotations.";
-	QubitNum::usage = "The number of physical active qubits for computations.";
-	QubitFreq::usage = "The fundamental qubit frequency for each qubit with unit MHz.";
-	QMap::usage = "Show maps from nodes in trapped ions to the actual emulated qubits";
-	ProbLeakInit::usage = "Leakage probability in the Rydberg initialisation. The noise is decribed with non-trace-preserving map.";
-	ProbLeakCZ::usage = "Leakage probability in executi multi-controlled-Z.";
-	ProbLossMeas::usage = "Probability of phyiscal atom loss due to measurement.";
-	ProbLeakMove::usage = "Probability of leakage in the process of moving atoms.";
-	ProbBFRot::usage = "Assymetric Bit-flip probability on single rotation operation. {01->p1, 10->p2}";
-	RydbergRabiFreq::usage = "Rydberg Rabi frequency";
-	RabiFreq::usage = "The Rabi frequency frequency in average or on each qubit with unit MHz.";
-	ScatProb::usage = "Scattering probability";
-	ShowNodes::usage = "Draw all Ions on every nodes within the zones";
-	StdPassiveNoise::usage = "Set to True/False. Use the standard passive noise that involves T1, T2 or T2s inputs.";
-	T1::usage = "T1 duration(s) in \[Mu]s. Exponential decay time for the state to be complete mixed.";
-	T2::usage = "T2 duration(s) in \[Mu]s. Exponential decay time for the state to be classical with echo applied.";
-	T2s::usage = "T2* duration(s) in \[Mu]s. Exponential decay time for the state to be classical.";
-	UnitLattice::usage = "The unit lattice AtomLocations in \[Mu]s. This gives access to internal device parameter in RydbergHub device.";
-	VacLifeTime::usage = "The lifetime of the qubit array is limited by its vacuum lifetime, where T1=VacTime/Nqubits.";
-	ZZPassiveNoise::usage = "The swtich for ZZ interaction passive noise in the Superconducting device.";
-	BField::error = "`1`";
 	DurInit::error="`1`";
-	DDActive::error="`1`";
-	ExchangeRotOff::error="`1`";
+	
+	DurRead::usage = "Readout duration in \[Mu]s";
+	DurRead::error="`1`";
+	
+	DurMove::usage = "Duration for physically moving operation in Trapped Ions: Splz, Comb, Shuttle, and SWAPLoc.";
+	DurMove::error="`1`";
+	
+	DurRxRy::usage = "Duration to run the rotation gates Rx and Ry on the Superconducting device; the value is fixed regardless the angle.";
+	DurRxRy::error="`1`";
+	
+	DurZX::usage="Duration of the cross-resonance ZX gate on the Superconducting device; this is fixed regardless the angle.";
+	DurZX::error="`1`";
+	
+	DurZZ::usage="Duration of the siZZle ZZ gate on the Superconducting device; this is fixed regardless the angle.";
+	DurZZ::error="`1`";
+	
+	EFSingleXY::usage = "Error fraction/ratio, {depolarising, dephasing} of the single qubit X and Y rotations. Sum of the ratio must be 1 or 0 (off).";
+	EFSingleXY::error="`1`";
+	
+	EFCZ::usage = "Error fraction/ratio, {depolarising, dephasing} of the controlled-Z gates in Silicon and Trapped ions. Sum of the ratio must be 1 or 0 (off).";
+	EFCZ::error="`1`";
+	
+	EFCRot::usage = "Error fraction/ratio, {depolarising, dephasing} of conditional-rotation in NV-center. Sum of the ratio must be 1 or 0 (off).";
+	EFCRot::error="`1`";
+	
+	EFEnt::usage = "Error fraction/ratio {depolarising, dephasing} of remote entanglement in Trapped Ions.  Sum of the ratio must be 1 or 0 (off).";
+	EFEnt::error="`1`";
+	
+	ExchangeRotOn::usage = "Maximum interaction j on the passive qubit crosstalk when applying CZ gates on Silicon qubit device; The noise form is C[Rz[j.\[Theta]]] It must be a square matrix with size (nqubit-2)x(nqubit-2).";
 	ExchangeRotOn::error="`1`";
-	EFRead::error="`1`";
-	EFInit::error="`1`";
-	FidCRotXY::error="`1`";
+	
+	ExchangeRotOff::usage = "Crosstalks error C-Rz[ex] on the passive qubits when not applying two-qubit gates on Silicon qubit device.";
+	ExchangeRotOff::error="`1`";
+	
+	ExcitedInit::usage = "The probability/fraction of the population excited in the thermal state; this also constitute the initial state in the superconducting qubit device.";
+	ExcitedInit::error="`1`";
+	
+	ExchangeCoupling::usage = "The exchange coupling strength of resonators in Superconducting devices";
+	ExchangeCoupling::error="`1`";
+	
+	(* fidelities has warning because of upper bound on error parameters *)
+	FidCRot::usage = "Fidelity of conditional rotation in NV-center obtained by dynamical decoupling and RF pulse or the Controlled-X180 in the Silicon qubits that is used in readout/measurement.";
+	FidCRot::error="`1`";
+	FidCRot::warning="`1`";
+	
+	FidCZ::usage = "Fidelity(ies) of the CZ gates.";
 	FidCZ::error="`1`";
-	FidSingleXY::error="`1`";
-	FidSingle::error="`1`";
-	FidTwo::error="`1`";
-	FidMeas::error="`1`";
+	FidCZ::warning="`1`";	
+	
+	FidEnt::usage = "Fidelity of remote entanglement operation on trapped ions.";
+	FidEnt::error="`1`";
+	FidEnt::warning="`1`";
+	
+	FidInit::usage = "Fidelity of qubit initialisation";
 	FidInit::error="`1`";
-	FreqCZ::error="`1`";
-	QubitFreq::error="`1`";
-	Nodes::error="`1`";
-	QubitNum::error="`1`";
-	OffResonantRabi::error="`1`";
-	ProbLeakInit::error="`1`";
-	ProbLeakCZ::error="`1`";
-	ProbLossMeas::error="`1`";
-	ProbLeakMove::error="`1`";
-	RabiFreq::error="`1`";
-	StdPassiveNoise::error="`1`";
-	T1::error="`1`";
-	T2::error="`1`";
-	T2s::error="`1`";
-	FidCRotXY::warning="`1`";
-	FidCZ::warning="`1`";
-	FidSingleXY::warning="`1`";
-	FidSingle::warning="`1`";
-	FidTwo::warning="`1`";
-	FidMeas::warning="`1`";
 	FidInit::warning="`1`";
+	
+	(* meas vs read *)
+	FidMeas::usage = "Fidelity of measurement";
+	FidMeas::error="`1`";
+	FidMeas::warning="`1`";
+	
+	FidRead::usage = "Readout fidelity";
+	FidRead::error="`1`";
+	FidRead::warning="`1`";	
+	
+	FidSingleXY::usage = "Fidelity of single Rx[\[Theta]] and Ry[\[Theta]] rotations obtained by random benchmarking.";
+	FidSingleXY::error="`1`";
+	FidSingleXY::warning="`1`";
+	
+	FidSingleZ::usage = "Fidelity of single Rz[\[Theta]] rotation obtained by random benchmarking.";
+	FidSingleZ::error="`1`";
+	FidSingleZ::warning="`1`";
+	
+	FreqCRot::usage = "Frequency of conditional rotation in NV-center obtained by dynamical decoupling and RF pulse.";
+	FreqCRot::error="`1`";
+	
+	FreqCZ::usage = "Rabi frequency for the CZ gate with unit MHz.";
+	FreqCZ::error="`1`";	
+	
+	FreqEnt::usage = "Frequency of remote entanglement.";
+	FreqEnt::error="`1`";
+	
+	FreqSingleXY::usage = "Rabi frequency(ies) for the single X- and Y- rotations with unit MHz";
+	FreqSingleXY::error="`1`";
+	
+	FreqSingleZ::usage = "Rabi frequency(ies) for the single Z- rotations with unit MHz";
+	FreqSingleZ::error="`1`";
+
+	FreqWeakZZ::usage = "Frequency of coherent cross-talk noise in form of ZZ-coupling that slowly entangle the nuclear qubits to each other in NV-center.";
+	FreqWeakZZ::error="`1`";
+
+	HeatFactor::usage = "The constant >=1 that enhance dephasing process in neutral atoms when moving the atoms.";
+	HeatFactor::error="`1`";
+
+	Nodes::usage = "Specify the node names and number of ions in ions traps with format <|node1 -> number_of_qubits_1, ... |>.";
+	Nodes::error="`1`";
+	
+	OffResonantRabi::usage = "Put the noise due to off-resonant Rabi oscillation when applying single qubit rotations.";
+	OffResonantRabi::error="`1`";
+	
+	ProbBFRead::usage = "Probability of bit-flip error in readout";
+	ProbBFRead::error="`1`";
+	
+	ProbBFRot::usage = "Assymetric Bit-flip probability on single-qubit rotation . {01->p1, 10->p2}.";
+	ProbBFRead::error="`1`";
+	
+	ProbLeakCZ::usage = "Leakage probability in executing multi-controlled-Z on neutral atoms.";
+	ProbLeakCZ::error="`1`";
+	
+	ProbLeakInit::usage = "Leakage probability in the Rydberg initialisation. The noise is decribed with non-trace-preserving map.";
+	ProbLeakInit::error="`1`";
+	
+	ProbLossMeas::usage = "Probability of phyiscal atom loss due to measurement in neutral atoms.";
+	ProbLossMeas::error="`1`";
+	
+	QubitFreq::usage = "The fundamental qubit frequency for each qubit with unit MHz.";
+	QubitFreq::error="`1`";
+	
+	QubitNum::usage = "The number of physical active qubits for computations.";
+	QubitNum::error="`1`";
+	
+	RabiFreq::usage = "The Rabi frequency with unit MHz.";
+	RabiFreq::error="`1`";
+	
+	StdPassiveNoise::usage = "Option eather to apply the standard passive noise that involves T1, T2 or T2s inputs. Set it to True/False.";
+	StdPassiveNoise::error="`1`";
+	
+	T1::usage = "T1 duration(s) in \[Mu]s; characterising an exponential decay.";
+	T1::error="`1`";
+	
+	T2::usage = "T2 duration(s) in \[Mu]s; characterising an exponential decay.";
+	T2::error="`1`";
+	
+	T2s::usage = "T2* duration(s) in \[Mu]s; characterising a Gaussian decay ";
+	T2s::error="`1`";
+	
+	UnitLattice::usage = "The unit lattice AtomLocations in \[Mu]s. This also gives access to internal device parameter in RydbergHub device.";
+	UnitLattice::error="`1`";
+	
+	VacLifeTime::usage = "The lifetime of the neutral atoms in the array of traps in vacuum chamber.";
+	VacLifeTime::error="`1`";
+	
+	ZZPassiveNoise::usage = "The switch (True/False) for ZZ interaction passive noise in the Superconducting device.";
+	ZZPassiveNoise::error="`1`";
+
 EndPackage[];
 
 (*******All definitions of modules****)
@@ -1574,7 +1666,7 @@ Begin["`Private`"];
 	]
 	
 	
-(* TRAPPED_IONS_OXFORD *)
+	(* TRAPPED_IONS_OXFORD *)
 	(*
 	createNodes[ <| zone1 -> nq1, zone2 -> nq2,...|>]
 	Return nodes with 4 zones, its map to qubits register, and the total number of qubits. Initially, all qubits are in zone 1";
@@ -1885,7 +1977,7 @@ zone-related convenient functions
 	TrappedIonOxford[OptionsPattern[]] := With[
 		{
 		initnodes = OptionValue @ Nodes,
-		bfprob = OptionValue @ BFProb,
+		bfprob = OptionValue @ ProbBFRead,
 		durinit = OptionValue @ DurInit,
 		durmove = OptionValue @ DurMove,
 		durread = OptionValue @ DurRead,
@@ -1899,7 +1991,6 @@ zone-related convenient functions
 		fidsinglexy = OptionValue @ FidSingleXY,
 		fidcz = OptionValue @ FidCZ,
 		rabifreq = OptionValue @ RabiFreq,
-		scatprob = OptionValue @ ScatProb,
 		t1 = OptionValue @ T1,
 		t2s = OptionValue @ T2s,
 		stdpn = OptionValue @ StdPassiveNoise
@@ -2025,7 +2116,7 @@ zone-related convenient functions
 		(* track the option that was used to generate this *)
 		OptionsUsed -> {
 			Nodes -> initnodes,
-			BFProb -> bfprob,
+			ProbBFRead -> bfprob,
 			DurInit -> durinit,
 			DurMove -> durmove,
 			DurRead -> durread,
@@ -2039,7 +2130,6 @@ zone-related convenient functions
 			FidSingleXY -> fidsinglexy,
 			FidCZ -> fidcz,
 			RabiFreq -> rabifreq,
-			ScatProb -> scatprob,
 			T1 -> t1,
 			T2s -> t2s,
 			StdPassiveNoise -> stdpn
@@ -2446,7 +2536,7 @@ zone-related convenient functions
 	]
 
 	(* 
-		Calculate fidelity between two density matrices (Tr[Sqrt[\[Rho]\[Sigma]]])^2: very expensive
+		Calculate fidelity between two density matrices (Tr[Sqrt[\[Rho]\[Sigma]]])^2: caution, very expensive
 	*)
 	CalcFidelityDensityMatrices[\[Rho]_, \[Sigma]_] := 
 		Re[
@@ -2455,6 +2545,31 @@ zone-related convenient functions
 				, 1/2]
 			]^2
 		]
+
+	(*
+		Join several symbols into a single symbol
+	*)
+	SetAttributes[symbolNameJoin, HoldAll];
+	symbolNameJoin[symbols__Symbol] := Symbol @ Apply[ StringJoin,
+			Map[ Function[s, ToString[Unevaluated[s]], HoldFirst], Hold[symbols]]
+		];
+
+	(*
+	gateIndex[gate], returns {the gate, the indices}
+	checked on Rydberg device only
+	*)
+	gateIndex[gate_] := With[{
+		gpattern = {
+			R[t_, Subscript[g1_, p_] Subscript[g2_, q_]] :> {symbolNameJoin[g1, g2], {p, q}}, 
+			Subscript[C, p__][Subscript[g_, q__]] :> {symbolNameJoin[C, g], {Sequence @@ Flatten @ {p, q}}},
+			Subscript[g_, q__] :> {g, {Sequence @@ Flatten @ {q}}},
+			Subscript[g_, q__][_] :> {g, {Sequence @@ Flatten @ {q}}}
+			}
+		}
+		,
+		gate/. gpattern
+	];
+
 
 
 	(*
@@ -2478,29 +2593,11 @@ zone-related convenient functions
 		contents = StringRiffle[contenl, "\\\\ \n"];
 		header<>contents<>"\\\\ \n \\bottomrule\n\\end{tabular}"
 	]
-	
-	SetAttributes[symbolNameJoin, HoldAll];
-	symbolNameJoin[symbols__Symbol] := Symbol @ Apply[ StringJoin,
-			Map[ Function[s, ToString[Unevaluated[s]], HoldFirst], Hold[symbols]]
-		];
 
-	(*
-	gateIndex[gate], returns {the gate, the indices}
-	*)
-	gateIndex[gate_] := With[{
-		gpattern = {
-			R[t_, Subscript[g1_, p_] Subscript[g2_, q_]] :> {symbolNameJoin[g1, g2], {p, q}}, 
-			Subscript[C, p__][Subscript[g_, q__]] :> {symbolNameJoin[C, g], {Sequence @@ Flatten @ {p, q}}},
-			Subscript[g_, q__] :> {g, {Sequence @@ Flatten @ {q}}},
-			Subscript[g_, q__][_] :> {g, {Sequence @@ Flatten @ {q}}}
-			}
-		}
-		,
-		gate/. gpattern
-	];
 
 	(* list of gates that are always parallel *)
-(*	parallelGates=<|
+	(*	
+	parallelGates=<|
 		"SiliconDelft"->{Wait},
 		"SiliconHub"->{Wait},
 		"SuperconductingFZJ"->{Wait},
