@@ -94,8 +94,6 @@ Serialize::error = "`1`";
 (* options *)
 Parallel::usage = "Parallel options in arrangement of gates: False, Default, All. False: serial, default: parallel according to the device specification, and All: full quantum parallel";
 MapQubits::usage = "Options in the CircTrappedIons[] that maps the local qubits (\[Rho]A) into the total qubits of the total (large) density matrix (\[Rho]AB).";
-
-
 (** Custom gates, used in Aliases **)
 BeginPackage["`CustomGates`"];
 
@@ -732,7 +730,8 @@ Begin["`Private`"];
 				];
 				noise
 			];
-					
+		
+							
 		<|
 			(* store the option that is initially used here *)
 			OptionsUsed -> 
@@ -753,7 +752,7 @@ Begin["`Private`"];
 				ZZPassiveNoise -> zzpassivenoise
 			}
 			,
-			DeviceType->"Superconducting"
+			DeviceType -> "Superconducting"
 			,
 			DeviceDescription -> ToString[qubitsnum]<>"-qubit of Superconducting transmon qubits based on Josephson junctions"
 			,
@@ -770,22 +769,25 @@ Begin["`Private`"];
 				Subscript[ZX, p_,q_] :> {R[Pi/2,Subscript[Z, p] Subscript[X, q]]}
 				,
 				(* in practice, it is a decay to the thermal state *)
-				Subscript[Init, q_] :> {}
+				Subscript[Init, q__] :> {}
 				,
 				Subscript[Wait, q_] :> {}
 			},	
-			Gates ->{
-				(* apply generalised amplitude damping to describe the decay to the thermal state which works only in the beginning *)
-				Subscript[Init, q_] /; (init == True) :> 
+			Gates ->
+			{
+				(* 
+				init can be done once, entirely, in the beginning.
+				the process uses generalised amplitude damping to describe the decay to the thermal state.
+				*)
+				Subscript[Init, q__] /; And[init === True, ContainsExactly[{q}, Range[0, qubitsnum - 1]] ] :> 
 				<|
-					NoisyForm -> {Subscript[Init, q], Subscript[gAmp, q][1, 1 - excitedinit[q]]},
+					NoisyForm ->  Table[Subscript[gAmp, j][1, 1 - excitedinit[j]], {j, Range[0, qubitsnum - 1]}],
 					GateDuration -> 0,
 					UpdateVariables -> Function[
-							activeq[q] = True;
+							(activeq[#] = True)& /@ Range[0, qubitsnum - 1];
 						]
 				|>
 				,
-				(* TODO: assertion for the readout at the end only *)
 				Subscript[M, q_] :>
 				<|
 					(* depolarise up the final result as well *)
@@ -807,7 +809,7 @@ Begin["`Private`"];
 				,
 				
 				(* single-qubit gates  *)
-					Subscript[Rx, q_][theta_] /; If[NumberQ@theta, And[(-Pi <= theta <= Pi), Abs[theta] > 0], True] :>
+					Subscript[Rx, q_][theta_] /; If[NumberQ@theta,(-Pi <= theta <= Pi), True] :>
 					<|
 						NoisyForm -> {Subscript[Rx, q][theta]},
 						GateDuration -> durrxry,
@@ -817,7 +819,7 @@ Begin["`Private`"];
 						]
 					|>
 					,
-					Subscript[Ry, q_][theta_] /; If[NumberQ@theta, And[(-Pi <= theta <= Pi), Abs[theta] > 0], True] :>
+					Subscript[Ry, q_][theta_] /; If[NumberQ@theta,(-Pi <= theta <= Pi), True] :>
 					<|
 						NoisyForm -> {Subscript[Ry, q][theta]},
 						GateDuration -> durrxry,
@@ -834,8 +836,7 @@ Begin["`Private`"];
 						GateDuration -> 0
 					|>
 					,				
-					(** two-qubit gates **)
-					(* siZZle gate *)
+					(* siZZle gates *)
 					Subscript[ZZ, p_, q_] /; EdgeQ[ug, p\[UndirectedEdge]q] :>
 					<|
 						NoisyForm -> {Subscript[ZZ, p, q]}, 
@@ -858,8 +859,9 @@ Begin["`Private`"];
 							activeq[q] = True;
 							activeq[p] = True;
 							]
-					|>		
-			},
+					|>
+			}
+			,
 			
 			(*TODO: option to activate/deactivate this. Re-initialized when invoking InsertCircuitNoise *)
 			InitVariables -> 
@@ -1665,12 +1667,13 @@ Begin["`Private`"];
 		]
 	]
 	
-	
+	 
 	(* TRAPPED_IONS_OXFORD *)
 	(*
 	createNodes[ <| zone1 -> nq1, zone2 -> nq2,...|>]
 	Return nodes with 4 zones, its map to qubits register, and the total number of qubits. Initially, all qubits are in zone 1";
 	*)
+	
 	createNodes[args__Association] :=
 		Module[{q, qglob = 0, nodes, qmap, qubits},
 			nodes = Map[<|1 -> Range[#], 2 -> {}, 3 -> {}, 4 -> {}|>&, args]; 
