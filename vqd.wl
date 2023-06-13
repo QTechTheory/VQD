@@ -930,7 +930,7 @@ Begin["`Private`"];
 		implement: Exp[-i dur ZZ]
 		*)	
 		weakzz[q_, dur_] := 
-			(R[dur * Pi/freqweakzz, Subscript[Z, #]Subscript[Z, #2]])& @@@ Subsets[DeleteCases[Range[1, qubitnum - 1], {q}], {2}];
+			R[dur * Pi/freqweakzz, Subscript[Z, #]Subscript[Z, #2]]& @@@ Subsets[DeleteCases[Range[1, qubitnum - 1], q], {2}];
 	
 		passivenoise[q_, dur_] :=
 			If[NumberQ @ freqweakzz,
