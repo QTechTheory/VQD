@@ -50,7 +50,6 @@ ToyDevice::usage = "Return a specification with simple standard model.";
 CalcFidelityDensityMatrices::usage = "CalcFidelityDensityMatrices[\[Rho],\[Sigma]] fidelity of two density matrices, \[Rho] and \[Sigma] can be density matrix of Quregs. Fidelity of two density matrices.";
 PartialTrace::usage = "PartialTrace[qureg/density matrix, tracedoutqubits_List]. Return the partial trace as a matrix.";
 RandomMixState::usage = "RandomMixState[nqubits, nsamples:None]. Return a random mixed quantum density state matrix.";
-GenerateOptionTable::usage = "GenerateOptionTable[options,columnwidth:{3cm,3cm,10cm}]. Create summary of options in Latex.Very buggy.";
 
 (* 
 Information keys 
@@ -58,6 +57,7 @@ Information keys
 Connectivity::usage = "Show the connectivity graph of a Superconducting qubit device, where the arrow show possible direction of the cross-resonant ZX gates.";
 DeviceType::usage = "The type of device. Normally, the name of the function that generates it.";
 LossAtoms::usage = "Device key in the RydbergHub device that identifies atoms lost to the environment.";
+LossAtomsProbability::usage = "Device ket in the RydbergHub device that shows the accumulation of probability of atom loss due to measurements.";
 OptionsUsed::usage = "Show all options used in a virtual device specification instance.";
 QMap::usage = "Show maps from nodes in trapped ions to the actual emulated qubits";
 ShowNodes::usage = "Draw all Ions on every nodes within the zones";
@@ -1117,7 +1117,7 @@ Begin["`Private`"];
 					]
 					,
 					If[showloss,
-						Sequence @@ Table[Graphics[Text[k, unit * ({0.15, 0.15} + qulocs[k])]], {k, Keys @ lossqulocs}]
+						Sequence @@ Table[Graphics[Text[k, unit * ({0.15, 0.15} + lossqulocs[k])]], {k, Keys @ lossqulocs}]
 						,
 						Sequence @@ {}
 					]
@@ -1133,13 +1133,13 @@ Begin["`Private`"];
 					Sequence @@ Table[Graphics3D[{Cyan, Opacity[0.15], Sphere[unit * qulocs[b], blrad]}], {b, blockade}],
 					(* show the atoms lost to the environment: the last position *)
 					If[showloss,
-						Sequence @@ Table[Graphics3D[{GrayLevel[0.5], Sphere[unit * v, 0.15]}], {v, Values @ lossqulocs}]
+						Sequence @@ Table[Graphics3D[{GrayLevel[0.3], Sphere[unit * v, 0.15]}], {v, Values @ lossqulocs}]
 						,
 						Sequence @@ {}
 					]
 					,
 					If[showloss,
-						Sequence @@ Table[Graphics3D[Text[Style[k, Bold, White], unit * qulocs[k]]], {k, Keys @ lossqulocs}]
+						Sequence @@ Table[Graphics3D[Text[Style[k, Bold, White], unit * lossqulocs[k]]], {k, Keys @ lossqulocs}]
 						,
 						Sequence @@ {}
 					],
@@ -1236,7 +1236,7 @@ Begin["`Private`"];
 		blockadecheck[q_List] := If[IntersectingQ[q, Keys @ lossatomlocs], 
 			Message[LossAtoms::error, "Some atoms are lost before applying a multi-qubit gate", Return @ False]
 			,
-			And @@ ((distloc @@ # <= 2 blockaderad)& /@ Subsets[Flatten[q], {2}])
+			And @@ ((distloc @@ # <= (blockaderad+$MachineEpsilon))& /@ Subsets[Flatten[q], {2}])
 		];
 				
 		(* 
@@ -1320,10 +1320,11 @@ Begin["`Private`"];
 		Gates -> {
 				Subscript[Init, q_Integer] :> 
 				<|
-				 (* Put the electron back to the atom and reset leak probability *)
+				 (* Put the electron back to the atom to the initial position and reset leak probability *)
 					UpdateVariables -> Function[
 										lossatomprob[q] = 0;
-										KeyDropFrom[lossatomlocs, q];										
+										KeyDropFrom[lossatomlocs, q];
+										atomlocs[q] = atomlocations[q];										
 									],
 					(* perfect init + leakage *)			
 					NoisyForm -> {Subscript[Init, q], Subscript[KrausNonTP, q][{{{Sqrt[1 - probleakinit], 0}, {0, 1}}}]}, 
@@ -1667,26 +1668,23 @@ Begin["`Private`"];
 		]
 	]
 	
-	 
-	(* TRAPPED_IONS_OXFORD *)
-	(*
-	createNodes[ <| zone1 -> nq1, zone2 -> nq2,...|>]
-	Return nodes with 4 zones, its map to qubits register, and the total number of qubits. Initially, all qubits are in zone 1";
-	*)
 	
+	  
+	(* DEVICE_TRAPPEDIONSOXFORD *)
+	
+	
+	(*Return nodes with 4 zones, its map to qubits register, and the total number of qubits. Initially, all qubits are in zone 1";*)
 	createNodes[args__Association] :=
 		Module[{q, qglob = 0, nodes, qmap, qubits},
 			nodes = Map[<|1 -> Range[#], 2 -> {}, 3 -> {}, 4 -> {}|>&, args]; 
 			qubits = Range[#]& /@ args;
 			qmap = Map[<|#[1] /. {q_Integer :> (q -> qglob++)}|>&, nodes]; 
 			{nodes, qmap, qglob, qubits}
-		]
-	(*
-	 Drawing-ions-related
-	*)
-	(*
-	Main function to draw the ions inside the zones
-	*)
+	]
+	
+	(*Drawing-ions-related*)
+	
+	(*Main function to draw the ions inside the zones*)
 	showIons[nodes_, connall_] := Module[
 		{qulocs, i, colors},
 		colors = rainbowcol[Length@nodes];
@@ -1706,14 +1704,10 @@ Begin["`Private`"];
 			{node, Keys @ nodes}] , Spacings -> {0,1}]
 	]
 
-	(*
-	Get n rainbow color
-	*)
+	(*Get n rainbow color*)
 	rainbowcol[n_] := Table[ColorData["CMYKColors", (i - 1)/n], {i, n}]
 	
-	(*
-	draw zone boxes
-	*)
+	(*draw zone boxes*)
 	drawZone[locszone_, label_, color_, conn_] := 
 		Module[ {v, edges},
 			edges = Select[
@@ -1741,12 +1735,10 @@ Begin["`Private`"];
 			]
 	]
 
-(* 
-zone-related convenient functions 
-*)
+	(* zone-related convenient functions*)
 	getZone[q_, node_] := ( Association @ Flatten @ Table[ Table[ v -> k, {v, node[k]} ], {k , Keys @ node}] )[q]
 
-(*  check legitimate physical ion moves *)
+	(*  check legitimate physical ion moves *)
 
 	(* 
 	Legitimate long split moves: future feature
@@ -2189,7 +2181,7 @@ zone-related convenient functions
 		|>]
 		,
 		(* effectively virtual and it is noiseless *)
-		Subscript[Rz, q_][node_,theta_] :>
+		Subscript[Rz, q_][node_, theta_] /; checklog[q, node] :>
 		<|
 			NoisyForm -> {Subscript[Rz, qmap[node][q]][theta]},
 			GateDuration -> 0
@@ -2577,7 +2569,6 @@ zone-related convenient functions
 
 	(*
 	Generate Latex table that show the options used in the parameter VQD. It is very buggy!
-	*)
 	GenerateOptionTable[options_, columnwidth_: {"3cm", "3cm", "10cm"}] := Module[
 		{vars, contents, header, content, contenf, contenl, fvalues, finfo, cw1, cw2, cw3}
 		,
@@ -2596,6 +2587,7 @@ zone-related convenient functions
 		contents = StringRiffle[contenl, "\\\\ \n"];
 		header<>contents<>"\\\\ \n \\bottomrule\n\\end{tabular}"
 	]
+	*)
 
 
 	(* list of gates that are always parallel *)
