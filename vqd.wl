@@ -18,8 +18,9 @@ NOTE&TODO
 SiliconDelft2::usage = "Returns device specification of a Silicon device with twice error severity of SiliconDelft.";
 *)
 SiliconDelft::usage = "Returns device specification of a Silicon device based on the device built by the University of Delft.";
+(*
 SiliconHub::usage = "Returns devices specification of a Silicon device based on the device built by the QCSHub.";
-
+*)
 (*superconducting qubit devices*)
 (*
 SuperconductingFZJ::usage = "Returns device specification of a Superconducting qubit device based on the device built by Forschungzentrum Juelich.";
@@ -43,9 +44,9 @@ NVCenterDelft::usage = "Returns device specification of a Nitrogen-Vacancy diamo
 (*
 NVCenterHub::usage = "Returns device specification of a Nitrogen-Vacancy diamond center device based on the device built by the QCSHub.";
 *)
-(* toy device *)
+(* toy device 
 ToyDevice::usage = "Return a specification with simple standard model.";
-
+*)
 (** General functions  **)
 CalcFidelityDensityMatrices::usage = "CalcFidelityDensityMatrices[\[Rho],\[Sigma]] fidelity of two density matrices, \[Rho] and \[Sigma] can be density matrix of Quregs. Fidelity of two density matrices.";
 PartialTrace::usage = "PartialTrace[qureg/density matrix, tracedoutqubits_List]. Return the partial trace as a matrix.";
