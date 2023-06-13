@@ -1,4 +1,4 @@
-#Vitual Quantum Devices (VQD)
+# Vitual Quantum Devices (VQD)
 
 **VQD** is a **Mathematica** package contains a collection of virtual quantum devices that are based on or inspired from actual quantum devices. **VQD** is built atop [**QuESTlink**](https://github.com/QTechTheory/QuESTlink), a Mathematica extension of [**QuEST**](https://github.com/QuEST-Kit/QuEST) &mdash; a powerful open-source emulator of quantum computers developed in **C** and **C++**.   [**QuESTlink**](https://github.com/QTechTheory/QuESTlink) combines **Mathematica**’s powerful symbolic operations with [**QuEST**](https://github.com/QuEST-Kit/QuEST)’s high-performance backend, enabling virtual devices to be highly configurable through an intuitive interface, and able to leverage powerful visualisation facilities, without compromising performance.
 
@@ -13,7 +13,7 @@
 Details on each quantum device's architecture and error model are available in this **paper**. 
 
 
-##Getting started
+## Getting started
 
 Every quantum device is unique. The virtual device is designed to reflect a close approximation to the physical reality by only providing access to physically possible native operations. Get to know them easily using our straightforward guides in the ``devices`` folder. 
 
@@ -30,7 +30,7 @@ To ensure the correct results when running the notebook, the the pdf file with t
 
 **Note**: the results shown in **paper** require extensive simulations, which are accessible in folder ``supplement``. Some codes are in text format, to prevent unecessary accidental expensive simulation. To use the code, simply convert the text into code or input.
 
-###General usage
+### General usage
 
 Check the API of **VQD**:
 
@@ -67,7 +67,7 @@ FreqSingleXY -> <|0 -> 15*10^6, 1 -> 500 , 2 -> 500, 3 -> 500, 4 -> 500, 5 -> 50
 
 We provide a collection of examples on setting those parameters in folder ``device`` based on actual devices (approximately realistic). These offer a practical view of realistic parameters that the user can easily modify, *e.g.,* the number of qubits, Rabi frequency, qubit frequency, error probability, and so on. 
 
-##Build your own virtual device
+## Build your own virtual device
 
 See the QuESTlink guide [here](https://github.com/QTechTheory/QuESTlink/blob/main/Doc/guide_creating_device_spec.pdf) to create your own device.
 
