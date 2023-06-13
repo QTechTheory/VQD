@@ -21,19 +21,57 @@ Simply run the notebook of the device of your interest and configure the numbers
 1. **TrappedIonOxford.nb** for the multi-nodes ion traps
 2. **NVCenterDelft.nb** for the NV-center qubits
 3. **RydbergHub.nb** for the Rydberg neutral atoms
-4. **SiliconDelft.nb** for the Silicon spin qubit
+4. **SiliconDelft.nb** for the silicon spin qubit
 5. **SuperconductingHub.nb** for the superconducting qubits.
 
 
 Each Mathematica notebook helps you understand these devices and their special features. It also gives access to obtain the results shown in our **paper**.
-To ensure the correct results when running the notebook, check the files in ``doc`` with the corresponding pdf name.
+To ensure the correct results when running the notebook, the the pdf file with the corresponding notebook name.
 
 **Note**: the results shown in **paper** require extensive simulations, which are accessible in folder ``supplement``. Some codes are in text format, to prevent unecessary accidental expensive simulation. To use the code, simply convert the text into code or input.
 
 ###General usage
 
-A virtual device contains descriptions  of the devices which comprises the architecture, connectivity, errors, gates frequency, and the device state.  
+Check the API of **VQD**:
 
+```Mathematica
+?VQD`*
+```
+
+A virtual device contains descriptions  of the devices which comprises the architecture, connectivity, errors, gates frequency, and the device state. The following functions generate device descriptions:
+1. ``TrappedIonOxford[]`` for the ion trap
+2. ``NVCenterDelft[]`` for the NV-center
+3. ``RydbergHub[]`` for the Rydberg neutral atom
+4. ``SiliconDelft[]`` for the silicon spin qubit.
+5. ``SuperconductingHub[]`` for the superconducting qubits.
+
+However, the function is not equipped with default parameters. The user must set the default parameters, for example:
+
+```Mathematica
+Options[TrappedIonOxford] = 
+{
+QubitNum -> 6
+,
+T1 -> <|0 -> 3600, 1 -> 60, 2 -> 60, 3 -> 60, 4 -> 60, 5 -> 60 |>
+,
+T2 -> <|0 -> 1.5, 1 -> 10, 2 -> 10, 3 -> 10, 4 -> 9, 5 -> 9|>
+,
+FreqWeakZZ -> 5
+,
+FreqSingleXY -> <|0 -> 15*10^6, 1 -> 500 , 2 -> 500, 3 -> 500, 4 -> 500, 5 -> 500|>
+
+... (and so on)
+
+}
+```
+
+We provide a collection of examples on setting those parameters in folder ``device`` based on actual devices (approximately realistic). These offer a practical view of realistic parameters that the user can easily modify, *e.g.,* the number of qubits, Rabi frequency, qubit frequency, error probability, and so on. 
+
+##Build your own virtual device
+
+See the QuESTlink guide [here](https://github.com/QTechTheory/QuESTlink/blob/main/Doc/guide_creating_device_spec.pdf) to create your own device.
+
+<!--
 ####Using parallelism, multithreading 
 
 ####Navigating through VQD
@@ -49,3 +87,4 @@ Example of a VQD setup
 UsedOptions
 
 error ratios : sum to 1 or zero (off)
+-->
