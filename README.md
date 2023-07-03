@@ -1,17 +1,31 @@
 # Vitual Quantum Devices (VQD)
 
-**VQD** is a **Mathematica** package contains a collection of virtual quantum devices that are based on or inspired from actual quantum devices. **VQD** is built atop [**QuESTlink**](https://github.com/QTechTheory/QuESTlink), a Mathematica extension of [**QuEST**](https://github.com/QuEST-Kit/QuEST) &mdash; a powerful open-source emulator of quantum computers developed in **C** and **C++**.   [**QuESTlink**](https://github.com/QTechTheory/QuESTlink) combines **Mathematica**’s powerful symbolic operations with [**QuEST**](https://github.com/QuEST-Kit/QuEST)’s high-performance backend, enabling virtual devices to be highly configurable through an intuitive interface, and able to leverage powerful visualisation facilities, without compromising performance.
 
-**VQD provides five families of virtual devices:**
+
+##About
+
+**VQD** is a **Mathematica** package contains a collection of virtual quantum devices that are based on or inspired from actual quantum devices. **VQD** is built atop [**QuESTlink**](https://github.com/QTechTheory/QuESTlink), a Mathematica extension of [**QuEST**](https://github.com/QuEST-Kit/QuEST): a powerful open-source emulator of quantum computers developed in **C** and **C++**.  
+
+ [**QuESTlink**](https://github.com/QTechTheory/QuESTlink) combines **Mathematica**’s powerful symbolic operations with [**QuEST**](https://github.com/QuEST-Kit/QuEST)’s high-performance backend, enabling virtual devices to be highly configurable through an intuitive interface, and able to leverage powerful visualisation facilities, without compromising performance.
+
+
+##Our goal
+
+We aim to facilitate the creation of virtual quantum devices with ease. We have developed an environment in which users can readily input parameters commonly mentioned in experimental papers such as **T<sub>1</sub>, T<sub>2</sub>, T<sub>2</sub><sup>*</sup>, qubit frequency, coupling strength, blockade radius, leakage probability, gate fidelities, initialisation fidelities**, and so forth.
+
+We've designed this to function as a user-friendly, plug-and-play platform. This empowers users to test their concepts and estimate their performance on actual devices, even across different noise scales. Not only useful for testing, this platform can also assist experimentalists in making estimates of certain parameters. All of these factors contribute to making quantum exploration more accessible and manageable.
+
+
+
+## VQD provides five families of virtual devices
+
 1. Multi-nodes ion traps
 2. Nitrogen-vacancy-center  (NV-center) diamond 
 3. Rydberg neutral atoms
 4. Quantum dots in Si/SiGe 
 5. Superconducting transmon qubits.
 
-
-Details on each quantum device's architecture and error model are available in this **paper**. 
-
+For more in-depth information on the architecture and error models of each quantum device, you can refer to this [**paper**](https://arxiv.org/abs/2306.07342). 
 
 ## Getting started
 
