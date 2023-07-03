@@ -9,6 +9,7 @@
 
 
 This package is developed by [Cica Gustiani](https://github.com/cicacica) within the University of Oxford, in [Simon Benjamin](https://qtechtheory.org/) group.
+
 [![Email](https://img.shields.io/badge/email-cicagustiani@gmail.com-red.svg)](mailto:cicagustiani@gmail.com)
 [![Paper](https://img.shields.io/badge/Paper-arXiv%3A2306.07342-b31b1b.svg)](https://arxiv.org/abs/2306.07342)
 
