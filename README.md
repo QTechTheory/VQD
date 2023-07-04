@@ -1,4 +1,8 @@
-# Vitual Quantum Devices (VQD)
+<div align="center">
+ <img src="supplement/web/vqd_logo.png" width="200" alt="Alt text">
+</div>
+
+# Vitual Quantum Devices
 
 **VQD** is a **Mathematica** package contains a collection of virtual quantum devices that are based on or inspired from actual quantum devices. **VQD** is built atop [**QuESTlink**](https://github.com/QTechTheory/QuESTlink), a Mathematica extension of [**QuEST**](https://github.com/QuEST-Kit/QuEST): a powerful open-source emulator of quantum computers developed in **C**.  
  **QuESTlink** combines **Mathematica**’s powerful symbolic operations with **QuEST**’s high-performance backend, enabling virtual devices to be highly configurable through an intuitive interface, and able to leverage powerful visualisation facilities, without compromising performance!

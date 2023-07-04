@@ -4,7 +4,7 @@
 
 # Nitrogen-vacancy center qubits
 
-There is currently one virtual NV-center devices, namely NV-center diamond that is inspired from devices in the University of Delft. This device is instantiated with command ``NVCenterDelft[]``.
+There is currently one virtual NV-center device, namely NV-center diamond that is inspired from devices in the University of Delft. This device is instantiated with command ``NVCenterDelft[]``.
 
 
 ## Characteristics
@@ -20,23 +20,27 @@ We set the electron spin to be indexed 0 in the program. See the picture below, 
 Therefore, two-qubit gates operations can be done (directly) between the center spin to the surrounding spin.
 
 
-### Native operators
+## Native operations
 
 Here are the operators defined in the virtual NV-center qubits, together with their commands.
 
-- Direct initialisation is the NV electron spin only.
+- Direct initialisation is the NV electron spin only, can be performed anytime.
 $$\mathtt{Init_0}$$
-- Direct measurement is the NV electron spin only, which is projective measurement in the computational basis.
+- Direct measurement is the NV electron spin only, can be performed anytime, and is projective measurement in the computational basis.
 $$\mathtt{M_0}$$
-- Single qubit gates are Pauli rotations that can be done on any qubits.
+- Single qubit gates are Pauli rotations that can be operated upon any qubit $q$.
 $$\mathtt{Rx_q[\theta]}, \mathtt{Ry_q[\theta]}, \mathtt{Rz_q[\theta]}$$
-- Two-qubit gates are conditional rotation,
+- Two-qubit gates are conditional rotation between electron and nuclear spin $q>0$
 $$\mathtt{CRx_{0,q}[\theta]}, \mathtt{CRy_{0,q}[\theta]}$$
 where  $$\mathtt{CR\sigma[\theta]}=\|0\rangle\langle0\|\otimes R\sigma(\theta)+\|1\rangle\langle1\|\otimes R\sigma(-\theta)$$
 - Doing nothing; remember it will introduce passive noise
-$$\mathtt{Wait_0[\Delta t]}$$
+$$\mathtt{Wait_q[\Delta t]}$$
 
-### Parameters
+## Parameters
+
+- Time unit is **second (s)**
+- Frequency unit is **Hertz (Hz)**
+- 0 is the index of NV<sup>-</sup> electron spin
 
 Here is an example of setting up a virtual device with quite a realistic parameters. The following device contains 6-qubit NV-center without considering the nitrogen spin. 
 
