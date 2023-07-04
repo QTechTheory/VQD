@@ -4,7 +4,7 @@
 
 # Vitual Quantum Devices
 
-**VQD** is a **Mathematica** package contains a collection of virtual quantum devices that are based on or inspired from actual quantum devices. **VQD** is built atop [**QuESTlink**](https://github.com/QTechTheory/QuESTlink), a Mathematica extension of [**QuEST**](https://github.com/QuEST-Kit/QuEST): a powerful open-source emulator of quantum computers developed in **C**.  
+**VQD** is a **Mathematica** package that contains a collection of virtual quantum devices that are based on or inspired by actual quantum devices. **VQD** is built atop [**QuESTlink**](https://github.com/QTechTheory/QuESTlink), a Mathematica extension of [**QuEST**](https://github.com/QuEST-Kit/QuEST): a powerful open-source emulator of quantum computers developed in **C**.  
  **QuESTlink** combines **Mathematica**’s powerful symbolic operations with **QuEST**’s high-performance backend, enabling virtual devices to be highly configurable through an intuitive interface, and able to leverage powerful visualisation facilities, without compromising performance!
 
 
@@ -27,7 +27,7 @@ We've designed this to function as a user-friendly, plug-and-play platform. This
 
 ## Five families of virtual quantum devices
 
-Currently we provide five types of solid-state quantum devices, including:
+Currently, we provide five types of solid-state quantum devices, including:
 1. Ion traps
 2. Nitrogen-vacancy-center  (NV-center) 
 3. Neutral atoms
@@ -35,7 +35,7 @@ Currently we provide five types of solid-state quantum devices, including:
 5. Superconducting qubits.
 
 
-Each type of quantum device is unique and is based on or inspired from actual devices. For more in-depth information on the architecture and error models of each quantum device, refer to our [**paper**](https://arxiv.org/abs/2306.07342). 
+Each type of quantum device is unique and is based on or inspired by actual devices. For more in-depth information on the architecture and error models of each quantum device, refer to our [**paper**](https://arxiv.org/abs/2306.07342). 
 
 ## Quickstart
 
@@ -45,7 +45,7 @@ Our virtual device is designed to reflect a close approximation to the physical 
 
 ### **1. Navigate to the Desired Folder**
 
-We categorise devices into five separate folders, corresponds to the family of quantum devices. Select the folder of your interest:
+We categorise devices into five separate folders, that correspond to the family of quantum devices. Select the folder of your interest:
 - `TrappedIon` - For ion trap devices
 - `NVCenter` - For NV-center devices
 - `NeutralAtom` - For neutral atom devices
@@ -64,12 +64,12 @@ Inside every folder, you'll find an example notebook. These notebooks serve to d
 
 Once you've run the notebooks, you should have generated outcomes. To verify the accuracy of your results, compare your outcomes with those depicted in the corresponding PDF file, which is included in each folder.
 
-By following these steps, you'll get a feeling on how various quantum devices operate, as each device type has unique capabilities and requirements.
+By following these steps, you'll get a feeling of how various quantum devices operate, as each device type has unique capabilities and requirements.
 
 
 ## General usage
 
-The **VQD** functionalities are neatly packaged within the `vqd.wl` file, where you can instantiate virtual quantum devices. As it is build atop **QuESTlink**, one must first load the **QuESTlink** package. 
+The **VQD** functionalities are neatly packaged within the `vqd.wl` file, where you can instantiate virtual quantum devices. As it is built atop **QuESTlink**, one must first load the **QuESTlink** package. 
 
 Here's how you can do this in Mathematica:
 
@@ -95,15 +95,15 @@ and access the API of **VQD**
 
 ### Virtual device instantiation and customisation
 
-A virtual device in our system holds descriptions of various physical quantum devices, encapsulating the characteristic of devices like architecture, legitimate operations, and every error that comes with every operations. Our noise descriptions generally have complete-positive map forms.
+A virtual device in our system holds descriptions of various physical quantum devices, encapsulating the characteristic of devices like architecture, legitimate operations, and every error that comes with every operation. Our noise descriptions generally have complete-positive map forms.
 
 To create these device descriptions, we provide functions that align with specific quantum device types
 
-- ``TrappedIonOxford[]`` for the multi-node ion traps based on University of Oxford devices.
+- ``TrappedIonOxford[]`` for the multi-node ion traps based on the University of Oxford devices.
 - ``NVCenterDelft[]`` for the NV-center diamonds based on the University of Delft devices.
 - ``RydbergHub[]`` for the Rydberg neutral atoms based on the University of Strathclyde devices.
 - ``SiliconDelft[]`` for the Si/SiGe spin qubits based on the University of Delft devices.
-- ``SuperconductingHub[]`` for the superconducting transmond qubits based on the University of Oxford devices.
+- ``SuperconductingHub[]`` for the superconducting transmon qubits based on the University of Oxford devices.
 
 
 These functions do not come with default parameters. Users must set these parameters, reflecting the fundamental characteristics of their devices. Here is an example of how to set parameters for the `TrappedIonOxford` function:
@@ -127,16 +127,16 @@ FreqSingleXY -> <|0 -> 15*10^6, 1 -> 500 , 2 -> 500, 3 -> 500, 4 -> 500, 5 -> 50
 ```
 In the corresponding folder, we offer a set of examples on how to configure these parameters, as well as the range of numbers that are typically based on actual, approximately realistic, devices. These examples provide a practical view of realistic parameters that you can easily modify according to your needs or your devices.
 
-The following command instantiate a virtual ion traps with default parameters set above.
+The following command instantiates a virtual ion trap with the default parameters set above.
 
 ```Mathematica
 TrappedIonOxford[]
 ```
-Overriding default parametrs devices can be done on the fly; for example 
+Overriding default parameters devices can be done on the fly; for example 
 ```Mathematica
 TrappedIonOxford[FreqWeakZZ -> 10]
 ```
-which overrides default parameters of ``FreqWeakZZ``.
+which overrides the default parameter ``FreqWeakZZ``.
 
 
 
@@ -151,7 +151,7 @@ Want to build a virtual device from scratch? follow the QuESTlink guide [here](h
 The development of this package would not have been possible without the significant contributions and collaborations of many individuals.
 
 - **Scientific Contributors:** 
-Mohammed Alghadeer, Mohamed Abobeih, Simon Benjamin, Alessandro Ciani, Shuxiang Cao, Andrew Daley, Joseph Goodwin, Fernando Gonzalez-Zalba, Tomas Kozlej, Peter Leek, David Nadlinger, Natalie Pearson, Gerard Pelergi, Cody Poole, Jonathan Pritchard, Mark Saffman, Jason Smith, and Joanna Zajac.
+Mohammed Alghadeer, Mohamed Abobeih, Simon Benjamin, Alessandro Ciani, Shuxiang Cao, Andrew Daley, Joseph Goodwin, Fernando Gonzalez-Zalba, Tomas Kozlej, Peter Leek, David Nadlinger, Natalie Pearson, Gerard Pelergi, Cody Poole, Jonathan Pritchard, Mark Saffman, Jason Smith, and Joanna Zajac, for designing error models and describing their quantum devices as well as the processes happening.
 
 - **Software Contributors:** 
 Tyson Jones, for providing essential support on the QuESTlink part.
