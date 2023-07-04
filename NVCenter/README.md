@@ -1,5 +1,7 @@
+<div align="center">
+ <img src="../supplement/web/nvc.png" width="150" alt="Alt text">
+</div>
 
-# <img src="../supplement/web/nvc.png" width="200" height="200" alt="Alt text">
 # Nitrogen-vacancy center qubits
 
 There is currently one virtual NV-center devices, namely NV-center diamond that is inspired from devices in the University of Delft. This device is instantiated with command ``NVCenterDelft[]``.
@@ -12,7 +14,7 @@ We set the electron spin to be indexed 0 in the program. See the picture below, 
 
 
 <div align="center">
- <img src="../supplement/web/conn_nvc.jpg" width="250" alt="Alt text">
+ <img src="../supplement/web/conn_nvc.jpg" width="150" alt="Alt text">
 </div>
 
 Therefore, two-qubit gates operations can be done (directly) between the center spin to the surrounding spin.
@@ -23,26 +25,16 @@ Therefore, two-qubit gates operations can be done (directly) between the center 
 Here are the operators defined in the virtual NV-center qubits, together with their commands.
 
 - Direct initialisation is the NV electron spin only.
-$$
-\mathtt{Init_0}
-$$
+$$\mathtt{Init_0}$$
 - Direct measurement is the NV electron spin only, which is projective measurement in the computational basis.
-$$
-\mathtt{M_0}
-$$
+$$\mathtt{M_0}$$
 - Single qubit gates are Pauli rotations that can be done on any qubits.
-$$
-\mathtt{Rx_q[\theta]}, \mathtt{Ry_q[\theta]}, \mathtt{Rz_q[\theta]}
-$$
+$$\mathtt{Rx_q[\theta]}, \mathtt{Ry_q[\theta]}, \mathtt{Rz_q[\theta]}$$
 - Two-qubit gates are conditional rotation,
-$$
-\mathtt{CRx_{0,q}[\theta]}, \mathtt{CRy_{0,q}[\theta]}
-$$
+$$\mathtt{CRx_{0,q}[\theta]}, \mathtt{CRy_{0,q}[\theta]}$$
 where  $$\mathtt{CR\sigma[\theta]}=\|0\rangle\langle0\|\otimes R\sigma(\theta)+\|1\rangle\langle1\|\otimes R\sigma(-\theta)$$
 - Doing nothing; remember it will introduce passive noise
-$$
-\mathtt{Wait_0[\Delta t]}
-$$
+$$\mathtt{Wait_0[\Delta t]}$$
 
 ### Parameters
 
