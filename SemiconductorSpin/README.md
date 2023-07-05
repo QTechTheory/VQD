@@ -4,16 +4,16 @@
 
 # Semiconductor spin qubits
 
-There is currently one virtual spin qubit in semiconductor quantum dots device, where quantum dots being defined in the <sup>28</sup>Si quantum well of the <sup>28</sup>Si/SiGe heterostructure. This device is based on quantum device in the University of Delft and is instantiated with command ``SiliconDelft[]``. 
+There is currently one virtual spin qubit in semiconductor quantum dots device, where quantum dots are defined in the <sup>28</sup>Si quantum well of the <sup>28</sup>Si/SiGe heterostructure. This device is based on a quantum device in the University of Delft and is instantiated with the command ``SiliconDelft[]``. 
 
 ## Characteristics
 
 The device has 1D linear architecture with nearest neighbour connectivity. There is favoured direction on the two-qubit gates implementation and direct measurement is only possible on the pair edge qubits, which is parity measurement.
 
-For instance, the architecture below is based on a silicon device in Delft [here](https://doi.org/10.1038/s41586-022-05117-x), consists of six qubits. 
+For instance, the architecture below is based on a silicon device in Delft [here](https://doi.org/10.1038/s41586-022-05117-x), and consists of six qubits. 
 
 <div align="center">
- <img src="../supplement/web/silicon_delft.jpg" height="70" alt="quantum dots">
+ <img src="../supplement/web/silicon_delft.jpg" height="50" alt="quantum dots">
 </div>
 
 The arrows in the architecture denote the connectivity of CNOT gates, with each arrow directed towards the target qubits. The dashed lines, on the other hand, represent the symmetric connectivity of the controlled-phase gates. The regions marked in yellow perform the function of parity measurement, specifically, they measure the parity between qubits 0,1 and 4,5. This architecture can be straightforwardly extended to incorporate any even number of qubits. With such a mechanism, initialisations are constrained to start from the edge qubits.
@@ -21,8 +21,8 @@ The arrows in the architecture denote the connectivity of CNOT gates, with each 
 The parity measurement operator distinguishes even ($\|01\rangle,\|10\rangle$) and odd outcomes ($\|00\rangle,\|11\rangle$) followed with fast decay of state $\|01\rangle$ into $\|10\rangle$. We describe such parity measurement with the following operations:
 $$\mathcal{M}=\mathcal{K}(M)$$
 where $M$ is the parity measurement projector and $\mathcal{K}$ is a CPTP map describing the state decay,
-$$M=\{ (\|01\rangle\langle01\|+\|10\rangle\langle10\|,\mathtt{0}),(\|00\rangle\langle00\|+\|11\rangle\langle11\|,\mathtt{1})\}$$
-$$\mathcal{K}=\{\|00\rangle\langle00\|,\|11\rangle\langle11\|,\|10\rangle\langle10\|,\|10\rangle\langle01\|\}$$
+$$M=\\{ (\|01\rangle\langle01\|+\|10\rangle\langle10\|,\mathtt{0}),(\|00\rangle\langle00\|+\|11\rangle\langle11\|,\mathtt{1}) \\}$$
+$$\mathcal{K}=\\{\|00\rangle\langle00\|,\|11\rangle\langle11\|,\|10\rangle\langle10\|,\|10\rangle\langle01\|\\}$$
 
 ## Native operations
 
@@ -30,13 +30,13 @@ Below are the operators defined in the virtual silicon spin qubits, together wit
 
 - Initialisation must be done from edge qubits at any time. For example, in the case of the six-qubit device shown above, here are the legitimate initialisation commands.
 $$\mathtt{Init_{0,1}, Init_{0,1,2}, Init_{4,5}, Init_{3,4,5}}$$
-- Parity measurement can be done only on the edge qubits. For example, in the case of the six-qubit device shown above, ligitimare parity measurements are shown below.
+- Parity measurement can be done only on the edge qubits. For example, in the case of the six-qubit device shown above, legitimate parity measurements are shown below.
 $$\mathtt{MeasP_{0,1},MeasP_{4,5}}$$
 - Single-qubit gates comprise Pauli rotations.
 $$\mathtt{Rx_q[\theta], Ry_q[\theta],Rz_q[\theta]}$$
-- The controlled-Z and controlled-phase gates can be operated upon nearest-neighbour qubits; here $\mathtt{p}$ and $\mathtt{q}$ are nearest neighbour
+- The controlled-Z and controlled-phase gates can be operated upon nearest-neighbour qubits; here $\mathtt{p}$ and $\mathtt{q}$ are nearest neighbours
 $$\mathtt{C_{p}[Z_q], C_{p}[Ph_q[\theta]]}$$
-- The CNOT gates can be operated upon nearest-neighbour qubits with certain direction (see **Charateristics** section above).
+- The CNOT gates can be operated upon nearest-neighbour qubits with certain directions (see **Characteristics** section above).
 $$\mathtt{C_p[X_q]}$$
 - Doing nothing; remember it will introduce passive noise
 $$\mathtt{Wait_q[\Delta t]}$$
@@ -81,7 +81,7 @@ Options[SiliconDelft] =
    (*  The rabi Frequency and fidelities of controlled-Z(C[Z]), nearest-neighbors. Keys are the smallest qubit number.  This applies to controlled-Ph gates *)
    FreqCZ -> <|0 -> 12.1, 1 -> 11.1, 2 -> 6.6, 3 -> 9.8, 4 -> 5.4|>
    ,
-   (* Fidelity of controlled-Z, the number below indicate the lower number of qubits *)
+   (* Fidelity of controlled-Z, the numbers below indicate the lower number of qubits *)
    FidCZ -> <|0 -> 0.9374945614729504`, 1 -> 0.9339691831083574`, 2 -> 0.9286379436705322`, 3 -> 0.9967228426036524`, 4 -> 0.9793017377403548`|>
    ,
    (* Fidelity of CROT(CNOT) rotation *)
@@ -90,7 +90,7 @@ Options[SiliconDelft] =
    (* Rabi frequency of CROT(CNOT), obtained by conditional microwave drive *)
    FreqCRot -> 5
    ,
-   (* Error fraction/ratio {depolarising, dephasing} of controled- Ph(Pi) or controlled-Z. The error for other angle is scalled from Pi. *)
+   (* Error fraction/ratio {depolarising, dephasing} of controled- Ph(Pi) or controlled-Z. The error for other angles is scaled from Pi. *)
    EFCZ -> {0, 1}
    ,
    (* Crosstalks error (C-Rz[ex])on the passive qubits when applying CZ gates; square matrix with dims nqubit-2 *)
