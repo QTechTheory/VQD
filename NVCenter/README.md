@@ -6,6 +6,10 @@
 
 There is currently one virtual NV-center device, namely NV-center diamond that is inspired from devices in the University of Delft. This device is instantiated with command ``NVCenterDelft[]``.
 
+**Table of contents**
+1. [Characteristics](#characteristics)
+2. [Native operations](#native-operations)
+3. [Parameters](#parameters)
 
 ## Characteristics
 

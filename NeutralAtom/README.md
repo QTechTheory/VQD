@@ -6,6 +6,10 @@
 
 There is currently one virtual neutral atom device, namely Rydberg atom device that is inspired by devices in the University of Strathclyde and the University of Harvard. This device is instantiated with the command ``RydbergHub[]``.
 
+**Table of contents**
+1. [Characteristics](#characteristics)
+2. [Native operations](#native-operations)
+3. [Parameters](#parameters)
 
 ## Characteristics
 

@@ -1,5 +1,12 @@
 (* ::Package:: *)
 
+(* @file
+* Virtual quantum device package.
+* Requires QuESTlink 
+* @author Cica Gustiani
+*)
+
+
 BeginPackage["VQD`"];
 
 (*

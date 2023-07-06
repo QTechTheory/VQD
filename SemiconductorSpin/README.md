@@ -6,6 +6,12 @@
 
 There is currently one virtual spin qubit in semiconductor quantum dots device, where quantum dots are defined in the <sup>28</sup>Si quantum well of the <sup>28</sup>Si/SiGe heterostructure. This device is based on a quantum device in the University of Delft and is instantiated with the command ``SiliconDelft[]``. 
 
+**Table of contents**
+1. [Characteristics](#characteristics)
+2. [Native operations](#native-operations)
+3. [Parameters](#parameters)
+
+
 ## Characteristics
 
 The device has 1D linear architecture with nearest neighbour connectivity. There is favoured direction on the two-qubit gates implementation and direct measurement is only possible on the pair edge qubits, which is parity measurement.
