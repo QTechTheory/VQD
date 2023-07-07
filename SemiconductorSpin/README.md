@@ -49,11 +49,14 @@ $$\mathtt{Wait_q[\Delta t]}$$
 
 ## Parameters
 
+The following configuration takes inspiration from a device at the University of Delft: six-qubit silicon device based on this [reference](https://doi.org/10.1038/s41586-022-05117-x). Device architecture is pictured above (see **Characteristics**).
+
+
 - Time unit is **microseconds** ($\mu s$)
 - Frequency unit is **megahertz (MHz)**
 
-Here is an example of setting up a virtual device with quite realistic parameters. The following device is a six-qubit device based on this [reference](https://doi.org/10.1038/s41586-022-05117-x).
 
+The code below can be directly copied and executed. 
 ```Mathematica
 Options[SiliconDelft] =
   {

@@ -5,8 +5,6 @@
 * Requires QuESTlink 
 * @author Cica Gustiani
 *)
-
-
 BeginPackage["VQD`"];
 
 (*
@@ -1681,7 +1679,8 @@ Begin["`Private`"];
 	(* DEVICE_TRAPPEDIONSOXFORD *)
 	
 	
-	(*Return nodes with 4 zones, its map to qubits register, and the total number of qubits. Initially, all qubits are in zone 1";*)
+	(* Return nodes with 4 zones, its map to qubits register, and the total number of qubits. Initially, all qubits are in zone 1 *)
+
 	createNodes[args__Association] :=
 		Module[{q, qglob = 0, nodes, qmap, qubits},
 			nodes = Map[<|1 -> Range[#], 2 -> {}, 3 -> {}, 4 -> {}|>&, args]; 
@@ -1690,7 +1689,7 @@ Begin["`Private`"];
 			{nodes, qmap, qglob, qubits}
 	]
 	
-	(*Drawing-ions-related*)
+	(* Drawing-ions-related *)
 	
 	(*Main function to draw the ions inside the zones*)
 	showIons[nodes_, connall_] := Module[
@@ -1708,7 +1707,7 @@ Begin["`Private`"];
 		Grid[ 
 			Table[ 
 				i++; 
-				{node, Sequence @@ Table[drawZone[qulocs[node][zone], "zone "<>ToString @ zone, colors[[i]], connall[node]], {zone, Keys @ nodes[node]}]},
+				{ToString[node], Sequence @@ Table[drawZone[qulocs[node][zone], "zone "<>ToString @ zone, colors[[i]], connall[node]], {zone, Keys @ nodes[node]}]},
 			{node, Keys @ nodes}] , Spacings -> {0,1}]
 	]
 

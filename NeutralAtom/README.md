@@ -68,12 +68,13 @@ $$\mathtt{Wait_q[\Delta t]}$$
 
 ## Parameters
 
+The following configuration takes inspiration from a device at Harvard University: seven-qubit Rydberg atom device based on this [reference](https://doi.org/10.1038/s41586-022-04592-6), in the Steane code stabiliser measurement experiment.
+
 - Time unit is **microseconds** ($\mu s$)
 - Frequency unit is **megahertz (MHz)**
 - Length/distance unit is **micrometer** ($\mu m$) 
 
-Here is an example of setting up a virtual device with quite realistic parameters. 
-The following device has 7-qubit neutral atoms in a 2D configuration (from the Steane code simulation in the paper).
+The code below can be directly copied and executed. 
 
 ```Mathematica
 Options[RydbergHub] = {

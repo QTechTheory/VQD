@@ -42,12 +42,13 @@ $$\mathtt{Wait_q[\Delta t]}$$
 
 ## Parameters
 
+The following configuration takes inspiration from devices at the University of Delft: a virtual NV-center contains six qubits without considering the nitrogen spin. 
+
 - Time unit is **second (s)**
 - Frequency unit is **Hertz (Hz)**
 - 0 is the index of NV<sup>-</sup> electron spin
 
-Here is an example of setting up a virtual device with quite a realistic parameters. The following device contains 6-qubit NV-center without considering the nitrogen spin. 
-
+The code below can be directly copied and executed. 
 ```Mathematica
 Options[NVCenterDelft] = {
    QubitNum -> 6
