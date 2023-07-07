@@ -4,7 +4,7 @@
 
 # Trapped Ions
 
-There is currently one virtual ion traps, which is multi-node ion traps. This device is based on quantum device in the University of Oxford, which is instantiated with ``TrappedIonOxford[]``.
+There is currently one virtual ion trap, which is multi-node ion traps. This device is based on a quantum device in the University of Oxford, which is instantiated with ``TrappedIonOxford[]``.
 
 **Table of contents**
 1. [Characteristics](#characteristics)
@@ -15,7 +15,7 @@ There is currently one virtual ion traps, which is multi-node ion traps. This de
 
 The multi-node ion traps have local full connectivity within each trap/node. In this virtual device, the user specifies the number of traps and the number of ions in each trap. Each trap contains four "zones", with each zone assigned to perform specific tasks. For instance, remote entanglement must be conducted in zone 4, gate operations in zones 2 and 3, and so on. Given these characteristics, the user needs to take into account the location of ions to perform operations.
 
-We provide a command to check the position of ions. For instance the following code instantiates a virtual ion traps and displays the position of ions. The user can freely specify the trap or node names, which are used in the operators. The following example shows two-node ion traps called **Alice** and **Bob**.
+We provide a command to check the position of ions. For instance, the following code instantiates a virtual ion trap and displays the position of ions. The user can freely specify the trap or node names, which are used in the operators. The following example shows two-node ion traps called **Alice** and **Bob**.
 
 ```Mathematica
 dev = TrappedIonOxford[];
@@ -23,12 +23,12 @@ dev[ShowNodes]
 ```
  <img src="../supplement/web/iontrap_before.png" height="130" alt="Alt text">
 
-The picture above shows initial configuration of two ion traps, in which all ions in the trap are combined (shown by the dashed lines). Before perfoming a two-qubit gate, the corresponding ions must be **combined**.
+The picture above shows the initial configuration of two ion traps, in which all ions in the trap are combined (shown by the dashed lines). Before performing a two-qubit gate, the corresponding ions must be **combined**.
 ## Native operations
 
-The native operations of the virtual ion traps are the following. Note that, the user must specify the **node** name (**Alice** or **Bob** in figure above) and the ion (indexed from **1** to **N**) in every operation. 
+The native operations of the virtual ion traps are the following. Note that, the user must specify the **node** name (**Alice** or **Bob** in the figure above) and the ion (indexed from **1** to **N**) in every operation. 
 
-Every operator has designated zone; the user must shuttle the ions around to fulfill this requirement.
+Every operator has designated zones; the user must shuttle the ions around to fulfil this requirement.
 
 - Initialisation must be done to all ion
 $$\mathtt{Init_{0,1,...,N-1}[node]}$$
@@ -42,7 +42,7 @@ $$\mathtt{Rx_q[\theta]}, \mathtt{Ry_q[\theta]}, \mathtt{Rz_q[\theta]}$$
 - Two-qubit gate is controlled-Z; qubits $\mathtt{q_1,q_2}$ must be **combined** before this gate.
 $$\mathtt{CZ_{q_1,q_2}[node]}$$
 
-- Remote gate between two different traps, generating entanglement gate. The following command initialises Bell pair $(\|01\rangle-\10\rangle)/\sqrt{2}$ between qubit $\mathtt{q_1}$ in $\mathtt{node1}$ and $\mathtt{q_2}$ in $\mathtt{node2}$.
+- Remote gate between two different traps, generating entanglement gate. The following command initialises Bell pair $(\|01\rangle-\|10\rangle)/\sqrt{2}$ between qubit $\mathtt{q_1}$ in $\mathtt{node1}$ and $\mathtt{q_2}$ in $\mathtt{node2}$.
 $$\mathtt{Ent_{q_1,q_2}[node1, node2]}$$
 
 - Physical move: swap location between qubits $\mathtt{q_1}$ and $\mathtt{q_2}$; qubits $\mathtt{q_1,q_2}$ must be **combined** before this operator.
@@ -54,7 +54,7 @@ $$\mathtt{Comb_{q_1,q_2}[node]}$$
 - Physical move: split two combined qubits (physically means splitting the created sub-zone with Comb); both qubits must be sitting inside the same zone. This is required before moving the ion around.
 $$\mathtt{Splz_{q_1,q_2}[node]}$$
 
-- Physical move: shuttling the ions linearly to destination zone **dzone**. All ions must be sitting inside the same zone. The move is linear, there is no ions in the path.
+- Physical move: shuttling the ions linearly to the destination zone **dzone**. All ions must be sitting inside the same zone. The move is linear, there is no ions in the path.
 $$\mathtt{Shutl_{q_1,q_2,q_3,...}[node, dzone]}$$
 
 - Doing nothing; remember it will introduce passive noise
@@ -97,7 +97,7 @@ Options[TrappedIonOxford] = {
    (* readout duration *)
    DurRead -> <|"Alice" -> 50, "Bob" -> 50|>
    ,
-   (* Symmetric bit-flip eror during readout  *)
+   (* Symmetric bit-flip error during readout  *)
    ProbBFRead -> <|"Alice" -> 10^-3, "Bob" -> 10^-3|>
    ,
    (*Fidelity of single x- and y- rotations; z-rotation is instaneous (noiseless, virtual)*)
