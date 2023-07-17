@@ -9,7 +9,7 @@ There is currently one virtual neutral atom device, namely Rydberg atom device t
 **Table of contents**
 1. [Characteristics](#characteristics)
 2. [Native operations](#native-operations)
-3. [Parameters](#parameters)
+3. [Parameters and usage](#parameters-and-usage)
 
 ## Characteristics
 
@@ -66,7 +66,7 @@ $$\mathtt{ShiftLoc_{q1,q2,q3,...}}[v]$$
 - Doing nothing; remember it will introduce passive noise
 $$\mathtt{Wait_q[\Delta t]}$$
 
-## Parameters
+## Parameters and usage
 
 The following configuration takes inspiration from a device at Harvard University: seven-qubit Rydberg atom device based on this [reference](https://doi.org/10.1038/s41586-022-04592-6), in the Steane code stabiliser measurement experiment.
 
@@ -127,5 +127,30 @@ Options[RydbergHub] = {
    ProbLeakCZ -> <|01 -> 0.01, 11 -> 0.0001|>
    }; 
 ```
+To allow efficient gates implementation that also reflects to what happen in practice, we provide gates arrangement command
+``CircRydbergHub[]`` with option to implement parallel (``CircRydbergHub[circuit, device, Parallel -> True]``) or serial implementation.
+(``CircRydbergHub[circuit, device, Parallel -> False]``). 
 
+Parallelisation in neutral atoms is atomic configuration-dependent, where concurrent operations can be performed if
+the corresponding atoms operated upon do not have their blockade radii overlapped.
+This means, if two atoms have their blockade radii overlapping, then parallel gates cannot be performed upon them. 
+On the other hand, serial implementation imposing gates to be performed one at a time, but initialisations are done simultaneously.
+This reflects the initialisation process in practice comprises loading and rearranging the atoms. 
 
+Here is an example of implementing a ``circuit`` in parallel fashion, on a virtual netural atoms. Note that ``circuit`` contains legitimate operations
+taking into account requirement on the atomic configurations, e.g., two-qubit gates are legit to atoms within their overlapping blockade radii.
+
+```Mathematica
+mydev = RydbergHub[];
+noisycircscheduled = InsertCircuitNoise[CircRydbergHub[circuit, mydev, Parallel -> True], mydev, ReplaceAliases -> True];
+noisycirc = ExtractCircuit @ noisycircscheduled;
+ApplyCircuit[rho, noisycirc];
+```
+First, ``mydev`` contains an instance of ``RydbergHub[]``.
+Second, ``noisycircscheduled`` contains noise-decorated of parallel implementation of ``circuit``. 
+Note that, ``InsertCircuitNoise`` command modifies ``mydev``; for instance, the arrangement of atoms, loss probabilities
+due to measurements are updated and stored in ``mydev``.
+Parallel arrangement is taken care by command ``CircRydberghub[Parallel -> True]``,
+which takes into account register reconfiguration operations in ``circuit``.
+Third, ``noisycirc`` contains the noise-decorated ``circuit`` without schedule information. 
+Finally, ``ApplyCircuit`` command operates the noisy circuit ``noisycirc`` to a density of states ``rho``.

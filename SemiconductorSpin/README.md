@@ -9,7 +9,7 @@ There is currently one virtual spin qubit in semiconductor quantum dots device, 
 **Table of contents**
 1. [Characteristics](#characteristics)
 2. [Native operations](#native-operations)
-3. [Parameters](#parameters)
+3. [Parameters and usage](#parameters-and-usage)
 
 
 ## Characteristics
@@ -47,7 +47,7 @@ $$\mathtt{C_p[X_q]}$$
 - Doing nothing; remember it will introduce passive noise
 $$\mathtt{Wait_q[\Delta t]}$$
 
-## Parameters
+## Parameters and usage
 
 The following configuration takes inspiration from a device at the University of Delft: six-qubit silicon device based on this [reference](https://doi.org/10.1038/s41586-022-05117-x). Device architecture is pictured above (see **Characteristics**).
 
@@ -116,4 +116,25 @@ Options[SiliconDelft] =
    };
 ```
 
+It is common to apply gates in serial manner in practice, which adds an asumption that
+some dynamical decoupling sequences are constantly applied to passive qubits.
+The following command obtain the noisy version of ``circuit`` running on a virtual silicon spin qubit, 
+e.g., virtual device with configuration above.
+
+```Mathematica
+noisycircscheduled = InsertCircuitNoise[Serialize @ circuit, SiliconDelft[], ReplaceAliases -> True];
+noisycirc = ExtractCircuit @ noisycircscheduled;
+ApplyCircuit[rho, noisycirc];
+```
+First, variable ``noisycircscheduled`` contains noise-decorated circuit together with its schedule.
+Command ``Serialize @ circuit`` imposes simple serial implementation,
+turning every element into a set, i.e., maps a set {a,b,c,...} to {{a},{b},{c}...}.
+Therefore, passive noise becomes more prevalent; however, given that dynamical decoupling
+is assumed, the coherence values (T1 and T2) supposed to be high with this implementation.
+Note that, option ``ReplaceAliases`` replaces gate aliases/custom gates into standard 
+**QuESTlink** operations: for instance ``Init`` gate here will be replaced with a
+series of operations involving parity measurements.
+Variable ``noisycirc`` contains noise-decorated ``circuit`` that is ready for simulation.
+Second, the command ``ExtractCircuit[]`` basically removes the schedule information.
+Finally, command ``ApplyCircuit`` operates ``noisycirc`` upon the density matrix ``rho``.
 

@@ -9,11 +9,11 @@ There is currently one virtual NV-center device, namely NV-center diamond that i
 **Table of contents**
 1. [Characteristics](#characteristics)
 2. [Native operations](#native-operations)
-3. [Parameters](#parameters)
+3. [Parameters and usage](#parameters-and-usage)
 
 ## Characteristics
 
-NV-center has star-shaped connectivity, where the NV<sup>-</sup>  electron spin is sitting in the center, surrounded by the nuclear spins C<sup>13</sup> &mdash; and may also involve N<sup>14</sup> spin.
+NV-center has star-shaped connectivity, where the NV<sup>-</sup>  electron spin is sitting in the center, surrounded by the nuclear spins <sup>13</sup>C &mdash; and may also involve <sup>14</sup>Nq spin.
 We set the electron spin to be indexed 0 in the program. See the picture below, where q0 is the electron spin and the rest are nuclear spin. The green circle represents nitrogen spin if you want to use it; this is decided in the setting up the parameters, e.g.,  particular fidelities and coherence time.
 
 
@@ -40,7 +40,7 @@ where  $$\mathtt{CR\sigma[\theta]}=\|0\rangle\langle0\|\otimes R\sigma(\theta)+\
 - Doing nothing; remember it will introduce passive noise
 $$\mathtt{Wait_q[\Delta t]}$$
 
-## Parameters
+## Parameters and usage
 
 The following configuration takes inspiration from devices at the University of Delft: a virtual NV-center contains six qubits without considering the nitrogen spin. 
 
@@ -100,4 +100,20 @@ Options[NVCenterDelft] = {
    };
 ```
 
+In practice, dynamical decoupling is constantly applied to passive qubits to mitigate unwanted interaction. For instance, let ``circuit`` be a circuit comprises native operations. The following command obtain noisy version of running ``circuit`` on the virtual NV-center defined above.
 
+```Mathematica
+noisycircscheduled = InsertCircuitNoise[Serialize @ circuit, NVCenterDelft[], ReplaceAliases -> True];
+noisycirc = Extractcircuit @ noisycircscheduled;
+ApplyCircuit[rho, noisycirc]
+```
+First, variable ``noisycircscheduled`` contains noise-decorated ``circuit`` together with its schedule.
+Command ``Serialize @ circuit`` imposes serial implementation, 
+turning every element into a set, i.e., maps a set {a,b,c,...} to {{a},{b},{c}...}. 
+Therefore, passive noise becomes more prevalent; however, given that dynamical decoupling is assumed, 
+the coherence values (T1 and T2) supposed to be high with this implementation.
+Note that, option ``ReplaceAliases`` replaces gate aliases/custom gates into standard **QuESTlink** operations:
+for instance ``Init`` gate here is defined as an amplitude damping.
+Variable ``noisycirc`` contains noise-decorated ``circuit`` that is ready for simulation. 
+Second, the command ``ExtractCircuit[]`` basically removes the schedule information.
+Finally, command ``ApplyCircuit`` operates ``noisycirc`` upon the density matrix ``rho``. 
