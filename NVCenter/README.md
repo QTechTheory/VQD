@@ -103,12 +103,12 @@ Options[NVCenterDelft] = {
 In practice, dynamical decoupling is constantly applied to passive qubits to mitigate unwanted interaction. For instance, let ``circuit`` be a circuit comprises native operations. The following command obtain noisy version of running ``circuit`` on the virtual NV-center defined above.
 
 ```Mathematica
-noisycircscheduled = InsertCircuitNoise[List /@ circuit, NVCenterDelft[], ReplaceAliases -> True];
+noisycircscheduled = InsertCircuitNoise[Serialize @ circuit, NVCenterDelft[], ReplaceAliases -> True];
 noisycirc = Extractcircuit @ noisycircscheduled;
 ApplyCircuit[rho, noisycirc]
 ```
 First, variable ``noisycircscheduled`` contains noise-decorated ``circuit`` together with its schedule.
-Command ``List /@ circuit`` imposes serial implementation, 
+Command ``Serialize @ circuit`` imposes serial implementation, 
 turning every element into a set, i.e., maps a set {a,b,c,...} to {{a},{b},{c}...}. 
 Therefore, passive noise becomes more prevalent; however, given that dynamical decoupling is assumed, 
 the coherence values (T1 and T2) supposed to be high with this implementation.
