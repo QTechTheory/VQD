@@ -116,4 +116,4 @@ Note that, option ``ReplaceAliases`` replaces gate aliases/custom gates into sta
 For instance ``Init`` gate, which is intialisation is defined as amplitude damping operation.
 Variable ``noisycirc`` contains noise-decorated ``circuit`` that is ready for simulation. 
 Second, the command ``ExtractCircuit[]`` basically removes the schedule information.
-Finally, command ``ApplyCircuit`` operates ``noisycirc`` to a density of state ``rho``. 
+Finally, command ``ApplyCircuit`` operates ``noisycirc`` upon the density matrix ``rho``. 
