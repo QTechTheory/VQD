@@ -9,7 +9,7 @@ There is currently one virtual ion trap, which is multi-node ion traps. This dev
 **Table of contents**
 1. [Characteristics](#characteristics)
 2. [Native operations](#native-operations)
-3. [Parameters](#parameters)
+3. [Parameters and usage](#parameters-and-usage)
 
 ## Characteristics
 
@@ -31,7 +31,7 @@ The native operations of the virtual ion traps are the following. Note that, the
 Every operator has designated zones; the user must shuttle the ions around to fulfil this requirement.
 
 - Initialisation must be done to all ion
-$$\mathtt{Init_{0,1,...,N-1}[node]}$$
+$$\mathtt{Init_{1,...,N}[node]}$$
 
 - Qubit readout must be done to a single ion sitting alone in the zone.
 $$\mathtt{Read_q[node]}$$
@@ -68,7 +68,7 @@ $$\mathtt{Wait_q[\Delta t]}$$
 - **Zone 4** : $\mathtt{Shutl, Ent}$
 
 
-## Parameters
+## Parameters and usage
 
 The following configuration takes inspiration from a device at the University of Oxford. The code provided below can be directly copied and executed.
 
@@ -131,3 +131,41 @@ Options[TrappedIonOxford] = {
    StdPassiveNoise -> True
    };
 ```
+In practice, gates parallelisation on ion traps is applicable to certain operations with
+some configuration of zones, e.g., when qubits are in different zones concurrent 
+gates may be acted upon them. However, as this effort is still actively explored,
+we do not implement parallelisation on this virtual ion traps for practical reasons.
+However, the user must rearrange the gates as there are multiple nodes involved,
+in which parallelisation is applicable on different nodes. This arrangement is 
+taken care by function ``CircTrappedIons[]``, with option ``MapQubits -> True``
+or ``MapQubits -> False``.
+
+The simulation of the multi-node ion trap is performed on the total density matrix.
+Therefore, we partition the density matrix into the corresponding nodes. 
+The option ``MapQubits -> True`` will map the local indices within a node into
+the global indices for the whole density matrix. This is useful to check the circuit
+arrangement globally, for instance command
+```Mathematica 
+DrawCircuit @ CircTrappedIons[circuit, TrappedIonOxford[], MapQubits -> True]
+```
+will draw the (noiseless) circuits arranged according to multi-nodes indices. 
+However, to obtain the noise-decorated ``circuit`` to simulate on the noisy
+ion traps, one must set ``MapQubits -> False``. See example below.
+```Mathematica
+mytraps = TrappedIonOxford[]; 
+noisycircscheduled = InsertCircuitNoise[CircTrappedIons[circuit, mytraps, MapQubits -> False], mytraps, ReplaceAliases -> True];
+noisycirc = Extractcircuit @ noisycircscheduled;
+ApplyCircuit[rho, noisycirc]
+```
+First, variable ``noisycircscheduled`` contains noise-decorated ``circuit`` together with its schedule.
+Command ``CircTrappedIons[circuit, mytraps, MapQubits -> False]`` imposes serial implementation
+locally to the node, but parrallel with respect to different nodes.
+Note that, option ``ReplaceAliases`` replaces gate aliases/custom gates into standard **QuESTlink** operations:
+for instance ``Init`` gate here is defined as amplitude damping.
+Variable ``noisycirc`` contains noise-decorated ``circuit`` that is ready for simulation. 
+Second, the command ``ExtractCircuit[]`` basically removes the schedule information.
+Finally, command ``ApplyCircuit`` operates ``noisycirc`` upon the density matrix ``rho``. 
+ 
+
+
+

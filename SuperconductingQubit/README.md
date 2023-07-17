@@ -9,7 +9,7 @@ There is currently one virtual superconducting qubit devices, which is supercond
 **Table of contents**
 1. [Characteristics](#characteristics)
 2. [Native operations](#native-operations)
-3. [Parameters](#parameters)
+3. [Parameters and usage](#parameters-and-usage)
 
 ## Characteristics
 
@@ -101,3 +101,25 @@ Options[SuperconductingHub] = {
    ZZPassiveNoise -> True
    };
 ```
+
+Superconducting qubits devices typically allow full parallelism in practice.
+Full parallel configuration is default implementation in **QuESTlink**. Therefore,
+implementing a circuit in this virtual device is simpler than other virtual devices.
+See the following example of usage, where we want to emulate running ``circuit`` that
+comprises legitimate operations on to a virtual superconducting qubits, e.g., a device
+with configuration given above.
+
+```Mathematica
+noisycircscheduled = InsertCircuitNoise[circuit, SuperconductingHub[], ReplaceAliases -> True];
+noisycirc = ExtractCircuit @ noisycircscheduled;
+ApplyCircuit[rho, noisycirc];
+```
+First, variable ``noisycircscheduled`` contains noise-decorated circuit together with its schedule.
+Passing ``circuit`` directly will arrange gates implementation in full parallell; one can 
+see this in the schedule, use ``DrawCircuit[noisycircscheduled]``.
+Note that, option ``ReplaceAliases`` replaces gate aliases/custom gates into standard 
+**QuESTlink** operations: for instance ``Init`` gate here replaces the state into the corresponding thermal state.
+Variable ``noisycirc`` contains noise-decorated ``circuit`` that is ready for simulation.
+Second, the command ``ExtractCircuit[]`` basically removes the schedule information.
+Finally, command ``ApplyCircuit`` operates ``noisycirc`` upon the density matrix ``rho``.
+

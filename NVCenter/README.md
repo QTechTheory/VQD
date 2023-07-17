@@ -112,8 +112,8 @@ Command ``Serialize @ circuit`` imposes serial implementation,
 turning every element into a set, i.e., maps a set {a,b,c,...} to {{a},{b},{c}...}. 
 Therefore, passive noise becomes more prevalent; however, given that dynamical decoupling is assumed, 
 the coherence values (T1 and T2) supposed to be high with this implementation.
-Note that, option ``ReplaceAliases`` replaces gate aliases/custom gates into standard **QuESTlink** operations.
-For instance ``Init`` gate, which is intialisation is defined as amplitude damping operation.
+Note that, option ``ReplaceAliases`` replaces gate aliases/custom gates into standard **QuESTlink** operations:
+for instance ``Init`` gate here is defined as an amplitude damping.
 Variable ``noisycirc`` contains noise-decorated ``circuit`` that is ready for simulation. 
 Second, the command ``ExtractCircuit[]`` basically removes the schedule information.
 Finally, command ``ApplyCircuit`` operates ``noisycirc`` upon the density matrix ``rho``. 
