@@ -144,12 +144,12 @@ The simulation of the multi-node ion trap is performed on the total density matr
 Therefore, we partition the density matrix into the corresponding nodes. 
 The option ``MapQubits -> True`` will map the local indices within a node into
 the global indices for the whole density matrix. This is useful to check the circuit
-arrangement globally, for instance command
+arrangement globally, for instance, command
 ```Mathematica 
 DrawCircuit @ CircTrappedIons[circuit, TrappedIonOxford[], MapQubits -> True]
 ```
 will draw the (noiseless) circuits arranged according to multi-nodes indices. 
-However, to obtain the noise-decorated ``circuit`` to simulate on the noisy
+However, to obtain the noise-decorated ``circuit``, to simulate it on the noisy
 ion traps, one must set ``MapQubits -> False``. See example below.
 ```Mathematica
 mytraps = TrappedIonOxford[]; 
@@ -159,7 +159,9 @@ ApplyCircuit[rho, noisycirc]
 ```
 First, variable ``noisycircscheduled`` contains noise-decorated ``circuit`` together with its schedule.
 Command ``CircTrappedIons[circuit, mytraps, MapQubits -> False]`` imposes serial implementation
-locally to the node, but parrallel with respect to different nodes.
+locally to the node, but parallel with respect to different nodes.
+Remark that command ``InsertCircuitNoise[]`` will update the state of the virtual device instance, namely,
+``mytraps`` in this case; for example, the arrangement of the ions is updated.
 Note that, option ``ReplaceAliases`` replaces gate aliases/custom gates into standard **QuESTlink** operations:
 for instance ``Init`` gate here is defined as amplitude damping.
 Variable ``noisycirc`` contains noise-decorated ``circuit`` that is ready for simulation. 
