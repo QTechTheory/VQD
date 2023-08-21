@@ -2,7 +2,7 @@
  <img src="supplement/web/vqd_logo.png" width="200" alt="Alt text">
 </div>
 
-# Vitual Quantum Devices
+# Virtual Quantum Devices
 
 **VQD** is a **Mathematica** package that contains a collection of virtual quantum devices that are based on or inspired by actual quantum devices. **VQD** is built atop [**QuESTlink**](https://github.com/QTechTheory/QuESTlink), a Mathematica extension of [**QuEST**](https://github.com/QuEST-Kit/QuEST): a powerful open-source emulator of quantum computers developed in **C**.  
  **QuESTlink** combines **Mathematica**’s powerful symbolic operations with **QuEST**’s high-performance backend, enabling virtual devices to be highly configurable through an intuitive interface, and able to leverage powerful visualisation facilities, without compromising performance!
@@ -27,7 +27,9 @@ We've designed this to function as a user-friendly, plug-and-play platform. This
 
 ## Five families of virtual quantum devices
 
-Currently, we provide five types of solid-state quantum devices, including:
+Currently, we provide five types of quantum devices. Navigate to the corresponding folder in which a short guide is provided for each device.
+
+Our current devices includes:
 1. Ion traps
 2. Nitrogen-vacancy-center  (NV-center) 
 3. Neutral atoms
@@ -35,7 +37,7 @@ Currently, we provide five types of solid-state quantum devices, including:
 5. Superconducting qubits.
 
 
-Each type of quantum device is unique and is based on or inspired by actual devices. For more in-depth information on the architecture and error models of each quantum device, refer to our [**paper**](https://arxiv.org/abs/2306.07342). 
+Each type of quantum device is unique and is based on or inspired by actual devices. For more in-depth information on the architecture and used error models, refer to our [**paper**](https://arxiv.org/abs/2306.07342). 
 
 ## Quickstart
 
