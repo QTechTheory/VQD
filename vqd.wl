@@ -670,10 +670,12 @@ Begin["`Private`"];
 		zzpassivenoise=OptionValue @ ZZPassiveNoise
 		},
 		
-		(* some assertions to check the inputted parameters *)
-		Catch @ If[CountDistinct[Values@qubitfreq]==Length@qubitfreq, 
+		(* some assertions to check the inputted parameters. 
+		TODO: distinct when coupled 
+		*)
+		(*Catch @ If[CountDistinct[Values@qubitfreq]==Length@qubitfreq, 
 			Throw @ Message[QubitFreq::error, "Every qubit frequency value given in QubitFreq must be distinct."]
-		];
+		];*)
 		
 		Module[{ccv, ug, stdpn, zzInteraction, zzPN, lessNeighbor, zzon, passivenoise, deltaT, activeq, counter=0, init=True}
 			,		
