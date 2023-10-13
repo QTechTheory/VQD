@@ -1549,7 +1549,7 @@ Begin["`Private`"];
 		
 		(* off-resonant Rabi oscillation as the cross-talk of single rotation noise due to detuning *)
 		offresrabi[q_, theta_]:= If[offresonantrabi, 
-			Table[Subscript[U, j][offresonantRabi[rabifreq[q], qubitfreq[j] - qubitfreq[q], Abs[theta]]],{j, Delete[qubits, q+1]}] 
+			Table[Subscript[U, j][offresonantRabi[rabifreq[q], qubitfreq[j] - qubitfreq[q], Abs[theta/rabifreq[q]]]],{j, Delete[qubits, q+1]}] 
 			,
 			{}];
 		
