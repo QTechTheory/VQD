@@ -67,6 +67,7 @@ LossAtomsProbability::usage = "Device ket in the RydbergHub device that shows th
 OptionsUsed::usage = "Show all options used in a virtual device specification instance.";
 QMap::usage = "Show maps from nodes in trapped ions to the actual emulated qubits";
 ShowNodes::usage = "Draw all Ions on every nodes within the zones";
+HighlightAtoms::usage = "Options in plot atoms, to highlight atoms.";
 
 (*  
 Visualisations functions and keys  
@@ -74,7 +75,7 @@ Visualisations functions and keys
 
 PlotAtoms::usage = "PlotAtoms[rydberg_device]. Plot the neutral atoms. Set ShowBlockade->{atoms} to visualise the blockade radii. Set ShowLossAtoms->True, to show the atoms that are loss as well (grey color). It also receives options of Graphic function to style the visualisation.";
 PlotAtoms::error = "`1`";
-Options[PlotAtoms] = {ShowBlockade -> {}, ShowLossAtoms -> False};
+Options[PlotAtoms] = {ShowBlockade -> {}, ShowLossAtoms -> False, HighlightAtoms -> {}};
 
 ShowBlockade::usage = "List the qubits to draw the blockade radius.";
 ShowLossAtoms::usage = "Set true to show the atoms lost into the evironment. This shows the last coordinate before being lost.";
@@ -92,7 +93,7 @@ Options[CircSiliconDelft] = {Parallel -> False};
 
 CircRydbergHub::usage = "CircRydbergHub[circuit, device, Parallel->(False, True)]";
 CircRydbergHub::error = "`1`";
-Options[CircRydbergHub] = {Parallel -> False};
+Options[CircRydbergHub] = {Parallel -> True};
 
 Serialize::usage = "Serialize circuit. Every quantum operation is done without concurency.";
 Serialize::error = "`1`";
@@ -938,7 +939,7 @@ Begin["`Private`"];
 		implement: Exp[-i dur ZZ]
 		*)	
 		weakzz[q_, dur_] := 
-			R[dur * Pi/freqweakzz, Subscript[Z, #]Subscript[Z, #2]]& @@@ Subsets[DeleteCases[Range[1, qubitnum - 1], q], {2}];
+			R[dur/freqweakzz, Subscript[Z, #]Subscript[Z, #2]]& @@@ Subsets[DeleteCases[Range[1, qubitnum - 1], q], {2}];
 	
 		passivenoise[q_, dur_] :=
 			If[NumberQ @ freqweakzz,
@@ -1107,63 +1108,69 @@ Begin["`Private`"];
 		unit = rydbergdev @ UnitLattice, 
 		blockade = OptionValue @ ShowBlockade,
 		showloss = OptionValue @ ShowLossAtoms,
+		highlightatoms = OptionValue @ HighlightAtoms,
 		style = {ImageSize -> Medium, Frame -> True, Axes -> True}	
 		},
-		Which[
-			2 === Length @ First @ Values @ qulocs,
-			(*2D lattice*)
-				Show[
-					Sequence @@ Table[Graphics[{Cyan, Opacity[0.15], EdgeForm[Directive[Dashed, Orange]], Disk[unit * qulocs[b], blrad]}], {b, blockade}],
-					Sequence @@ Table[Graphics[{Red, Disk[unit * v, 0.15]}], {v, Values @ qulocs}],
-					Sequence @@ Table[Graphics[Text[k, ({0.1, 0.1} + qulocs[k]) * unit]], {k, Keys @ qulocs}],
-					
-					(* show the atoms lost to the environment at the last position *)
-					If[showloss,
-						Sequence @@ Table[Graphics[{Gray, Disk[unit * v, 0.15]}], {v, Values @ lossqulocs}]
-						,
-						Sequence @@ {}
-					]
-					,
-					If[showloss,
-						Sequence @@ Table[Graphics[Text[k, unit * ({0.15, 0.15} + lossqulocs[k])]], {k, Keys @ lossqulocs}]
-						,
-						Sequence @@ {}
-					]
-					,
-					Evaluate @ FilterRules[{opt}, Options[Graphics]],
-					Sequence @@ style,
-					AxesLabel -> {"x", "y"}
-				]
-			,
-			3 === Length @ First @ Values @ qulocs,
-				Show[
-					Sequence @@ Flatten @ Table[{Graphics3D[{Text[Style[k, Bold, White], unit * qulocs[k]]}], Graphics3D[{Red, Sphere[qulocs[k] * unit, 0.15]}]}, {k, Keys @ qulocs}],
-					Sequence @@ Table[Graphics3D[{Cyan, Opacity[0.15], Sphere[unit * qulocs[b], blrad]}], {b, blockade}],
-					(* show the atoms lost to the environment: the last position *)
-					If[showloss,
-						Sequence @@ Table[Graphics3D[{GrayLevel[0.3], Sphere[unit * v, 0.15]}], {v, Values @ lossqulocs}]
-						,
-						Sequence @@ {}
-					]
-					,
-					If[showloss,
-						Sequence @@ Table[Graphics3D[Text[Style[k, Bold, White], unit * lossqulocs[k]]], {k, Keys @ lossqulocs}]
-						,
-						Sequence @@ {}
-					],
-					Evaluate @ FilterRules[{opt}, Options[Graphics]],
-					Sequence @@ style,
-					AxesLabel -> {"x", "y", "z"}
-				]
-			,
-			True
-			,
-			Message[PlotAtoms::error, "Only accepts 2D- or 3D-coordinates."];
-			Return @ $Failed
-		]
-	]
+		Module[{spacing, avgedgelen, nodesize},
+		(* styling element *)
+		spacing = Total[ 1 + Max /@ Transpose @  Join[Values @ qulocs, Values @ lossqulocs]];
+		avgedgelen = N @ Mean[EuclideanDistance @@@ Subsets[Join[Values @ qulocs, Values @ lossqulocs], {2}]];
+		nodesize = 0.5 * avgedgelen * unit /spacing;
 		
-		
+			Which[
+				2 === Length @ First @ Values @ qulocs,
+				(*2D lattice*)
+					Show[
+						Sequence @@ Table[Graphics[{Cyan, Opacity[0.15], EdgeForm[Directive[Dashed, Orange]], Disk[unit * qulocs[b], blrad]}], {b, blockade}],
+						Sequence @@ Table[Graphics[{If[MemberQ[highlightatoms, k], Yellow, Red], Disk[unit * qulocs[k], nodesize]}], {k, Keys @ qulocs}],
+						Sequence @@ Table[Graphics[Text[k, qulocs[k] * unit, BaseStyle -> {FontSize -> Min[Scaled[nodesize/unit/2], 12], FontFamily -> "Times"}]], {k, Keys @ qulocs}]
+						,	
+						(* show the atoms lost to the environment at the last position *)
+						If[showloss,
+							Sequence @@ Table[Graphics[{Gray, Disk[unit * v, nodesize]}], {v, Values @ lossqulocs}]
+							,
+							Sequence @@ {}
+						]
+						,
+						If[showloss,
+							Sequence @@ Table[Graphics[Text[k, unit * lossqulocs[k], BaseStyle -> {FontSize -> Min[Scaled[nodesize/unit/2],12], FontFamily->"Times"}]], {k, Keys @ lossqulocs}]
+							,
+							Sequence @@ {}
+						]
+						,
+						Evaluate @ FilterRules[{opt}, Options[Graphics]],
+						Sequence @@ style,
+						AxesLabel -> {"x", "y"}
+					]
+				,
+				3 === Length @ First @ Values @ qulocs,
+					Show[
+						Sequence @@ Flatten @ Table[{Graphics3D[{Text[Style[k, Bold, White, FontSize -> Scaled[nodesize/unit/2]], unit * qulocs[k]]}], Graphics3D[{If[MemberQ[highlightatoms, k], Yellow, Red], Sphere[qulocs[k] * unit, nodesize]}]}, {k, Keys @ qulocs}],
+						Sequence @@ Table[Graphics3D[{Cyan, Opacity[0.15], Sphere[unit * qulocs[b], blrad]}], {b, blockade}],
+						(* show the atoms lost to the environment: the last position *)
+						If[showloss,
+							Sequence @@ Table[Graphics3D[{GrayLevel[0.3], Sphere[unit * v, nodesize]}], {v, Values @ lossqulocs}]
+							,
+							Sequence @@ {}
+						]
+						,
+						If[showloss,
+							Sequence @@ Table[Graphics3D[Text[k, unit * lossqulocs[k], BaseStyle -> {FontSize -> Scaled[nodesize/unit/2], FontFamily -> "Times", Bold, White}]], {k, Keys @ lossqulocs}]
+							,
+							Sequence @@ {}
+						],
+						Evaluate @ FilterRules[{opt}, Options[Graphics]],
+						Sequence @@ style,
+						AxesLabel -> {"x", "y", "z"}
+					]
+				,
+				True
+				,
+				Message[PlotAtoms::error, "Only accepts 2D- or 3D-coordinates."];
+				Return @ $Failed
+				]
+		]	
+	]	
 	
 	(* 
 	The main virtual Rydberg function 
@@ -1913,8 +1920,6 @@ Begin["`Private`"];
 		
 		nodes
 	]
-
-
 	(*
 	legitimate split and combine move:
 	1) The same zone
@@ -2277,8 +2282,6 @@ Begin["`Private`"];
 		Qubits :> {}	
 	|>
 	]]
-
-
 (**
  Functions related to constructing circuits, parallelisation, etc
 **)
@@ -2290,18 +2293,18 @@ Begin["`Private`"];
 	Check if gates g1 and g2 can be done concurrently, i.e., there is no overlapping blockade radii.
 	Some gates, such as Wait and Init has no parallel restriction.
 	*)
-	SetAttributes[blockadeParallel, HoldAll]
-	blockadeParallel[gate1_, gate2_, nadevice_] := Module[
-		{g1, g2, idx1, idx2, parallelgates, serialgates, distloc, atomlocs, unitlattice}
+	(*SetAttributes[blockadeParallel, HoldAll]*)
+	blockadeParallel[gate1_, gate2_, atomlocs_, unitlattice_, blockaderad_] := Module[
+		{g1, g2, idx1, idx2, parallelgates, serialgates, distloc}
 		,
-		atomlocs = nadevice[AtomLocations];
-		unitlattice = nadevice[UnitLattice];
 		(* distance measure *)
-		distloc[q1_, q2_] := Norm[atomlocs[q1] - atomlocs[q2], 2]unitlattice;
+		distloc[q1_, q2_] := Norm[atomlocs[q1] - atomlocs[q2], 2] unitlattice;
 		(* serial-only operations *)
 		serialgates = {SWAPLoc, ShiftLoc, Wait};
-		(* parallellisable operations *)
-		parallelgates = {Init, SRot, H, Rx, Ry, Rz};
+		(* unconditionally parallellisable operations *)
+		parallelgates = {Init(*, SRot, H, Rx, Ry, Rz*)};
+		(* blockade-requirement operations: the rest *)
+		
 		(* get the gate and qubit indices *)
 		{g1, idx1} = gateIndex[gate1];
 		{g2, idx2} = gateIndex[gate2];
@@ -2311,26 +2314,31 @@ Begin["`Private`"];
 			MemberQ[parallelgates, (g1|g2)],
 			True
 			,
-			MemberQ[serialgates, (g1|g2)],
+			MemberQ[serialgates, (g1|g2)]
+			,
 			False
 			,
-			True,
-			And @@ (distloc[Sequence @@ #, nadevice] > nadevice[BlockadeRadius]& /@ Tuples[{idx1, idx2}])
+			True
+			,
+			And @@ (distloc[Sequence @@ #] > blockaderad & /@ Tuples[{idx1, idx2}])
 		]
 	]
 
 	SetAttributes[CircRydbergHub, HoldAll]
 	CircRydbergHub[circuit_, device_, OptionsPattern[]] := Module[
-		{parallel, circ, newcirc, circols, idxcol, incol, idx1, idx2, g1, g2}
+		{parallel, circ, newcirc, circols, idxcol, incol, idx1, idx2, g1, g2, q1, q2, atomlocs, unitlattice, blockaderad, shiftvec}
 		,
-		parallel=OptionValue[Parallel];
-		circ=circuit;
-		newcirc={};
-		
+		atomlocs = device[AtomLocations];
+		unitlattice = device[UnitLattice];
+		blockaderad = device[BlockadeRadius];
+		parallel = OptionValue[Parallel];
+		circ = circuit;
+		newcirc = {};
 		If[
 			(* parallel mode *)
 			parallel
 			,
+			(* track the position of atoms *)
 			While[Length @ circ > 0
 				,
 				circols = GetCircuitColumns[circ];
@@ -2341,23 +2349,36 @@ Begin["`Private`"];
 				
 				(* eliminate non-legitimate gates of the first column *)
 				AppendTo[newcirc, {}];
-				incol = <| #->True & /@ idxcol |>;
+				(* parallelizable by default, then eliminate the rest *)
+				incol = <| # -> True & /@ idxcol |>;
 				
 				Table[
 					If[incol[i1],
 						(* add gate i1 and eliminate the rest *)
 						AppendTo[newcirc[[-1]], circ[[i1]]];
+						(* check if there's any updates in atom position. This check is sufficient because swalop must be done in serial manner *)
+						{g1, idx1} = gateIndex[circ[[i1]]];
+						If[g1 === ShiftLoc, 
+							shiftvec = circ[[i1]] /. Subscript[ShiftLoc, __][v_ ]:> v;
+							If[KeyExistsQ[atomlocs , #], atomlocs[#] += shiftvec] & /@ idx1;
+						 ];
+						If[g1 === SWAPLoc, 
+							{q1, q2} = circ[[i1]] /. Subscript[SWAPLoc, p_,q_] :> {p, q};
+							{atomlocs[q1], atomlocs[q2]} = {atomlocs[q2], atomlocs[q1]}
+						 ];
+						 
 						Table[
 							If[incol[[i2]],
-								incol[[i2]] = blockadeParallel[circ[[i1]], circ[[i2]], device]
+								(* if True, then parallelisable, the gate is "implemented" otherwise, thrown to the next column *)
+								incol[[i2]] = blockadeParallel[circ[[i1]], circ[[i2]],  atomlocs, unitlattice, blockaderad]
 							]
 						,
-						{i2, Complement[idxcol, {i1}]}];
+						{i2, Complement[idxcol, {i1}]}];	
 					]
 				,{i1, idxcol}];
 				
-				(* update circuit *)
-				circ = Delete[circ, {#}& /@ Keys@Select[incol, #&]];
+				(* update circuit: *)
+				circ = Delete[circ, {#}& /@ Keys @ Select[incol, #&]];
 			]
 		,
 			(* serial mode *)
@@ -2371,7 +2392,7 @@ Begin["`Private`"];
 				
 				(* eliminate non-legitimate gates of the first column *)
 				AppendTo[newcirc, {}];
-				incol = <| #->True & /@ idxcol |>;
+				incol = <| # -> True & /@ idxcol |>;
 				
 				Table[
 					If[incol[i1]
@@ -2525,7 +2546,7 @@ Begin["`Private`"];
 	3) reshape to matrix with dim2^mx2^mwhere m=(n-#contract)
 	*)
 	PartialTrace[\[Rho]_List, qubits___] := ptrace[\[Rho], qubits]
-	PartialTrace[\[Rho]_Integer, qubits___] := ptrace[GetQuregMatrix[\[Rho]], qubits]
+	PartialTrace[\[Rho]_Integer, qubits___] := ptrace[GetQuregState[\[Rho]], qubits]
 	
 	ptrace[\[Rho]mat_List, qubits___] := Module[
 		{tmat, nq, pmat, nfin, pairs}
@@ -2549,7 +2570,7 @@ Begin["`Private`"];
 	CalcFidelityDensityMatrices[\[Rho]_, \[Sigma]_] := 
 		Re[
 			Tr[MatrixPower[
-				If[IntegerQ @ \[Rho], GetQuregMatrix[\[Rho]], \[Rho]] . If[IntegerQ @ \[Sigma], GetQuregMatrix[\[Sigma]], \[Sigma]]
+				If[IntegerQ @ \[Rho], GetQuregState[\[Rho]], \[Rho]] . If[IntegerQ @ \[Sigma], GetQuregState[\[Sigma]], \[Sigma]]
 				, 1/2]
 			]^2
 		]
@@ -2578,8 +2599,6 @@ Begin["`Private`"];
 		gate/. gpattern
 	];
 
-
-
 	(*
 	Generate Latex table that show the options used in the parameter VQD. It is very buggy!
 	GenerateOptionTable[options_, columnwidth_: {"3cm", "3cm", "10cm"}] := Module[
@@ -2601,8 +2620,6 @@ Begin["`Private`"];
 		header<>contents<>"\\\\ \n \\bottomrule\n\\end{tabular}"
 	]
 	*)
-
-
 	(* list of gates that are always parallel *)
 	(*	
 	parallelGates=<|
