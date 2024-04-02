@@ -45,7 +45,8 @@ RydbergWisconsin::usage = "Returns device specification of a Rydberg/Neutral Ato
 *)
 
 (* nuclear-vacancy center devices *)
-NVCenterDelft::usage = "Returns device specification of a Nitrogen-Vacancy diamond center device based on the device built by the University of Delft.";
+NVCenterDelft::usage = "Returns device specification of a Nitrogen-Vacancy diamond center device based on the device built by the University of Delft. This device explicitly using electron spin (qubit 0) and 13C spins (qubits j>=1).";
+NVCenterDelftN::usage = "Returns device specification of a Nitrogen-Vacancy diamond center device based on the device built by the University of Delft. This device explicitly using electron spin (qubit 0), Nitrogen spin (qubit 1), and 13C spins (qubits j>=2).";
 (*
 NVCenterHub::usage = "Returns device specification of a Nitrogen-Vacancy diamond center device based on the device built by the QCSHub.";
 *)
@@ -246,6 +247,10 @@ BeginPackage["`ParameterDevices`"];
 	FidRead::error="`1`";
 	FidRead::warning="`1`";	
 	
+	FidCRx::usage = "Fidelity of controlled-Rx[\[Theta]]";
+	FidCRx::error="`1`";
+	FidCRx::warning="`1`";
+	
 	FidSingleXY::usage = "Fidelity of single Rx[\[Theta]] and Ry[\[Theta]] rotations obtained by random benchmarking.";
 	FidSingleXY::error="`1`";
 	FidSingleXY::warning="`1`";
@@ -256,6 +261,9 @@ BeginPackage["`ParameterDevices`"];
 	
 	FreqCRot::usage = "Frequency of conditional rotation in NV-center obtained by dynamical decoupling and RF pulse.";
 	FreqCRot::error="`1`";
+	
+	FreqCRx::usage="Frequency of controlled-x rotation.";
+	FreqCRx::error="`1`";
 	
 	FreqCZ::usage = "Rabi frequency for the CZ gate with unit MHz.";
 	FreqCZ::error="`1`";	
@@ -280,6 +288,9 @@ BeginPackage["`ParameterDevices`"];
 	
 	OffResonantRabi::usage = "Put the noise due to off-resonant Rabi oscillation when applying single qubit rotations.";
 	OffResonantRabi::error="`1`";
+	
+	OverRotation::usage = "Over rotation \[Delta] in radian when implementing physical single-qubit rotation, e.g., noisy version of Rx(\[Theta]) is Rx(\[Theta]+\[Delta]).";
+	OverRotation::error="`1`";
 	
 	ProbBFRead::usage = "Probability of bit-flip error in readout";
 	ProbBFRead::error="`1`";
@@ -967,7 +978,7 @@ Begin["`Private`"];
 	
 		(* Aliases are useful for declaring custom events. At this stage the specification is noise-free (but see later) *)
 	Aliases -> {
-		Subscript[Init, q_] :>  {}
+		Subscript[Init, q_] :>  {Subscript[Damp, q][1.]}
 		,
 		Subscript[Wait, q__][t_] :> {}
 		,
@@ -1048,6 +1059,186 @@ Begin["`Private`"];
 				NoisyForm -> {Subscript[CRy, e, n][theta], Subscript[Depol, e, n][Min[ercrot[n][[1]] Abs[theta]/Pi, 15/16]], Subscript[Deph, e, n][Min[ercrot[n][[2]]Abs[theta]/Pi, 3/4]]},
 				GateDuration -> Abs[theta]/(freqcrot[n])    
 			|>		
+		}	
+		,
+		(* Declare that dt will refer to the duration of the current gate/channel. *)
+		DurationSymbol -> dt, 
+	
+		(* passive noise *)
+		(* 
+		Note 'globalField' is the unwanted (positive or negative) field offset for the present circuit; 
+		this should be set on a per-run basis as in examples below. Could be augmented with e.g. a drifting function of t 
+		other potential passive noise: Global magnetic field fluctuation due to ^13C bath 
+		causes dephasing on the electron in 4 \[Mu]s
+		external field is effectively perfect
+		*)
+			Qubits -> {
+				q_ :> 
+					<|
+						PassiveNoise -> passivenoise[q, dt]
+					|>	
+			}
+		|>
+	
+		]
+	]
+	
+	
+	(* DEVICE_NVCENTER_DELFT_NITROGEN *)
+	NVCenterDelftN[OptionsPattern[]] := With[
+	{
+		qubitnum = OptionValue @ QubitNum,
+		t1 = OptionValue @ T1,
+		t2 = OptionValue @ T2,
+		freqcrot = OptionValue @ FreqCRot,
+		freqcrx = OptionValue @ FreqCRx,
+		freqsinglexy = OptionValue @ FreqSingleXY,
+		freqsinglez = OptionValue @ FreqSingleZ,
+		fidcrot = OptionValue @ FidCRot,
+		fidcrx = OptionValue @ FidCRx,
+		fidsinglexy = OptionValue @ FidSingleXY,
+		fidsinglez = OptionValue @ FidSingleZ,
+		efsinglexy = OptionValue @ EFSingleXY,
+		efcrot = OptionValue @ EFCRot,
+		fidinit = OptionValue @ FidInit,
+		fidmeas = OptionValue @ FidMeas,
+		durmeas = OptionValue @ DurMeas,
+		durinit = OptionValue @ DurInit,
+		freqweakzz = OptionValue @ FreqWeakZZ,
+		overrotation = OptionValue @ OverRotation
+	},
+	
+	
+	Module[
+		{dt, stdpn, passivenoise, ersinglexy, ersinglez, ercrot, ercrx, nuclearq, weakzz}
+		,
+		(* standard passive noise *) 
+		stdpn[q_, dur_] := 
+			{Subscript[Depol, q][0.75 (1 - E^(-dur/t1[q]))], Subscript[Deph, q][0.5 (1 - E^(-dur/t2[q]))]};
+		(* 
+		Note: cross-talk ZZ-coupling in order of Hz on passive noise, Phase entanglement among nuclear spins 
+		Subscript[C, n1][Subscript[Rz, n2][dt]], weak rotation for all combinations of n1,n2, few Hz.
+		implement: Exp[-i dur ZZ]
+		*)	
+		weakzz[q_, dur_] := 
+			R[dur/freqweakzz, Subscript[Z, #]Subscript[Z, #2]]& @@@ Subsets[DeleteCases[Range[1, qubitnum - 1], q], {2}];
+	
+		passivenoise[q_, dur_] :=
+			If[NumberQ @ freqweakzz,
+				Flatten @ {stdpn[q, dur], weakzz[q, dur]}
+				,
+				stdpn[q, dur]
+			];
+	
+		(* error parameters (depolarising and dephasing) *)
+		ersinglexy = fid2DepolDeph[#, efsinglexy, 1, FidSingleXY]& /@ fidsinglexy;	
+		
+		ersinglez = fid2DepolDeph[#, {0, 1}, 1, FidSingleZ]& /@ fidsinglez;	
+		
+		ercrot = fid2DepolDeph[#, efcrot, 2, FidCRot]& /@ fidcrot;
+		
+		ercrx = fid2DepolDeph[fidcrx, efcrot, 2, FidCRx];
+	
+	<|
+		DeviceDescription -> "One node of an NV center, where qubit 0 is the electronic spin and qubit 1 is nitrogen spin. It has star connectivity with qubit 0 at the center.",
+		
+		(* The number of accessible qubits. This informs the qubits that a user's circuit can target *)
+		NumAccessibleQubits -> qubitnum,	
+		
+		(* The total number of qubits which would be needed to simulate a circuit prescribed by this device.
+		 * This is > NumAccessibleQubits only when the spec uses hidden qubits for advanced noise modelling *)
+		NumTotalQubits -> qubitnum,
+	
+		(* Aliases are useful for declaring custom events. At this stage the specification is noise-free (but see later) *)
+	Aliases -> {
+		Subscript[Init, q_] :>  {Subscript[Damp, q][1.]}
+		,
+		Subscript[Wait, q__][t_] :> {}
+		,
+		Subscript[CRx, e_, n_][theta_] :> {Subscript[U, e, n][
+				{{Cos[theta/2], 0, -I Sin[theta/2], 0}, {0, Cos[theta/2], 0, I Sin[theta/2]}, 
+				{-I Sin[theta/2], 0, Cos[theta/2], 0}, {0, I Sin[theta/2], 0, Cos[theta/2]}}]}
+			,
+		Subscript[CRy, e_, n_][theta_] :> {Subscript[U, e, n][
+				{{Cos[theta/2], 0, -Sin[theta/2], 0}, {0, Cos[theta/2], 0, Sin[theta/2]},
+				{Sin[theta/2], 0, Cos[theta/2], 0},{0, -Sin[theta/2], 0, Cos[theta/2]}}]}
+	}
+	,	
+	Gates ->
+	{
+	(* exclusively on ELECTRON SPIN, q===0 *)
+			Subscript[Init, q_] /; q === 0  :>
+			<|
+				NoisyForm -> {Subscript[Damp, q][fidinit]}, 
+				GateDuration -> durinit
+			|>
+			,
+			Subscript[M, q_] /; q === 0 :> 
+			<|
+				NoisyForm -> {Subscript[X, 0], Subscript[Damp, 0][1-fidmeas], Subscript[X, 0], Subscript[M, 0]},
+				GateDuration -> durmeas
+			|>
+			,
+			(* Electron and nuclear spins *)
+			(* A simple 'wait' instruction, useful for padding a circuit. The content inside the table should be the same as the passive noise section below (copy / paste it) *)
+			Subscript[Wait, qubits__][dur_] :>
+			<|
+				NoisyForm -> stdpn[#, dur]& /@ Flatten[{qubits}],
+				GateDuration -> dur
+			|>
+			,			
+			(* Z-rotations are unconditional for both electron and nuclear spins *)
+			Subscript[Rz, q_][theta_] :> 
+			<|
+				NoisyForm -> {Subscript[Rz, q][theta],Subscript[Deph, q][Min[ersinglez[q][[2]] * Abs[theta]/Pi,0.5]]},
+				GateDuration -> Abs[theta]/freqsinglez[q]
+			|>
+			, 
+			Subscript[Rx, q_][theta_] /; q === 0 :> 
+			<|
+				NoisyForm -> {Subscript[Rx, q][theta + overrotation[0]], Subscript[Depol, q][Min[ersinglexy[q][[1]] Abs[theta]/Pi, 0.75]], Subscript[Deph, q][Min[ersinglexy[q][[2]] Abs[theta]/Pi, 0.5]]},
+				GateDuration -> Abs[theta]/freqsinglexy[q]
+			|>
+			,
+			Subscript[Ry, q_][theta_]/; q === 0 :> <|
+				NoisyForm -> {Subscript[Ry, q][theta + overrotation[0]], Subscript[Depol, q][Min[ersinglexy[q][[1]]Abs[theta]/Pi, 0.75]], Subscript[Deph, q][Min[ersinglexy[q][[2]] Abs[theta]/Pi, 0.5]]},
+				GateDuration -> Abs[theta]/freqsinglexy[q]
+			|>
+			,
+			(* NUCLEAR SPIN ROTATIONS CONDITIONED ON ELETRON SPIN. electron needs to be set at ms=-1: quite bad *)
+			Subscript[Rx, q_][theta_] /; q > 0 :> 
+			<|
+				NoisyForm -> {Subscript[Rx, q][theta + overrotation[q] ], Subscript[Depol, q][Min[ersinglexy[q][[1]]Abs[theta]/Pi, 0.75]], Subscript[Deph, q][Min[ersinglexy[q][[2]] Abs[theta]/Pi, 0.5]]},
+				GateDuration -> Abs[theta]/freqsinglexy[q]
+			|>
+			,
+			Subscript[Ry, q_][theta_] /; q > 0 :>
+			<|
+				NoisyForm -> {Subscript[Ry, q][theta + overrotation[q]], Subscript[Depol, q][Min[ersinglexy[q][[1]] Abs[theta]/Pi, 0.75]], Subscript[Deph, q][Min[ersinglexy[q][[2]] Abs[theta]/Pi, 0.5]]},
+				GateDuration -> Abs[theta]/(freqsinglexy[q])
+			|>
+			,
+			(* conditional rotations *)
+			Subscript[CRx, e_, n_][theta_] /; (e == 0 && n > 0) :> 
+			<|
+				(* its noisy form depolarising the control and target qubits *)
+				NoisyForm -> {Subscript[CRx, e, n][theta], Subscript[Depol,e, n][Min[ercrot[n][[1]] Abs[theta]/Pi, 15/16]], Subscript[Deph, e, n][Min[ercrot[n][[2]]Abs[theta]/Pi, 3/4]]},
+				GateDuration -> Abs[theta]/(freqcrot[n]) 
+			|>
+			,
+			Subscript[CRy, e_, n_][theta_] /; (e == 0 && n > 0):> 
+			<|
+				(* its noisy form depolarises the control and target qubits *)
+				NoisyForm -> {Subscript[CRy, e, n][theta], Subscript[Depol, e, n][Min[ercrot[n][[1]] Abs[theta]/Pi, 15/16]], Subscript[Deph, e, n][Min[ercrot[n][[2]]Abs[theta]/Pi, 3/4]]},
+				GateDuration -> Abs[theta]/(freqcrot[n])    
+			|>	
+			,
+			(* Controlled-Rx between Nitrogen and electron spins *)
+			Subscript[C, 1][Subscript[Rx, 0][theta_]] :>
+			<|
+				NoisyForm -> {Subscript[C, 1][Subscript[Rx, 0][theta]] , Subscript[Depol, 0, 1][Min[ercrx[[1]] Abs[theta]/Pi, 15/16]], Subscript[Deph, 0, 1][Min[ercrx[[2]]Abs[theta]/Pi, 3/4]]},
+				GateDuration ->  Abs[theta]/freqcrx	
+			|>
 		}	
 		,
 		(* Declare that dt will refer to the duration of the current gate/channel. *)
