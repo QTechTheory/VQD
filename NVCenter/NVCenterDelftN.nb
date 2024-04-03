@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[    204241,       4702]
-NotebookOptionsPosition[    200252,       4626]
-NotebookOutlinePosition[    200953,       4651]
-CellTagsIndexPosition[    200910,       4648]
+NotebookDataLength[    215071,       4961]
+NotebookOptionsPosition[    210852,       4881]
+NotebookOutlinePosition[    211553,       4906]
+CellTagsIndexPosition[    211510,       4903]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -543,6 +543,34 @@ Cell[BoxData[
         RowBox[{"2", "->", "0.01"}], ",", " ", 
         RowBox[{"3", "->", "0.01"}], ",", " ", 
         RowBox[{"4", "->", "0.01"}], ",", " ", 
+        RowBox[{"5", "->", "0.01"}]}], " ", "|>"}]}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"(*", " ", 
+      RowBox[{
+       RowBox[{
+        RowBox[{
+        "over", " ", "rotation", " ", "\[Delta]", " ", "in", " ", "unit", " ",
+          "radian", " ", "when", " ", "applying", " ", "two"}], "-", 
+        RowBox[{
+        "qubit", " ", "gates", " ", "where", " ", "the", " ", "control", " ", 
+         "qubit", " ", "is", " ", "the", " ", "electron", " ", 
+         RowBox[{"spin", ".", " ", "The"}], " ", "numbers", " ", "indicate", 
+         " ", "the", " ", "target", " ", 
+         RowBox[{"qubits", ".", " ", "Thus"}]}]}], ",", " ", 
+       RowBox[{
+        RowBox[{"for", " ", "q"}], "=", "0"}], ",", " ", 
+       RowBox[{
+       "it", " ", "means", " ", "the", " ", "two", " ", "qubit", " ", "gate", 
+        " ", "between", " ", "nuclear", " ", "and", " ", "electron", " ", 
+        "spin"}]}], " ", "*)"}], "\[IndentingNewLine]", 
+     RowBox[{"OverRotation2", " ", "->", "  ", 
+      RowBox[{"<|", 
+       RowBox[{
+        RowBox[{"0", "->", "0.1"}], ",", " ", 
+        RowBox[{"1", "->", "0.001"}], ",", " ", 
+        RowBox[{"2", "->", "0.01"}], ",", " ", 
+        RowBox[{"3", "->", "0.01"}], ",", " ", 
+        RowBox[{"4", "->", "0.01"}], ",", " ", 
         RowBox[{"5", "->", "0.01"}]}], " ", "|>"}]}], "\[IndentingNewLine]", 
      ",", "\[IndentingNewLine]", 
      RowBox[{"(*", " ", 
@@ -733,9 +761,8 @@ Cell[BoxData[
    3.921061354689946*^9}, {3.92106151488826*^9, 3.921061562124237*^9}, 
    3.92106165974434*^9, {3.921062880241786*^9, 3.921062938890461*^9}, {
    3.921063000712699*^9, 3.92106303657544*^9}, {3.9210638051920443`*^9, 
-   3.921063819533687*^9}},
- CellLabel->
-  "In[1562]:=",ExpressionUUID->"d493ea5b-1198-4fa7-8f89-66bc8b2a689c"]
+   3.921063819533687*^9}, {3.921143572383383*^9, 3.921143776564115*^9}},
+ CellLabel->"In[5]:=",ExpressionUUID->"d493ea5b-1198-4fa7-8f89-66bc8b2a689c"]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -911,8 +938,7 @@ Cell[BoxData[{
    "\"\<Nuclear spin qubit measurement sequence on NV-center\>\""}], 
   ";"}]}], "Input",
  CellChangeTimes->{{3.895643457766077*^9, 3.895643552486805*^9}},
- CellLabel->
-  "In[513]:=",ExpressionUUID->"4edc6d41-1978-4eb1-8f85-fa1d7d6099c6"],
+ CellLabel->"In[6]:=",ExpressionUUID->"4edc6d41-1978-4eb1-8f85-fa1d7d6099c6"],
 
 Cell[BoxData[
  RowBox[{
@@ -1068,8 +1094,7 @@ Cell[BoxData[
    3.88179447307244*^9}, {3.881863801670169*^9, 3.8818638180155573`*^9}, {
    3.8818640086150703`*^9, 3.881864013482071*^9}, {3.8916043905289307`*^9, 
    3.891604410973668*^9}, 3.8920336203111963`*^9},
- CellLabel->
-  "In[518]:=",ExpressionUUID->"74f90a35-14ba-43bf-a85c-3ca851c72025"],
+ CellLabel->"In[11]:=",ExpressionUUID->"74f90a35-14ba-43bf-a85c-3ca851c72025"],
 
 Cell[CellGroupData[{
 
@@ -1078,8 +1103,7 @@ Cell[BoxData[{
   SubscriptBox["initNcl", "1"], "}"}], "\[IndentingNewLine]", 
  RowBox[{"DrawCircuit", "@", "%"}]}], "Input",
  CellChangeTimes->{{3.874682860813259*^9, 3.874682876846472*^9}},
- CellLabel->
-  "In[523]:=",ExpressionUUID->"1daf9959-3b3b-4a22-844b-b9a5ee846594"],
+ CellLabel->"In[16]:=",ExpressionUUID->"1daf9959-3b3b-4a22-844b-b9a5ee846594"],
 
 Cell[BoxData[
  RowBox[{"{", 
@@ -1100,9 +1124,8 @@ Cell[BoxData[
      RowBox[{"0", ",", "1"}]], "[", 
     RowBox[{"-", 
      FractionBox["\[Pi]", "2"]}], "]"}]}], "}"}]], "Output",
- CellChangeTimes->{3.921064330276499*^9},
- CellLabel->
-  "Out[523]=",ExpressionUUID->"223cdccc-6034-4ee6-8052-9af9592374ca"],
+ CellChangeTimes->{3.921064330276499*^9, 3.9211445717974443`*^9},
+ CellLabel->"Out[16]=",ExpressionUUID->"d15b3549-6e47-4964-9696-8e1e7eaf0a36"],
 
 Cell[BoxData[
  GraphicsBox[
@@ -1124,15 +1147,13 @@ Cell[BoxData[
      InsetBox["\<\"CRy\"\>", {4.5, 1.}]}}},
   ImageSize->180,
   PlotRangePadding->None]], "Output",
- CellChangeTimes->{3.921064330300297*^9},
- CellLabel->
-  "Out[524]=",ExpressionUUID->"3059ad27-e441-4cf3-b292-283caf002e36"]
+ CellChangeTimes->{3.921064330276499*^9, 3.921144571841444*^9},
+ CellLabel->"Out[17]=",ExpressionUUID->"013cb9b9-4e85-4527-8049-248879384ea4"]
 }, Open  ]],
 
 Cell[BoxData[""], "Input",
- CellChangeTimes->{{3.921061824515586*^9, 
-  3.921061838209876*^9}},ExpressionUUID->"38a53c0d-47fc-4493-a07a-\
-24e7de1ed57d"]
+ CellChangeTimes->{{3.921061824515586*^9, 3.921061838209876*^9}},
+ CellLabel->"In[18]:=",ExpressionUUID->"38a53c0d-47fc-4493-a07a-24e7de1ed57d"]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -1145,6 +1166,234 @@ Cell["Introducing explicit Nitrogen spin, over-rotations", "Subsection",
    3.921064445073791*^9, 
    3.92106444890279*^9}},ExpressionUUID->"99fb8a63-f5b0-49ca-ab0c-\
 daec83922ac8"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"?", "OverRotation2"}]], "Input",
+ CellChangeTimes->{{3.921144698989702*^9, 3.9211447022969837`*^9}},
+ CellLabel->
+  "In[284]:=",ExpressionUUID->"ed3734ea-da80-462c-859d-16f962971241"],
+
+Cell[BoxData[
+ InterpretationBox[
+  StyleBox[
+   FrameBox[
+    DynamicModuleBox[{System`InformationDump`open$$ = False, 
+     System`InformationDump`mouseOver$$ = False}, 
+     PaneSelectorBox[{True->
+      TagBox[GridBox[{
+         {
+          ItemBox[
+           PaneBox[
+            StyleBox["\<\" Symbol\"\>", "InformationTitleText",
+             StripOnInput->False,
+             BaseStyle -> None],
+            FrameMargins->{{4, 0}, {-1, 1}}],
+           BaseStyle->"InformationTitleBackground",
+           StripOnInput->False], 
+          ItemBox["\<\"\"\>",
+           BaseStyle->"InformationTitleBackground",
+           StripOnInput->False]},
+         {
+          ItemBox[
+           PaneBox[
+            
+            StyleBox["\<\"Over rotation \[Delta] in radian when implementing \
+two-qubit rotations, e.g., noisy version of CRx(\[Theta]) is CRx(\[Theta]+\
+\[Delta]). For the association entry, the keys indicate the target \
+qubits.\"\>", "InformationUsageText",
+             StripOnInput->False,
+             LineSpacing->{1.5, 1.5, 3.}],
+            FrameMargins->{{10, 10}, {8, 10}}],
+           BaseStyle->"InformationUsageSubtitleBackground",
+           StripOnInput->False], 
+          ItemBox["\<\"\"\>",
+           BaseStyle->"InformationUsageSubtitleBackground",
+           StripOnInput->False]},
+         {
+          PaneBox[GridBox[{
+             {
+              
+              DynamicModuleBox[{System`InformationDump`open$$ = {
+               False, False, False, False, False, False}}, 
+               StyleBox[GridBox[{
+                  {
+                   TagBox[
+                    TooltipBox[
+                    StyleBox["\<\" Full Name\"\>", "InformationRowLabel",
+                    StripOnInput->False],
+                    "\"FullName\"",
+                    TooltipStyle->"TextStyling"],
+                    
+                    Annotation[#, "FullName", 
+                    "Tooltip"]& ], \
+"\<\"VQD`ParameterDevices`OverRotation2\"\>"}
+                 },
+                 AutoDelete->False,
+                 GridBoxAlignment->{"Columns" -> {Right, Left}},
+                 GridBoxDividers->None,
+                 GridBoxItemSize->{"Columns" -> {Automatic, Automatic}},
+                 GridBoxSpacings->{"Columns" -> {
+                    Offset[0.27999999999999997`], {
+                    Offset[0.5599999999999999]}, 
+                    Offset[0.27999999999999997`]}, "Rows" -> {
+                    Offset[0.2], {
+                    Offset[0.8]}, 
+                    Offset[0.2]}}], "DialogStyle",
+                StripOnInput->False],
+               DynamicModuleValues:>{}]}
+            },
+            DefaultBaseStyle->"Column",
+            GridBoxAlignment->{"Columns" -> {{Left}}},
+            GridBoxDividers->{"Columns" -> {{False}}, "Rows" -> {{False}}},
+            
+            GridBoxItemSize->{
+             "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}},
+            GridBoxSpacings->{"Columns" -> {
+                Offset[0.27999999999999997`], {
+                 Offset[0.5599999999999999]}, 
+                Offset[0.27999999999999997`]}, "Rows" -> {
+                Offset[0.2], {
+                 Offset[3.6]}, 
+                Offset[0.2]}}],
+           FrameMargins->{{6, 6}, {6, 3}}], ""},
+         {
+          ItemBox[
+           TagBox[
+            ButtonBox[
+             PaneSelectorBox[{False->
+              
+              DynamicBox[FEPrivate`FrontEndResource[
+               "FEBitmaps", "UpPointerOpener"]], True->
+              
+              DynamicBox[FEPrivate`FrontEndResource[
+               "FEBitmaps", "UpPointerOpenerHot"]]}, Dynamic[
+              System`InformationDump`mouseOver$$]],
+             Alignment->Left,
+             Appearance->{"Default" -> None},
+             
+             ButtonFunction:>FEPrivate`Set[
+              System`InformationDump`open$$, False],
+             Evaluator->Automatic,
+             FrameMargins->{{9, 0}, {0, 0}},
+             ImageMargins->0,
+             ImageSize->Full,
+             Method->"Preemptive"],
+            
+            EventHandlerTag[{
+             "MouseEntered" :> 
+              FEPrivate`Set[System`InformationDump`mouseOver$$, True], 
+              "MouseExited" :> 
+              FEPrivate`Set[System`InformationDump`mouseOver$$, False], 
+              Method -> "Preemptive", PassEventsDown -> Automatic, 
+              PassEventsUp -> True}]],
+           BaseStyle->"InformationTitleBackground",
+           StripOnInput->False], "\[SpanFromLeft]"}
+        },
+        AutoDelete->False,
+        FrameStyle->Directive[
+          GrayLevel[0.8], 
+          Thickness[Tiny]],
+        GridBoxAlignment->{"Columns" -> {Left, Right}, "Rows" -> {{Center}}},
+        GridBoxDividers->{
+         "Columns" -> {{None}}, "Rows" -> {False, {True}, False}},
+        GridBoxItemSize->{
+         "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}],
+       "Grid"], False->
+      TagBox[GridBox[{
+         {
+          ItemBox[
+           PaneBox[
+            StyleBox["\<\" Symbol\"\>", "InformationTitleText",
+             StripOnInput->False],
+            FrameMargins->{{4, 0}, {-1, 1}}],
+           BaseStyle->"InformationTitleBackground",
+           StripOnInput->False], 
+          ItemBox["\<\"\"\>",
+           BaseStyle->"InformationTitleBackground",
+           StripOnInput->False]},
+         {
+          ItemBox[
+           PaneBox[
+            
+            StyleBox["\<\"Over rotation \[Delta] in radian when implementing \
+two-qubit rotations, e.g., noisy version of CRx(\[Theta]) is CRx(\[Theta]+\
+\[Delta]). For the association entry, the keys indicate the target \
+qubits.\"\>", "InformationUsageText",
+             StripOnInput->False,
+             LineSpacing->{1.5, 1.5, 3.}],
+            FrameMargins->{{10, 10}, {8, 10}}],
+           BaseStyle->"InformationUsageSubtitleBackground",
+           StripOnInput->False], 
+          ItemBox["\<\"\"\>",
+           BaseStyle->"InformationUsageSubtitleBackground",
+           StripOnInput->False]},
+         {
+          ItemBox[
+           TagBox[
+            ButtonBox[
+             PaneSelectorBox[{False->
+              
+              DynamicBox[FEPrivate`FrontEndResource[
+               "FEBitmaps", "DownPointerOpener"],
+               ImageSizeCache->{9., {3., 6.}}], True->
+              
+              DynamicBox[FEPrivate`FrontEndResource[
+               "FEBitmaps", "DownPointerOpenerHot"],
+               ImageSizeCache->{9., {3., 6.}}]}, Dynamic[
+              System`InformationDump`mouseOver$$]],
+             Alignment->Left,
+             Appearance->{"Default" -> None},
+             
+             ButtonFunction:>FEPrivate`Set[
+              System`InformationDump`open$$, True],
+             Evaluator->Automatic,
+             FrameMargins->{{9, 0}, {0, 0}},
+             ImageMargins->0,
+             ImageSize->Full,
+             Method->"Preemptive"],
+            
+            EventHandlerTag[{
+             "MouseEntered" :> 
+              FEPrivate`Set[System`InformationDump`mouseOver$$, True], 
+              "MouseExited" :> 
+              FEPrivate`Set[System`InformationDump`mouseOver$$, False], 
+              Method -> "Preemptive", PassEventsDown -> Automatic, 
+              PassEventsUp -> True}]],
+           BaseStyle->"InformationTitleBackground",
+           StripOnInput->False], "\[SpanFromLeft]"}
+        },
+        AutoDelete->False,
+        FrameStyle->Directive[
+          GrayLevel[0.8], 
+          Thickness[Tiny]],
+        GridBoxAlignment->{"Columns" -> {Left, Right}, "Rows" -> {{Center}}},
+        GridBoxDividers->{
+         "Columns" -> {{None}}, "Rows" -> {False, {True}, False}},
+        GridBoxItemSize->{
+         "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}],
+       "Grid"]}, Dynamic[System`InformationDump`open$$],
+      BaselinePosition->Baseline,
+      FrameMargins->0,
+      ImageSize->Automatic],
+     DynamicModuleValues:>{}],
+    BaseStyle->"InformationGridFrame",
+    StripOnInput->False], "InformationGridPlain",
+   StripOnInput->False],
+  InformationData[<|
+   "ObjectType" -> "Symbol", "Usage" -> 
+    "Over rotation \[Delta] in radian when implementing two-qubit rotations, \
+e.g., noisy version of CRx(\[Theta]) is CRx(\[Theta]+\[Delta]). For the \
+association entry, the keys indicate the target qubits.", "Documentation" -> 
+    None, "OwnValues" -> None, "UpValues" -> None, "DownValues" -> None, 
+    "SubValues" -> None, "DefaultValues" -> None, "NValues" -> None, 
+    "FormatValues" -> None, "Options" -> None, "Attributes" -> {}, "FullName" -> 
+    "VQD`ParameterDevices`OverRotation2"|>, False]]], "Output",
+ CellChangeTimes->{3.9211447030975437`*^9},
+ CellLabel->
+  "Out[284]=",ExpressionUUID->"bad46c8f-3075-44c4-8bdb-c32e13d622a5"]
+}, Open  ]],
 
 Cell["Initialize all qubits to zero", "Text",
  CellChangeTimes->{{3.841832374587064*^9, 3.841832381245659*^9}},
@@ -1189,7 +1438,7 @@ Cell[BoxData[{
    3.9210644135513353`*^9, 3.9210644697362633`*^9}, {3.921064795191194*^9, 
    3.921064796355497*^9}, {3.921064902874049*^9, 3.921064910065209*^9}},
  CellLabel->
-  "In[1573]:=",ExpressionUUID->"034244f5-d113-48b8-8b75-3d3d8d845b98"],
+  "In[282]:=",ExpressionUUID->"034244f5-d113-48b8-8b75-3d3d8d845b98"],
 
 Cell[BoxData[
  GraphicsBox[
@@ -1224,9 +1473,10 @@ Cell[BoxData[
  CellChangeTimes->{
   3.921064383541095*^9, {3.92106443239758*^9, 3.921064435860075*^9}, 
    3.921064470542453*^9, 3.921064580895277*^9, 3.921064688953662*^9, {
-   3.921064768398286*^9, 3.921064796693241*^9}, 3.921064910526898*^9},
+   3.921064768398286*^9, 3.921064796693241*^9}, 3.921064910526898*^9, 
+   3.921144571893152*^9, 3.921144669884251*^9},
  CellLabel->
-  "Out[1574]=",ExpressionUUID->"c72c1890-847c-478d-a049-51162f700d3b"]
+  "Out[283]=",ExpressionUUID->"7e6acf5f-ab0a-4010-bfb7-b01a2496dc96"]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -1240,7 +1490,7 @@ Cell[BoxData[
   3.9210646997225103`*^9, 3.921064702764291*^9}, {3.921064814585486*^9, 
   3.921064842472516*^9}, {3.92106491504459*^9, 3.921064921938949*^9}},
  CellLabel->
-  "In[1581]:=",ExpressionUUID->"388199e9-8d25-44f4-b0b5-52c200c98d45"],
+  "In[280]:=",ExpressionUUID->"388199e9-8d25-44f4-b0b5-52c200c98d45"],
 
 Cell[BoxData[
  RowBox[{"{", 
@@ -1252,7 +1502,9 @@ Cell[BoxData[
        RowBox[{
         SubscriptBox["C", "1"], "[", 
         RowBox[{
-         SubscriptBox["Rx", "0"], "[", "\[Theta]", "]"}], "]"}], ",", 
+         SubscriptBox["Rx", "0"], "[", 
+         RowBox[{"0.1`", "\[VeryThinSpace]", "+", "\[Theta]"}], "]"}], "]"}], 
+       ",", 
        RowBox[{
         SubscriptBox["Depol", 
          RowBox[{"0", ",", "1"}]], "[", 
@@ -2391,7 +2643,8 @@ Cell[BoxData[
       RowBox[{
        RowBox[{
         SubscriptBox["CRx", 
-         RowBox[{"0", ",", "1"}]], "[", "\[Theta]", "]"}], ",", 
+         RowBox[{"0", ",", "1"}]], "[", 
+        RowBox[{"0.001`", "\[VeryThinSpace]", "+", "\[Theta]"}], "]"}], ",", 
        RowBox[{
         SubscriptBox["Depol", 
          RowBox[{"0", ",", "1"}]], "[", 
@@ -2746,9 +2999,10 @@ Cell[BoxData[
      RowBox[{"{", "}"}], ",", 
      RowBox[{"{", "}"}]}], "}"}]}], "}"}]], "Output",
  CellChangeTimes->{
-  3.9210648427410307`*^9, {3.9210649121600113`*^9, 3.921064922386026*^9}},
+  3.9210648427410307`*^9, {3.9210649121600113`*^9, 3.921064922386026*^9}, 
+   3.921144571949778*^9, 3.921144647658846*^9},
  CellLabel->
-  "Out[1581]=",ExpressionUUID->"98e3b37c-2909-4ef2-b907-48275f0090ae"]
+  "Out[280]=",ExpressionUUID->"ab4de2da-ac91-49ea-86d5-bd559c22b1b6"]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -2760,7 +3014,7 @@ Cell[BoxData[
     RowBox[{"\[Theta]", "->", "\[Pi]"}]}], ")"}]}]], "Input",
  CellChangeTimes->{{3.921064926555335*^9, 3.9210649552222357`*^9}},
  CellLabel->
-  "In[1583]:=",ExpressionUUID->"9766250d-1bc3-4170-a044-a8039bd32374"],
+  "In[281]:=",ExpressionUUID->"9766250d-1bc3-4170-a044-a8039bd32374"],
 
 Cell[BoxData[
  GraphicsBox[
@@ -4616,16 +4870,17 @@ Cell[BoxData[
       Center}]}},
   ImageSize->5013.75,
   PlotRangePadding->None]], "Output",
- CellChangeTimes->{{3.921064935285201*^9, 3.921064955776855*^9}},
+ CellChangeTimes->{{3.921064935285201*^9, 3.921064955776855*^9}, 
+   3.921144572108181*^9, 3.9211446625495872`*^9},
  CellLabel->
-  "Out[1583]=",ExpressionUUID->"e7505e44-abda-4be2-813e-e29253bd5344"]
+  "Out[281]=",ExpressionUUID->"2511c30b-b910-4619-a656-a9e7a90b3f52"]
 }, Open  ]]
 }, Open  ]]
 }, Open  ]]
 }, Open  ]]
 },
-WindowSize->{959.25, 539.25},
-WindowMargins->{{-1440, Automatic}, {Automatic, 0}},
+WindowSize->{1247.25, 770.25},
+WindowMargins->{{Automatic, 0}, {0.75, Automatic}},
 PrintingCopies->1,
 PrintingPageRange->{Automatic, Automatic},
 PrintingOptions->{"PaperOrientation"->"Portrait",
@@ -4634,7 +4889,7 @@ PrintingOptions->{"PaperOrientation"->"Portrait",
 "PrintingMargins"->7},
 TaggingRules->{
  "WelcomeScreenSettings" -> {"FEStarting" -> False}, "TryRealOnly" -> False},
-Magnification:>0.6,
+Magnification:>0.9,
 FrontEndVersion->"13.3 for Linux x86 (64-bit) (July 24, 2023)",
 StyleDefinitions->"Default.nb",
 ExpressionUUID->"c6669cd7-ccaf-4dd5-94c0-f06ca82437c9"
@@ -4651,55 +4906,59 @@ CellTagsIndex->{}
 (*NotebookFileOutline
 Notebook[{
 Cell[CellGroupData[{
-Cell[580, 22, 451, 7, 59, "Title",ExpressionUUID->"d15a831b-a7a9-4c44-9fc8-632f14beb7e9"],
-Cell[1034, 31, 1881, 33, 48, "Text",ExpressionUUID->"86b6ae0c-b31f-476a-8cfd-71aa29495616"],
+Cell[580, 22, 451, 7, 88, "Title",ExpressionUUID->"d15a831b-a7a9-4c44-9fc8-632f14beb7e9"],
+Cell[1034, 31, 1881, 33, 72, "Text",ExpressionUUID->"86b6ae0c-b31f-476a-8cfd-71aa29495616"],
 Cell[CellGroupData[{
-Cell[2940, 68, 154, 3, 40, "Section",ExpressionUUID->"2ac9a657-8798-4d2d-b923-97964512c847"],
-Cell[3097, 73, 374, 5, 30, "Text",ExpressionUUID->"3304fd8a-d7dc-4a75-8cf8-3d33d0cf0751"],
-Cell[3474, 80, 391, 8, 19, "Input",ExpressionUUID->"aed5bfe1-5767-4439-be35-1e2df05d494a"],
-Cell[3868, 90, 649, 12, 44, "Text",ExpressionUUID->"ce76efab-251b-412c-b6a3-02c0d0c36601"],
-Cell[4520, 104, 1617, 23, 19, "Input",ExpressionUUID->"6e693605-cc17-45f2-9601-2db93546cf18"],
-Cell[6140, 129, 962, 19, 58, "Text",ExpressionUUID->"7d572411-f4d5-4ae5-8454-26f190783554"],
-Cell[7105, 150, 536, 8, 19, "Input",ExpressionUUID->"0a3e4105-8616-4b73-9f06-9e870681e805"],
-Cell[7644, 160, 689, 14, 30, "Text",ExpressionUUID->"1a57288f-5674-4f4e-a47b-92ef1e42b7c2"],
-Cell[8336, 176, 1221, 17, 19, "Input",ExpressionUUID->"0bca19ed-8b53-40a5-b274-5d8948466e3f"]
+Cell[2940, 68, 154, 3, 60, "Section",ExpressionUUID->"2ac9a657-8798-4d2d-b923-97964512c847"],
+Cell[3097, 73, 374, 5, 45, "Text",ExpressionUUID->"3304fd8a-d7dc-4a75-8cf8-3d33d0cf0751"],
+Cell[3474, 80, 391, 8, 26, "Input",ExpressionUUID->"aed5bfe1-5767-4439-be35-1e2df05d494a"],
+Cell[3868, 90, 649, 12, 66, "Text",ExpressionUUID->"ce76efab-251b-412c-b6a3-02c0d0c36601"],
+Cell[4520, 104, 1617, 23, 26, "Input",ExpressionUUID->"6e693605-cc17-45f2-9601-2db93546cf18"],
+Cell[6140, 129, 962, 19, 87, "Text",ExpressionUUID->"7d572411-f4d5-4ae5-8454-26f190783554"],
+Cell[7105, 150, 536, 8, 26, "Input",ExpressionUUID->"0a3e4105-8616-4b73-9f06-9e870681e805"],
+Cell[7644, 160, 689, 14, 45, "Text",ExpressionUUID->"1a57288f-5674-4f4e-a47b-92ef1e42b7c2"],
+Cell[8336, 176, 1221, 17, 26, "Input",ExpressionUUID->"0bca19ed-8b53-40a5-b274-5d8948466e3f"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[9594, 198, 350, 5, 40, "Section",ExpressionUUID->"0a272559-54f5-4241-a2ef-952b0c75bf12"],
-Cell[9947, 205, 3519, 123, 59, "Text",ExpressionUUID->"e73935be-87b8-409b-a155-d15789a0d941"],
-Cell[13469, 330, 21153, 407, 689, "Input",ExpressionUUID->"d493ea5b-1198-4fa7-8f89-66bc8b2a689c"]
+Cell[9594, 198, 350, 5, 60, "Section",ExpressionUUID->"0a272559-54f5-4241-a2ef-952b0c75bf12"],
+Cell[9947, 205, 3519, 123, 88, "Text",ExpressionUUID->"e73935be-87b8-409b-a155-d15789a0d941"],
+Cell[13469, 330, 22472, 434, 1144, "Input",ExpressionUUID->"d493ea5b-1198-4fa7-8f89-66bc8b2a689c"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[34659, 742, 756, 11, 40, "Section",ExpressionUUID->"f9c2da94-9ce1-47f3-aa68-cf4e42d9a9d1"],
+Cell[35978, 769, 756, 11, 60, "Section",ExpressionUUID->"f9c2da94-9ce1-47f3-aa68-cf4e42d9a9d1"],
 Cell[CellGroupData[{
-Cell[35440, 757, 160, 3, 32, "Subsection",ExpressionUUID->"a55ea8a9-cdf3-4b72-a237-f73b972a8611"],
-Cell[35603, 762, 4221, 108, 205, "Text",ExpressionUUID->"6d381f91-3180-4fd8-b6d2-1f19f4e8d0c6"]
+Cell[36759, 784, 160, 3, 48, "Subsection",ExpressionUUID->"a55ea8a9-cdf3-4b72-a237-f73b972a8611"],
+Cell[36922, 789, 4221, 108, 306, "Text",ExpressionUUID->"6d381f91-3180-4fd8-b6d2-1f19f4e8d0c6"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[39861, 875, 546, 9, 32, "Subsection",ExpressionUUID->"0f029284-dc78-499a-b674-ed1fb93eef31"],
-Cell[40410, 886, 942, 28, 65, "Input",ExpressionUUID->"4edc6d41-1978-4eb1-8f85-fa1d7d6099c6"],
-Cell[41355, 916, 6164, 155, 127, "Input",ExpressionUUID->"74f90a35-14ba-43bf-a85c-3ca851c72025"],
+Cell[41180, 902, 546, 9, 48, "Subsection",ExpressionUUID->"0f029284-dc78-499a-b674-ed1fb93eef31"],
+Cell[41729, 913, 937, 27, 103, "Input",ExpressionUUID->"4edc6d41-1978-4eb1-8f85-fa1d7d6099c6"],
+Cell[42669, 942, 6160, 154, 191, "Input",ExpressionUUID->"74f90a35-14ba-43bf-a85c-3ca851c72025"],
 Cell[CellGroupData[{
-Cell[47544, 1075, 288, 6, 30, "Input",ExpressionUUID->"1daf9959-3b3b-4a22-844b-b9a5ee846594"],
-Cell[47835, 1083, 653, 21, 39, "Output",ExpressionUUID->"223cdccc-6034-4ee6-8052-9af9592374ca"],
-Cell[48491, 1106, 1054, 22, 57, "Output",ExpressionUUID->"3059ad27-e441-4cf3-b292-283caf002e36"]
+Cell[48854, 1100, 284, 5, 46, "Input",ExpressionUUID->"1daf9959-3b3b-4a22-844b-b9a5ee846594"],
+Cell[49141, 1107, 673, 20, 43, "Output",ExpressionUUID->"d15b3549-6e47-4964-9696-8e1e7eaf0a36"],
+Cell[49817, 1129, 1072, 21, 74, "Output",ExpressionUUID->"013cb9b9-4e85-4527-8049-248879384ea4"]
 }, Open  ]],
-Cell[49560, 1131, 152, 3, 19, "Input",ExpressionUUID->"38a53c0d-47fc-4493-a07a-24e7de1ed57d"]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[49749, 1139, 474, 7, 32, "Subsection",ExpressionUUID->"99fb8a63-f5b0-49ca-ab0c-daec83922ac8"],
-Cell[50226, 1148, 207, 3, 30, "Text",ExpressionUUID->"80339c59-8cb5-4578-b983-326a6f9eebde"],
-Cell[CellGroupData[{
-Cell[50458, 1155, 1872, 36, 39, "Input",ExpressionUUID->"034244f5-d113-48b8-8b75-3d3d8d845b98"],
-Cell[52333, 1193, 1743, 35, 62, "Output",ExpressionUUID->"c72c1890-847c-478d-a049-51162f700d3b"]
+Cell[50904, 1153, 171, 2, 26, "Input",ExpressionUUID->"38a53c0d-47fc-4493-a07a-24e7de1ed57d"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[54113, 1233, 469, 9, 28, "Input",ExpressionUUID->"388199e9-8d25-44f4-b0b5-52c200c98d45"],
-Cell[54585, 1244, 52823, 1506, 657, "Output",ExpressionUUID->"98e3b37c-2909-4ef2-b907-48275f0090ae"]
+Cell[51112, 1160, 474, 7, 48, "Subsection",ExpressionUUID->"99fb8a63-f5b0-49ca-ab0c-daec83922ac8"],
+Cell[CellGroupData[{
+Cell[51611, 1171, 207, 4, 26, "Input",ExpressionUUID->"ed3734ea-da80-462c-859d-16f962971241"],
+Cell[51821, 1177, 8735, 217, 83, "Output",ExpressionUUID->"bad46c8f-3075-44c4-8bdb-c32e13d622a5"]
+}, Open  ]],
+Cell[60571, 1397, 207, 3, 45, "Text",ExpressionUUID->"80339c59-8cb5-4578-b983-326a6f9eebde"],
+Cell[CellGroupData[{
+Cell[60803, 1404, 1871, 36, 48, "Input",ExpressionUUID->"034244f5-d113-48b8-8b75-3d3d8d845b98"],
+Cell[62677, 1442, 1790, 36, 81, "Output",ExpressionUUID->"7e6acf5f-ab0a-4010-bfb7-b01a2496dc96"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[107445, 2755, 314, 7, 28, "Input",ExpressionUUID->"9766250d-1bc3-4170-a044-a8039bd32374"],
-Cell[107762, 2764, 92438, 1856, 145, "Output",ExpressionUUID->"e7505e44-abda-4be2-813e-e29253bd5344"]
+Cell[64504, 1483, 468, 9, 29, "Input",ExpressionUUID->"388199e9-8d25-44f4-b0b5-52c200c98d45"],
+Cell[64975, 1494, 52985, 1510, 1068, "Output",ExpressionUUID->"ab4de2da-ac91-49ea-86d5-bd559c22b1b6"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[117997, 3009, 313, 7, 26, "Input",ExpressionUUID->"9766250d-1bc3-4170-a044-a8039bd32374"],
+Cell[118313, 3018, 92487, 1857, 205, "Output",ExpressionUUID->"2511c30b-b910-4619-a656-a9e7a90b3f52"]
 }, Open  ]]
 }, Open  ]]
 }, Open  ]]

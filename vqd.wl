@@ -292,6 +292,9 @@ BeginPackage["`ParameterDevices`"];
 	OverRotation::usage = "Over rotation \[Delta] in radian when implementing physical single-qubit rotation, e.g., noisy version of Rx(\[Theta]) is Rx(\[Theta]+\[Delta]).";
 	OverRotation::error="`1`";
 	
+	OverRotation2::usage = "Over rotation \[Delta] in radian when implementing two-qubit rotations, e.g., noisy version of CRx(\[Theta]) is CRx(\[Theta]+\[Delta]). For the association entry, the keys indicate the target qubits.";
+	OverRotation2::error="`1`";
+	
 	ProbBFRead::usage = "Probability of bit-flip error in readout";
 	ProbBFRead::error="`1`";
 	
@@ -1105,7 +1108,8 @@ Begin["`Private`"];
 		durmeas = OptionValue @ DurMeas,
 		durinit = OptionValue @ DurInit,
 		freqweakzz = OptionValue @ FreqWeakZZ,
-		overrotation = OptionValue @ OverRotation
+		overrotation = OptionValue @ OverRotation,
+		overrotation2 = OptionValue @ OverRotation2
 	},
 	
 	
@@ -1222,21 +1226,21 @@ Begin["`Private`"];
 			Subscript[CRx, e_, n_][theta_] /; (e == 0 && n > 0) :> 
 			<|
 				(* its noisy form depolarising the control and target qubits *)
-				NoisyForm -> {Subscript[CRx, e, n][theta], Subscript[Depol,e, n][Min[ercrot[n][[1]] Abs[theta]/Pi, 15/16]], Subscript[Deph, e, n][Min[ercrot[n][[2]]Abs[theta]/Pi, 3/4]]},
+				NoisyForm -> {Subscript[CRx, e, n][theta + overrotation2[n]], Subscript[Depol,e, n][Min[ercrot[n][[1]] Abs[theta]/Pi, 15/16]], Subscript[Deph, e, n][Min[ercrot[n][[2]]Abs[theta]/Pi, 3/4]]},
 				GateDuration -> Abs[theta]/(freqcrot[n]) 
 			|>
 			,
 			Subscript[CRy, e_, n_][theta_] /; (e == 0 && n > 0):> 
 			<|
 				(* its noisy form depolarises the control and target qubits *)
-				NoisyForm -> {Subscript[CRy, e, n][theta], Subscript[Depol, e, n][Min[ercrot[n][[1]] Abs[theta]/Pi, 15/16]], Subscript[Deph, e, n][Min[ercrot[n][[2]]Abs[theta]/Pi, 3/4]]},
+				NoisyForm -> {Subscript[CRy, e, n][theta + overrotation2[n]], Subscript[Depol, e, n][Min[ercrot[n][[1]] Abs[theta]/Pi, 15/16]], Subscript[Deph, e, n][Min[ercrot[n][[2]]Abs[theta]/Pi, 3/4]]},
 				GateDuration -> Abs[theta]/(freqcrot[n])    
 			|>	
 			,
 			(* Controlled-Rx between Nitrogen and electron spins *)
 			Subscript[C, 1][Subscript[Rx, 0][theta_]] :>
 			<|
-				NoisyForm -> {Subscript[C, 1][Subscript[Rx, 0][theta]] , Subscript[Depol, 0, 1][Min[ercrx[[1]] Abs[theta]/Pi, 15/16]], Subscript[Deph, 0, 1][Min[ercrx[[2]]Abs[theta]/Pi, 3/4]]},
+				NoisyForm -> {Subscript[C, 1][Subscript[Rx, 0][theta + overrotation2[0]]] , Subscript[Depol, 0, 1][Min[ercrx[[1]] Abs[theta]/Pi, 15/16]], Subscript[Deph, 0, 1][Min[ercrx[[2]]Abs[theta]/Pi, 3/4]]},
 				GateDuration ->  Abs[theta]/freqcrx	
 			|>
 		}	
