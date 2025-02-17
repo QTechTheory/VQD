@@ -825,7 +825,7 @@ Begin["`Private`"];
 				(* doing nothing, is equivalent to being passive *)
 				Subscript[Wait, q_][dur_]:>
 				<|
-					NoisyForm -> Flatten @ {Subscript[stdpn, q][dur], Subscript[zzPN, q][dur]},
+					NoisyForm -> Flatten @ {Subscript[zzPN, q][dur], Subscript[stdpn, q][dur]},
 					GateDuration -> dur,
 					UpdateVariables -> Function[ activeq[q] = False ]
 				|>
@@ -902,7 +902,7 @@ Begin["`Private`"];
 			Qubits :> {
 				q_ :> <|
 						(* reset the zzon here *)
-						PassiveNoise -> Flatten @ {Subscript[stdpn, q][deltaT], Subscript[zzPN, q][deltaT]}
+						PassiveNoise -> Flatten @ {Subscript[zzPN, q][deltaT], Subscript[stdpn, q][deltaT]}
 						,
 						UpdateVariables -> Function[
 							counter++; 
@@ -1129,7 +1129,7 @@ Begin["`Private`"];
 	
 		passivenoise[q_, dur_] :=
 			If[NumberQ @ freqweakzz,
-				Flatten @ {stdpn[q, dur], weakzz[q, dur]}
+				Flatten @ {weakzz[q, dur], stdpn[q, dur]}
 				,
 				stdpn[q, dur]
 			];
@@ -1767,7 +1767,7 @@ Begin["`Private`"];
 		
 		(*Errors on single rotations*)
 		sroterr[q_, theta_] := Flatten @ {
-			Subscript[Depol, q][ndepol[er1xy[q][[1]] Abs[theta/Pi]]], Subscript[Deph, q][ndeph[er1xy[q][[2]] Abs[theta/Pi]]], offresrabi[q, theta]};						
+			offresrabi[q, theta],Subscript[Depol, q][ndepol[er1xy[q][[1]] Abs[theta/Pi]]], Subscript[Deph, q][ndeph[er1xy[q][[2]] Abs[theta/Pi]]]};						
 		
 		<|
 		(* one hidden qubit for measurement ancilla *)
@@ -1848,7 +1848,7 @@ Begin["`Private`"];
 			Subscript[C, p_][Subscript[Z, q_]] /; (Abs[q - p] == 1)  :>
 			<|
 				(*The last bit is the exchange in the passive noise when the two-qubit gate is on *)
-				NoisyForm -> {Subscript[C, p][Subscript[Z, q]], Subscript[Depol, p, q][ercz[p][[1]]], Subscript[Deph, p, q][ercz[p][[2]]], Sequence@@exczon[q]}, 
+				NoisyForm -> {Subscript[C, p][Subscript[Z, q]], Sequence@@exczon[q], Subscript[Depol, p, q][ercz[p][[1]]], Subscript[Deph, p, q][ercz[p][[2]]]}, 
 				GateDuration -> Pi/freqcz[p],
 				UpdateVariables -> Function[ g2 = True]
 			|>
@@ -1856,7 +1856,7 @@ Begin["`Private`"];
 			Subscript[C, p_][Subscript[Ph, q_][theta_]] /; (Abs[q - p] == 1)  :>
 			<|
 				(*The last bit undo the exchange in the passive noise *)
-				NoisyForm -> {Subscript[C, p][Subscript[Ph, q][theta]], Subscript[Depol, p, q][Min[ercz[p][[1]]Abs[theta/Pi], 15/16]], Subscript[Deph, p, q][Min[ercz[p][[2]]Abs[theta/Pi], 3/4]], Sequence@@exczon[q]}, 
+				NoisyForm -> {Subscript[C, p][Subscript[Ph, q][theta]], Sequence@@exczon[q], Subscript[Depol, p, q][Min[ercz[p][[1]]Abs[theta/Pi], 15/16]], Subscript[Deph, p, q][Min[ercz[p][[2]]Abs[theta/Pi], 3/4]]}, 
 				GateDuration -> Abs[theta]/freqcz[p],
 				UpdateVariables -> Function[ g2 = True]
 			|>
