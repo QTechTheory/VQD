@@ -938,15 +938,17 @@ Begin["`Private`"];
 		fidmeas = OptionValue @ FidMeas,
 		durmeas = OptionValue @ DurMeas,
 		durinit = OptionValue @ DurInit,
-		freqweakzz = OptionValue @ FreqWeakZZ
+		freqweakzz = OptionValue @ FreqWeakZZ,
+		stdpassivenoise = OptionValue @ StdPassiveNoise
 	},
 	
 	Module[
 		{dt, stdpn, passivenoise, ersinglexy, ersinglez, ercrot, nuclearq, weakzz}
 		,
 		(* standard passive noise *) 
-		stdpn[q_, dur_] := 
-			{Subscript[Depol, q][0.75 (1 - E^(-dur/t1[q]))], Subscript[Deph, q][0.5 (1 - E^(-dur/t2[q]))]};
+		stdpn[q_, dur_] := If[stdpassivenoise,
+			{Subscript[Depol, q][0.75 (1 - E^(-dur/t1[q]))], Subscript[Deph, q][0.5 (1 - E^(-dur/t2[q]))]}, 
+			{}];
 		(* 
 		Note: cross-talk ZZ-coupling in order of Hz on passive noise, Phase entanglement among nuclear spins 
 		Subscript[C, n1][Subscript[Rz, n2][dt]], weak rotation for all combinations of n1,n2, few Hz.
@@ -1109,7 +1111,8 @@ Begin["`Private`"];
 		durinit = OptionValue @ DurInit,
 		freqweakzz = OptionValue @ FreqWeakZZ,
 		overrotation = OptionValue @ OverRotation,
-		overrotation2 = OptionValue @ OverRotation2
+		overrotation2 = OptionValue @ OverRotation2,
+		stdpassivenoise = OptionValue @ StdPassiveNoise
 	},
 	
 	
@@ -1117,8 +1120,9 @@ Begin["`Private`"];
 		{dt, stdpn, passivenoise, ersinglexy, ersinglez, ercrot, ercrx, nuclearq, weakzz}
 		,
 		(* standard passive noise *) 
-		stdpn[q_, dur_] := 
-			{Subscript[Depol, q][0.75 (1 - E^(-dur/t1[q]))], Subscript[Deph, q][0.5 (1 - E^(-dur/t2[q]))]};
+		stdpn[q_, dur_] := If[stdpassivenoise,
+			{Subscript[Depol, q][0.75 (1 - E^(-dur/t1[q]))], Subscript[Deph, q][0.5 (1 - E^(-dur/t2[q]))]},
+			{}];
 		(* 
 		Note: cross-talk ZZ-coupling in order of Hz on passive noise, Phase entanglement among nuclear spins 
 		Subscript[C, n1][Subscript[Rz, n2][dt]], weak rotation for all combinations of n1,n2, few Hz.
