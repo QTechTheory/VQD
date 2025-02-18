@@ -1,0 +1,309 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 13.1' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     13854,        301]
+NotebookOptionsPosition[     12119,        263]
+NotebookOutlinePosition[     12814,        288]
+CellTagsIndexPosition[     12771,        285]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell["Toy model", "Title",
+ CellChangeTimes->{{3.8250058175043*^9, 3.825005854301442*^9}, {
+  3.825006152419363*^9, 3.825006172060075*^9}, {3.825680827842572*^9, 
+  3.8256808389487886`*^9}, {3.825701169183799*^9, 3.825701169340406*^9}, {
+  3.826958311226933*^9, 3.826958327332601*^9}, {3.8416873769652023`*^9, 
+  3.8416873816744013`*^9}, {3.874399170443549*^9, 3.874399173841239*^9}, {
+  3.9229606584832478`*^9, 
+  3.9229606632344313`*^9}},ExpressionUUID->"d15a831b-a7a9-4c44-9fc8-\
+632f14beb7e9"],
+
+Cell[TextData[StyleBox["Create VQD",
+ FontWeight->"Bold",
+ FontSlant->"Italic"]], "Text",
+ CellChangeTimes->{{3.826958436240924*^9, 3.82695870921028*^9}, {
+   3.826958746200656*^9, 3.826958748636915*^9}, {3.8269589094382772`*^9, 
+   3.826958914251007*^9}, {3.826958951579002*^9, 3.826958954435522*^9}, {
+   3.8269590097304707`*^9, 3.826959014248453*^9}, {3.826960919158531*^9, 
+   3.826960922263524*^9}, {3.827395161984859*^9, 3.8273951859009943`*^9}, {
+   3.827395229711132*^9, 3.827395234035915*^9}, {3.834479944833457*^9, 
+   3.834479986961046*^9}, {3.8344801203580437`*^9, 3.834480142706661*^9}, {
+   3.8406210641930523`*^9, 3.840621091644374*^9}, {3.840628127190097*^9, 
+   3.8406281499484463`*^9}, {3.84168740096542*^9, 3.8416874088126173`*^9}, {
+   3.841687497082028*^9, 3.841687505930637*^9}, {3.84168774400422*^9, 
+   3.841687756123467*^9}, 3.841713473156818*^9, {3.841716840880055*^9, 
+   3.841716841058804*^9}, {3.841717533373096*^9, 3.841717544431862*^9}, {
+   3.841718923859845*^9, 3.841718936706002*^9}, {3.841824445344933*^9, 
+   3.841824448382442*^9}, {3.8432007891831427`*^9, 3.8432008059778957`*^9}, {
+   3.8782095961611423`*^9, 3.878209596781719*^9}, {3.8952152043825397`*^9, 
+   3.8952152486073627`*^9}, {3.895591013275625*^9, 3.895591014416366*^9}, {
+   3.922960665495644*^9, 
+   3.92296066754662*^9}},ExpressionUUID->"86b6ae0c-b31f-476a-8cfd-\
+71aa29495616"],
+
+Cell[CellGroupData[{
+
+Cell["QuESTlink setup", "Section",
+ CellChangeTimes->{{3.895564711188003*^9, 3.895564736046365*^9}, {
+  3.922960682556809*^9, 
+  3.922960688451406*^9}},ExpressionUUID->"2ac9a657-8798-4d2d-b923-\
+97964512c847"],
+
+Cell["Set the main directory as the current directory", "Text",
+ CellChangeTimes->{{3.8344802680745296`*^9, 3.83448027667835*^9}, {
+  3.8528844215679693`*^9, 3.8528844367050333`*^9}, {3.895561738644601*^9, 
+  3.895561955745701*^9}, {3.895565197806723*^9, 3.895565201167206*^9}},
+ Background->RGBColor[
+  0.87, 0.94, 1],ExpressionUUID->"3304fd8a-d7dc-4a75-8cf8-3d33d0cf0751"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"SetDirectory", "[", 
+   RowBox[{"NotebookDirectory", "[", "]"}], "]"}], ";"}]], "Input",
+ CellChangeTimes->{
+  3.872921462633623*^9, {3.895561958967956*^9, 3.895561969776804*^9}, {
+   3.895564630836348*^9, 3.895564635452001*^9}, {3.895565208327444*^9, 
+   3.89556521021968*^9}},
+ CellLabel->"In[1]:=",ExpressionUUID->"aed5bfe1-5767-4439-be35-1e2df05d494a"],
+
+Cell[TextData[{
+ "Load the QuESTLink package",
+ StyleBox["\nOne may also use the off-line questlink.m file, change it to the \
+location of the local file",
+  FontSlant->"Italic"]
+}], "Text",
+ CellChangeTimes->{{3.8344802680745296`*^9, 3.83448027667835*^9}, {
+  3.895555062959041*^9, 3.895555112315363*^9}, {3.8955551881974287`*^9, 
+  3.895555260300796*^9}, {3.895555597085835*^9, 3.895555664673655*^9}, {
+  3.895560998697385*^9, 3.895561075198522*^9}, {3.8955620885151787`*^9, 
+  3.895562088990657*^9}, {3.8955621274003143`*^9, 3.8955621439683104`*^9}},
+ Background->RGBColor[
+  0.87, 0.94, 1],ExpressionUUID->"ce76efab-251b-412c-b6a3-02c0d0c36601"],
+
+Cell[BoxData[
+ RowBox[{"Import", "[", "\"\<https://qtechtheory.org/questlink.m\>\"", 
+  "]"}]], "Input",
+ CellChangeTimes->{{3.82497505062926*^9, 3.8249750506297073`*^9}, 
+   3.824994043627574*^9, 3.825001607792643*^9, {3.825001692867886*^9, 
+   3.825001693910748*^9}, 3.825005541672139*^9, {3.8257703632332573`*^9, 
+   3.8257703928999557`*^9}, {3.8257705549908867`*^9, 
+   3.8257705572226887`*^9}, {3.827395402084569*^9, 3.827395414565299*^9}, 
+   3.8273959879208593`*^9, {3.8273960394479303`*^9, 3.8273960853619223`*^9}, {
+   3.8273961168062162`*^9, 3.827396123715522*^9}, {3.827396318549856*^9, 
+   3.827396412632536*^9}, {3.8274045827011538`*^9, 3.82740458379325*^9}, {
+   3.8278173564819393`*^9, 3.827817361228321*^9}, {3.830976734134877*^9, 
+   3.8309767494625072`*^9}, {3.834480282684927*^9, 3.834480283538302*^9}, {
+   3.834480426528635*^9, 3.834480438344689*^9}, {3.840643429673587*^9, 
+   3.84064343214264*^9}, {3.840644090065632*^9, 3.840644110294639*^9}, {
+   3.841376639126837*^9, 3.841376652890356*^9}, {3.852805051225027*^9, 
+   3.852805051940732*^9}, 3.852866941489101*^9, 3.863433244574464*^9, {
+   3.863444417946168*^9, 3.8634444207524557`*^9}, {3.863758485466724*^9, 
+   3.8637585009226294`*^9}, {3.863763334072833*^9, 3.8637633356047773`*^9}, {
+   3.875107822325452*^9, 3.8751078327815647`*^9}, {3.8833829933758574`*^9, 
+   3.883382993547421*^9}, {3.8955550552579536`*^9, 3.8955550607116213`*^9}, {
+   3.895555251924384*^9, 3.895555252843107*^9}, 3.895560933223365*^9, {
+   3.895562150271586*^9, 3.895562151551223*^9}},
+ CellLabel->"In[2]:=",ExpressionUUID->"6e693605-cc17-45f2-9601-2db93546cf18"],
+
+Cell[TextData[{
+ "This will download a binary file  ",
+ StyleBox["quest_link ",
+  FontWeight->"Bold"],
+ "from the repo; some error will show if the system tries to override the \
+file\n\nUse ",
+ StyleBox["CreateLocalQuESTEnv[quest_link_file] ",
+  FontWeight->"Bold"],
+ "to use the existing binary"
+}], "Text",
+ CellChangeTimes->{{3.8344802680745296`*^9, 3.83448027667835*^9}, {
+  3.895555062959041*^9, 3.895555112315363*^9}, {3.8955551881974287`*^9, 
+  3.895555260300796*^9}, {3.895555597085835*^9, 3.895555664673655*^9}, {
+  3.895560998697385*^9, 3.895561075198522*^9}, {3.895562094495385*^9, 
+  3.895562099994422*^9}, {3.8955621743068743`*^9, 3.89556218382623*^9}, {
+  3.895562229085458*^9, 3.895562229999806*^9}, {3.8955623057350197`*^9, 
+  3.895562353406741*^9}, {3.8955652259848747`*^9, 3.8955652439751587`*^9}, {
+  3.897374998974423*^9, 3.897375104232131*^9}},
+ Background->RGBColor[
+  0.87, 0.94, 1],ExpressionUUID->"7d572411-f4d5-4ae5-8454-26f190783554"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"CreateDownloadedQuESTEnv", "[", "]"}], ";"}]], "Input",
+ CellChangeTimes->{{3.895562380629335*^9, 3.8955623806299543`*^9}, {
+  3.8955642461170387`*^9, 3.895564576316752*^9}, {3.8955654013994617`*^9, 
+  3.8955654071519136`*^9}, {3.8955668835199842`*^9, 3.895566963802331*^9}, {
+  3.895567025375177*^9, 3.895567027172988*^9}, {3.897374936726169*^9, 
+  3.8973749435219097`*^9}, {3.897374996068986*^9, 3.8973749967993937`*^9}},
+ CellLabel->"In[3]:=",ExpressionUUID->"0a3e4105-8616-4b73-9f06-9e870681e805"],
+
+Cell[TextData[{
+ "Load the ",
+ StyleBox["VQD",
+  FontWeight->"Bold"],
+ " package; must be loaded after QuESTlink is loaded"
+}], "Text",
+ CellChangeTimes->{{3.8344802680745296`*^9, 3.83448027667835*^9}, {
+  3.8406416900502462`*^9, 3.840641698118609*^9}, {3.840641813367085*^9, 
+  3.840641822804656*^9}, {3.853839759327433*^9, 3.853839762140107*^9}, {
+  3.86344845184791*^9, 3.863448455324099*^9}, {3.8637680860803547`*^9, 
+  3.863768086918572*^9}, {3.895562384490183*^9, 3.895562387907646*^9}, {
+  3.895562552053419*^9, 3.8955625677886047`*^9}, {3.895565295097423*^9, 
+  3.895565315981283*^9}},
+ Background->RGBColor[
+  0.87, 0.94, 1],ExpressionUUID->"1a57288f-5674-4f4e-a47b-92ef1e42b7c2"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"qubitnum", "=", "5"}], ";"}]], "Input",
+ CellChangeTimes->{{3.922960797683435*^9, 3.9229607995745707`*^9}},
+ CellLabel->"In[71]:=",ExpressionUUID->"549d1213-a460-4b19-833a-fe2124fd50e9"],
+
+Cell[BoxData[
+ RowBox[{"\t\t\t\t", 
+  RowBox[{"<|", "\n", "\t\t\t\t\t", 
+   RowBox[{
+    RowBox[{"DeviceDescription", " ", "->", " ", "\"\<Some device\>\""}], 
+    "\t", "\n", "\t\t\t\t\t", ",", "\n", "\t\t\t\t\t", 
+    RowBox[{"NumAccessibleQubits", " ", "->", " ", "qubitnum"}], "\n", 
+    "\t\t\t\t\t", ",", "\n", "\t\t\t\t\t", 
+    RowBox[{"NumTotalQubits", " ", "->", " ", "qubitnum"}], "\n", 
+    "\t\t\t\t\t", ",", "\n", "\t\t\t\t\t", 
+    RowBox[{"Aliases", " ", "->", " ", 
+     RowBox[{"{", "\n", "\t\t\t\t\t\t", 
+      RowBox[{"(*", " ", 
+       RowBox[{"parameterised", " ", "swap"}], " ", "*)"}], "\n", 
+      "\t\t\t\t\t\t", 
+      RowBox[{
+       SubscriptBox["A", 
+        RowBox[{"p_", ",", "q_"}]], " ", ":>", " ", "..."}], "\n", 
+      "\t\t\t\t\t\t ", "}"}]}], "\n", "\t\t\t\t\t", ",", "\n", "\t\t\t\t\t", 
+    RowBox[{"Gates", " ", "->", "\n", "\t\t\t\t\t\t", 
+     RowBox[{"{", "\n", "\t\t\t\t\t\t\t", 
+      RowBox[{"(*", " ", "Singles", " ", "*)"}], "\n", "\t\t\t\t\t\t\t", 
+      RowBox[{
+       RowBox[{
+        RowBox[{
+         SubscriptBox["Rx", "q_"], "[", "theta_", "]"}], " ", ":>", "\n", 
+        "\t\t\t\t\t\t\t\t", 
+        RowBox[{"<|", "\n", "\t\t\t\t\t\t\t\t", 
+         RowBox[{
+          RowBox[{"NoisyForm", " ", "->", "  ", "..."}], ",", "\n", 
+          "\t\t\t\t\t\t\t\t", 
+          RowBox[{"GateDuration", " ", "->", "..."}]}], "\n", 
+         "\t\t\t\t\t\t\t\t", "|>"}]}], "\n", "\t\t\t\t\t\t\t", ",", "\n", 
+       "\t\t\t\t\t\t\t", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"Subscript", "[", 
+          RowBox[{"Ry", ",", " ", "q_"}], "]"}], "[", "theta_", "]"}], " ", 
+        ":>"}]}], " ", "\n", "\[IndentingNewLine]", "\t\t\t\t", "}"}]}], ",", 
+    "\n", "\t\t\t\t\t", 
+    RowBox[{"(*", " ", 
+     RowBox[{
+     "Declare", " ", "that", " ", "deltaT", " ", "will", " ", "refer", " ", 
+      "to", " ", "the", " ", "duration", " ", "of", " ", "the", " ", 
+      "current", " ", 
+      RowBox[{"gate", "/", 
+       RowBox[{"channel", "."}]}]}], " ", "*)"}], "\n", "\t\t\t\t\t", 
+    RowBox[{"DurationSymbol", " ", "->", " ", "\[CapitalDelta]t"}], "\n", 
+    "\t\t\t\t\t", ",", "\n", "\t\t\t\t\t", 
+    RowBox[{"(*", " ", 
+     RowBox[{"Passive", " ", "noise"}], " ", "*)"}], "\n", "\t\t\t\t\t", 
+    RowBox[{"Qubits", " ", ":>", "\n", "\t\t\t\t\t\t", 
+     RowBox[{"{", "\n", "\t\t\t\t\t\t\t", 
+      RowBox[{"q_Integer", " ", ":>", "\n", "\t\t\t\t\t\t\t\t", 
+       RowBox[{"<|", "\n", "\t\t\t\t\t\t\t\t\t", 
+        RowBox[{"PassiveNoise", " ", "->", "\n", "\t\t\t\t\t\t\t\t\t\t", 
+         RowBox[{"(*", " ", 
+          RowBox[{"standard", " ", "passive", " ", "noise", " ", "on"}], " ", 
+          "*)"}], "\n", "\t\t\t\t\t\t\t\t\t\t\t", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"Subscript", "[", 
+             RowBox[{"Depol", ",", " ", "q"}], "]"}], "[", 
+            RowBox[{"0.75", " ", 
+             RowBox[{"(", 
+              RowBox[{"1", " ", "-", " ", 
+               RowBox[{"E", " ", "^", " ", 
+                RowBox[{"(", 
+                 RowBox[{
+                  RowBox[{"-", "\[CapitalDelta]t"}], " ", "/", " ", "t1"}], 
+                 ")"}]}]}], ")"}]}], "]"}], ",", " ", 
+           RowBox[{
+            RowBox[{"Subscript", "[", 
+             RowBox[{"Deph", ",", " ", "q"}], "]"}], "[", 
+            RowBox[{"0.5", " ", 
+             RowBox[{"(", 
+              RowBox[{"1", " ", "-", " ", 
+               RowBox[{"E", " ", "^", " ", 
+                RowBox[{"(", 
+                 RowBox[{
+                  RowBox[{"-", "\[CapitalDelta]t"}], " ", "/", " ", "t2"}], 
+                 ")"}]}]}], ")"}]}], "]"}]}], "}"}]}], "\n", 
+        "\t\t\t\t\t\t\t\t\t\t", "\n", "\t\t\t\t\t\t\t\t", "|>"}]}], "\n", 
+      "\t\t\t\t\t\t", "}"}]}]}], "\n", "\t\t\t\t", "|>"}]}]], "Input",
+ CellChangeTimes->{{3.922960780035228*^9, 
+  3.922960924019902*^9}},ExpressionUUID->"57eafbd1-26d7-4a34-92fe-\
+2eb75993cece"]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{1248, 771.75},
+WindowMargins->{{0, Automatic}, {0, Automatic}},
+PrintingCopies->1,
+PrintingPageRange->{Automatic, Automatic},
+PrintingOptions->{"PaperOrientation"->"Portrait",
+"PaperSize"->{842, 1191},
+"PostScriptOutputFile"->"",
+"PrintingMargins"->7},
+TaggingRules->{
+ "WelcomeScreenSettings" -> {"FEStarting" -> False}, "TryRealOnly" -> False},
+Magnification:>0.8,
+FrontEndVersion->"13.3 for Linux x86 (64-bit) (July 24, 2023)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"17f81c71-5f26-451e-9bcb-da056e5104a4"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 497, 8, 78, "Title",ExpressionUUID->"d15a831b-a7a9-4c44-9fc8-632f14beb7e9"],
+Cell[1080, 32, 1380, 21, 28, "Text",ExpressionUUID->"86b6ae0c-b31f-476a-8cfd-71aa29495616"],
+Cell[CellGroupData[{
+Cell[2485, 57, 209, 4, 54, "Section",ExpressionUUID->"2ac9a657-8798-4d2d-b923-97964512c847"],
+Cell[2697, 63, 374, 5, 40, "Text",ExpressionUUID->"3304fd8a-d7dc-4a75-8cf8-3d33d0cf0751"],
+Cell[3074, 70, 391, 8, 23, "Input",ExpressionUUID->"aed5bfe1-5767-4439-be35-1e2df05d494a"],
+Cell[3468, 80, 649, 12, 59, "Text",ExpressionUUID->"ce76efab-251b-412c-b6a3-02c0d0c36601"],
+Cell[4120, 94, 1617, 23, 23, "Input",ExpressionUUID->"6e693605-cc17-45f2-9601-2db93546cf18"],
+Cell[5740, 119, 962, 19, 77, "Text",ExpressionUUID->"7d572411-f4d5-4ae5-8454-26f190783554"],
+Cell[6705, 140, 536, 8, 23, "Input",ExpressionUUID->"0a3e4105-8616-4b73-9f06-9e870681e805"],
+Cell[7244, 150, 689, 14, 40, "Text",ExpressionUUID->"1a57288f-5674-4f4e-a47b-92ef1e42b7c2"],
+Cell[7936, 166, 221, 4, 23, "Input",ExpressionUUID->"549d1213-a460-4b19-833a-fe2124fd50e9"],
+Cell[8160, 172, 3931, 87, 668, "Input",ExpressionUUID->"57eafbd1-26d7-4a34-92fe-2eb75993cece"]
+}, Open  ]]
+}, Open  ]]
+}
+]
+*)
+
