@@ -55,9 +55,17 @@ ToyDevice::usage = "Return a specification with simple standard model.";
 *)
 (** General functions  **)
 CalcFidelityDensityMatrices::usage = "CalcFidelityDensityMatrices[\[Rho],\[Sigma]] fidelity of two density matrices, \[Rho] and \[Sigma] can be density matrix of Quregs. Fidelity of two density matrices.";
+ChoiApply::usage="ChoiApply[\[Rho]mat, \[CapitalLambda]]. Apply Choi operator in Row convention and LSB, to a density matrix: \!\(\*SuperscriptBox[\(Tr\), \(y\)]\)[\[CapitalLambda](Id \[CircleTimes] \[Rho])]";
 PartialTrace::usage = "PartialTrace[qureg/density matrix, tracedoutqubits_List]. Return the partial trace as a matrix.";
 RandomMixState::usage = "RandomMixState[nqubits, nsamples:None]. Return a random mixed quantum density state matrix.";
+RowShuffle::usage = "RowShuffle[matrix] Row shuffling of \!\(\*SuperscriptBox[\(2\), \(2  nq\)]\)x \!\(\*SuperscriptBox[\(2\), \(2  nq\)]\) matrix.";
+Stacking::usage="Pick row or colum stacking. By default, it's row stacking";	
+SuperOperate::usage="SuperOperate[\[Rho]matrix, superoperator]. Apply a superoperator operation.";
+Tensorize::usage = "Tensorice[vector, Stacking -> Row]. Tensorization from a list to a squared matrix";
+Vectorize::usage = "Vectorize[matrix, Stacking -> Row]Vectorisation of 2-dimensional matrices";
 
+Options[Tensorize] = {Stacking -> "row"};
+Options[Vectorize] = {Stacking -> "row"};
 (* 
 Information keys 
 *)
@@ -1129,7 +1137,7 @@ Begin["`Private`"];
 		implement: Exp[-i dur ZZ]
 		*)	
 		weakzz[q_, dur_] := 
-			R[dur/freqweakzz, Subscript[Z, #]Subscript[Z, #2]]& @@@ Subsets[DeleteCases[Range[1, qubitnum - 1], q], {2}];
+			R[\[Pi] * dur * freqweakzz, Subscript[Z, #]Subscript[Z, #2]]& @@@ Subsets[DeleteCases[Range[1, qubitnum - 1], q], {2}];
 	
 		passivenoise[q_, dur_] :=
 			If[NumberQ @ freqweakzz,
@@ -2717,11 +2725,31 @@ Begin["`Private`"];
 
 	Serialize[circ_List]:=List/@Flatten[circ]
 
-	
 	(*
 	General convenient functions 	
-	*)	
+	*)		
+	Vectorize[m_, OptionsPattern[]] := If[OptionValue @ Stacking === "row", Flatten[m, 1],
+		Join@@Table[m[[;;, j]], {j, Dimensions[m][[2]]}]]
 	
+	Tensorize[v_, OptionsPattern[]] := With[{m = ArrayReshape[v, {Sqrt@Length@v, Sqrt@Length@v}]},
+		If[OptionValue @ Stacking === "row", m, Transpose @ m]
+	]
+
+	RowShuffle[mat_]:=Module[{half, idxfull, nq, permut},
+		Assert[Equal @@ Dimensions @ mat, "Must be a square matrix"];
+		half = Log2 @ Length @ mat;
+		nq = half/2;
+		idxfull = 2half;
+		permut = Flatten @ Permute[Partition[Range[idxfull], idxfull/4], {1,3,2,4}];
+		 ArrayReshape[
+			TensorTranspose[ArrayReshape[mat, ConstantArray[2, idxfull]], permut]
+		, Dimensions @ mat]
+	]
+
+	ChoiApply[\[Rho]mat_, \[CapitalLambda]_] := Module[{dim = First @ Dimensions @ \[Rho]mat},
+			PartialTrace[\[CapitalLambda] . KroneckerProduct[IdentityMatrix[dim], Transpose@\[Rho]mat], Sequence@@Range[0, Log2[dim] - 1]]
+	] 
+	SuperOperate[\[Rho]mat_, superop_] := Tensorize[superop . Vectorize[\[Rho]mat]]
 	
 	(* 
 	Random states generation: https://iitis.pl/~miszczak/files/papers/miszczak12generating.pdf  
@@ -2798,27 +2826,7 @@ Begin["`Private`"];
 		gate/. gpattern
 	];
 
-	(*
-	Generate Latex table that show the options used in the parameter VQD. It is very buggy!
-	GenerateOptionTable[options_, columnwidth_: {"3cm", "3cm", "10cm"}] := Module[
-		{vars, contents, header, content, contenf, contenl, fvalues, finfo, cw1, cw2, cw3}
-		,
-		vars = Keys @ options;
-		{cw1, cw2, cw3} = columnwidth;
-		header = StringForm["\\begin{tabular}{p{``}p{``}p{``}}\n\\toprule", cw1, cw2, cw3];
-		header = StringRiffle[{header, "\\textbf{Variable}&\\textbf{Value}&\\textbf{Description}\\\\ \n\\midrule\n"}];
-		fvalues = List @@ # & /@ Values@options;
-		finfo = ToString@Information[#]& /@ Keys[options];
-		finfo = Quiet[
-				StringReplace[#, 
-					{"Rx"->"$Rx$", "Ry"->"$Ry$", "Rz"->"$Rz$", "T1"->"$T_1$", "T2s"->"$T_2^s$", "T2"->"$T_2$"}]& /@ finfo;
-				content = Transpose@{Keys@options, fvalues, finfo}
-			];
-		contenl = StringRiffle[#, "&"]& /@ content;
-		contents = StringRiffle[contenl, "\\\\ \n"];
-		header<>contents<>"\\\\ \n \\bottomrule\n\\end{tabular}"
-	]
-	*)
+
 	(* list of gates that are always parallel *)
 	(*	
 	parallelGates=<|
