@@ -61,13 +61,13 @@ PartialTrace::usage = "PartialTrace[qureg/density matrix, tracedoutqubits_List].
 RandomMixState::usage = "RandomMixState[nqubits, nsamples:None]. Return a random mixed quantum density state matrix.";
 RowShuffle::usage = "RowShuffle[matrix] Row shuffling of \!\(\*SuperscriptBox[\(2\), \(2  nq\)]\)x \!\(\*SuperscriptBox[\(2\), \(2  nq\)]\) matrix.";
 Stacking::usage="Pick row or colum stacking. By default, it's row stacking";	
-SuperOperate::usage="SuperOperate[\[Rho]matrix, superoperator]. Apply a superoperator operation.";
-Tensorize::usage = "Tensorice[vector, Stacking -> Row]. Tensorization from a list to a squared matrix";
-Vectorize::usage = "Vectorize[matrix, Stacking -> Row]Vectorisation of 2-dimensional matrices";
+SuperOperate::usage="SuperOperate[\[Rho]matrix, superoperator]. Apply a superoperator operation to a density matrix.";
+Tensorize::usage = "Tensorize[vector, Stacking -> 'column']. Tensorization from a vector to a squared matrix.";
+Vectorize::usage = "Vectorize[matrix, Stacking -> 'column']. Vectorisation of 2-dimensional matrices.";
 
-Options[Tensorize] = {Stacking -> "row"};
-Options[Vectorize] = {Stacking -> "row"};
-Options[SuperOperate] = {Stacking -> "row"};
+Options[Tensorize] = {Stacking -> "column"};
+Options[Vectorize] = {Stacking -> "column"};
+Options[SuperOperate] = {Stacking -> "column"};
 (* 
 Information keys 
 *)
