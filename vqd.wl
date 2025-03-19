@@ -56,6 +56,7 @@ ToyDevice::usage = "Return a specification with simple standard model.";
 (** General functions  **)
 CalcFidelityDensityMatrices::usage = "CalcFidelityDensityMatrices[\[Rho],\[Sigma]] fidelity of two density matrices, \[Rho] and \[Sigma] can be density matrix of Quregs. Fidelity of two density matrices.";
 ChoiApply::usage="ChoiApply[\[Rho]mat, \[CapitalLambda]]. Apply Choi operator in Row convention and LSB, to a density matrix: \!\(\*SuperscriptBox[\(Tr\), \(y\)]\)[\[CapitalLambda](Id \[CircleTimes] \[Rho])]";
+ColumnShuffle::usage = "ColumnShuffle[matrix] Column shuffling of \!\(\*SuperscriptBox[\(2\), \(2  nq\)]\)x \!\(\*SuperscriptBox[\(2\), \(2  nq\)]\) matrix."
 PartialTrace::usage = "PartialTrace[qureg/density matrix, tracedoutqubits_List]. Return the partial trace as a matrix.";
 RandomMixState::usage = "RandomMixState[nqubits, nsamples:None]. Return a random mixed quantum density state matrix.";
 RowShuffle::usage = "RowShuffle[matrix] Row shuffling of \!\(\*SuperscriptBox[\(2\), \(2  nq\)]\)x \!\(\*SuperscriptBox[\(2\), \(2  nq\)]\) matrix.";
@@ -66,6 +67,7 @@ Vectorize::usage = "Vectorize[matrix, Stacking -> Row]Vectorisation of 2-dimensi
 
 Options[Tensorize] = {Stacking -> "row"};
 Options[Vectorize] = {Stacking -> "row"};
+Options[SuperOperate] = {Stacking -> "row"};
 (* 
 Information keys 
 *)
@@ -2735,7 +2737,7 @@ Begin["`Private`"];
 		If[OptionValue @ Stacking === "row", m, Transpose @ m]
 	]
 
-	RowShuffle[mat_]:=Module[{half, idxfull, nq, permut},
+	RowShuffle[mat_] := Module[{half, idxfull, nq, permut},
 		Assert[Equal @@ Dimensions @ mat, "Must be a square matrix"];
 		half = Log2 @ Length @ mat;
 		nq = half/2;
@@ -2745,11 +2747,24 @@ Begin["`Private`"];
 			TensorTranspose[ArrayReshape[mat, ConstantArray[2, idxfull]], permut]
 		, Dimensions @ mat]
 	]
+	
+	ColumnShuffle[mat_] := Module[{half, idxfull, nq, permut},
+		Assert[Equal @@ Dimensions @ mat, "Must be a square matrix"];
+		half = Log2 @ Length @ mat;
+		nq = half/2;
+		idxfull = 2half;
+		permut = Flatten @ Permute[Partition[Range[idxfull], idxfull/4], {4,2,3,1}];
+		 ArrayReshape[
+			TensorTranspose[ArrayReshape[mat, ConstantArray[2, idxfull]], permut]
+		, Dimensions @ mat]
+	]
 
 	ChoiApply[\[Rho]mat_, \[CapitalLambda]_] := Module[{dim = First @ Dimensions @ \[Rho]mat},
 			PartialTrace[\[CapitalLambda] . KroneckerProduct[IdentityMatrix[dim], Transpose@\[Rho]mat], Sequence@@Range[0, Log2[dim] - 1]]
 	] 
-	SuperOperate[\[Rho]mat_, superop_] := Tensorize[superop . Vectorize[\[Rho]mat]]
+	SuperOperate[\[Rho]mat_, superop_, OptionsPattern[]] := With[{stacking = OptionValue @ Stacking},
+		Tensorize[superop . Vectorize[\[Rho]mat, Stacking -> Stacking], Stacking -> stacking]
+	]
 	
 	(* 
 	Random states generation: https://iitis.pl/~miszczak/files/papers/miszczak12generating.pdf  
