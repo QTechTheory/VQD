@@ -56,13 +56,13 @@ ToyDevice::usage = "Return a specification with simple standard model.";
 (** General functions  **)
 CalcFidelityDensityMatrices::usage = "CalcFidelityDensityMatrices[\[Rho],\[Sigma]] fidelity of two density matrices, \[Rho] and \[Sigma] can be density matrix of Quregs. Fidelity of two density matrices.";
 ChoiApply::usage="ChoiApply[\[Rho]mat, \[CapitalLambda]]. Apply Choi operator in Row convention and LSB, to a density matrix: \!\(\*SuperscriptBox[\(Tr\), \(y\)]\)[\[CapitalLambda](Id \[CircleTimes] \[Rho])]";
-ColumnShuffle::usage = "ColumnShuffle[matrix] Column shuffling of \!\(\*SuperscriptBox[\(2\), \(2  nq\)]\)x \!\(\*SuperscriptBox[\(2\), \(2  nq\)]\) matrix."
+ColumnShuffle::usage = "ColumnShuffle[matrix] Column shuffling of \!\(\*SuperscriptBox[\(2\), \(2  nq\)]\)x \!\(\*SuperscriptBox[\(2\), \(2  nq\)]\) matrix.";
 PartialTrace::usage = "PartialTrace[qureg/density matrix, tracedoutqubits_List]. Return the partial trace as a matrix.";
 RandomMixState::usage = "RandomMixState[nqubits, nsamples:None]. Return a random mixed quantum density state matrix.";
 RowShuffle::usage = "RowShuffle[matrix] Row shuffling of \!\(\*SuperscriptBox[\(2\), \(2  nq\)]\)x \!\(\*SuperscriptBox[\(2\), \(2  nq\)]\) matrix.";
 Stacking::usage="Pick row or colum stacking. By default, it's row stacking";	
 SuperOperate::usage="SuperOperate[\[Rho]matrix, superoperator]. Apply a superoperator operation to a density matrix.";
-Tensorize::usage = "Tensorize[vector, Stacking -> 'column']. Tensorization from a vector to a squared matrix.";
+Tensorize::usage = "Tensorize[vector, Stacking -> 'column']. Tensorization from a vector.";
 Vectorize::usage = "Vectorize[matrix, Stacking -> 'column']. Vectorisation of 2-dimensional matrices.";
 
 Options[Tensorize] = {Stacking -> "column"};
@@ -2733,10 +2733,10 @@ Begin["`Private`"];
 	Vectorize[m_, OptionsPattern[]] := If[OptionValue @ Stacking === "row", Flatten[m, 1],
 		Join@@Table[m[[;;, j]], {j, Dimensions[m][[2]]}]]
 	
-	Tensorize[v_, OptionsPattern[]] := With[{m = ArrayReshape[v, {Sqrt@Length@v, Sqrt@Length@v}]},
+	Tensorize[v_, OptionsPattern[]] := With[{m = ArrayReshape[v, {Log2@Length@v, Log2@Length@v}]},
 		If[OptionValue @ Stacking === "row", m, Transpose @ m]
 	]
-
+	
 	RowShuffle[mat_] := Module[{half, idxfull, nq, permut},
 		Assert[Equal @@ Dimensions @ mat, "Must be a square matrix"];
 		half = Log2 @ Length @ mat;
@@ -2840,7 +2840,6 @@ Begin["`Private`"];
 		,
 		gate/. gpattern
 	];
-
 
 	(* list of gates that are always parallel *)
 	(*	
