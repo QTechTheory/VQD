@@ -38,12 +38,12 @@ Our current devices includes:
 5. Superconducting qubits.
 
 
-Each type of quantum device is unique and is based on or inspired by actual devices. For more in-depth information on the architecture and used error models, refer to our [**paper**](https://arxiv.org/abs/2306.07342). 
+Each type of quantum device is unique and is based on or inspired by actual devices. For more in-depth information on the architecture and used error models, refer to our [**paper**](https://doi.org/10.22331/q-2025-02-25-1642). 
 
 ## Quickstart
 
 
-Our virtual device is designed to reflect a close approximation to the physical reality. It achieves this by offering access solely to native operations and parameters that are physically feasible and tailored specifically to the quantum device in question. Therefore, users will find it beneficial to have some understanding of the devices they're interested in. But don't worry if you're not there yet &mdash; you can get up to speed quickly by diving into our [**paper**](https://arxiv.org/abs/2306.07342), or follow the steps below.
+Our virtual device is designed to reflect a close approximation to the physical reality. It achieves this by offering access solely to native operations and parameters that are physically feasible and tailored specifically to the quantum device in question. Therefore, users will find it beneficial to have some understanding of the devices they're interested in. But don't worry if you're not there yet &mdash; you can get up to speed quickly by diving into our [**paper**](https://doi.org/10.22331/q-2025-02-25-1642), or follow the steps below.
 
 
 ### **1. Navigate to the Desired Folder**
