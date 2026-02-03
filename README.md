@@ -14,8 +14,9 @@
 
 This package is developed by [Cica Gustiani](https://github.com/cicacica) within the University of Oxford, in [Simon Benjamin](https://qtechtheory.org/) group.
 
-[![Email](https://img.shields.io/badge/email-cicagustiani@gmail.com-red.svg)](mailto:cicagustiani@gmail.com)
-[![Paper](https://img.shields.io/badge/Paper-arXiv%3A2306.07342-b31b1b.svg)](https://arxiv.org/abs/2306.07342)
+[![Email](https://img.shields.io/badge/email-cicacica13@pm.me-red.svg)](mailto:cicacica13@pm.me)
+[![Paper](https://img.shields.io/badge/Paper-Quantum%202025-blue?style=flat-square&logo=readthedocs)](https://doi.org/10.22331/q-2025-02-25-1642)
+
 
 
 ## Our goal
